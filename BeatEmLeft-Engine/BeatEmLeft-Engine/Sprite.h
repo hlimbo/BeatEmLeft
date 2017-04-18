@@ -5,6 +5,7 @@
 class Texture;
 struct SDL_Renderer;
 
+//sprite's pivot point is its top left corner
 class Sprite
 {
 public:
@@ -18,8 +19,10 @@ public:
 	bool FreeSprite();
 	//bool DrawSprite(SDL_Renderer* renderer, SDL_Point location, int width, int height);
 	bool DrawSprite(SDL_Renderer* renderer);
-	void MoveSprite(int x, int y);
-	void MoveSprite(SDL_Point newLocation);
+	void MoveSprite(int dx, int dy);
+	void MoveSprite(SDL_Point dPosition);
+	void SetLocation(int x, int y);
+	void SetLocation(SDL_Point newLocation);
 	void SetSize(SDL_Point sizeInPixels);
 	void SetSize(int w, int h);
 

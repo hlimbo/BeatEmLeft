@@ -5,8 +5,6 @@
 #include <SDL2/SDL_ttf.h>
 
 #define SUCCESS 0
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
 
 //app initialization
 Core::Core()

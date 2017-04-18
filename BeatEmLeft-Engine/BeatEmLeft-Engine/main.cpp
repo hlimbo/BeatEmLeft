@@ -29,7 +29,17 @@ int main(int argc, char* argv[])
 	spritePath += std::string("block.jpg");
 	Sprite firstSprite;
 	firstSprite.LoadSprite(core.getRenderer(), spritePath.c_str());
+	firstSprite.SetSize(40, 40);
+
+	SDL_Point newLocation;
+	newLocation.x = SCREEN_WIDTH / 2 - firstSprite.GetWidth() / 2;
+	newLocation.y = SCREEN_HEIGHT / 2 - firstSprite.GetHeight() / 2;
+
+	firstSprite.MoveSprite(newLocation);
 	firstSprite.DrawSprite(core.getRenderer());
+	int move = 10;
+
+	printf("Sprite dimensions: %d, %d", firstSprite.GetWidth(), firstSprite.GetHeight());
 
 	//definitely need a texture store class.
 //#define SIZE 2
@@ -47,15 +57,41 @@ int main(int argc, char* argv[])
 	{
 		//TODO: process inputs
 		SDL_Event event;
-		if (SDL_PollEvent(&event))
+		if(SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
 				running = false;
+			//temporary code.
+			if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_w:
+					firstSprite.MoveSprite(0, -move);
+					break;
+				case SDLK_s:
+					firstSprite.MoveSprite(0, move);
+					break;
+				case SDLK_a:
+					firstSprite.MoveSprite(-move, 0);
+					break;
+				case SDLK_d:
+					firstSprite.MoveSprite(move, 0);
+					break;
+				default:
+					firstSprite.SetLocation(newLocation);
+					break;
+				}
+			}
 		}
 
 		//TODO: process game logic updates
+		//core.update();
 
 		//TODO: render game
+		//core.render();
+		SDL_RenderClear(core.getRenderer());
+		firstSprite.DrawSprite(core.getRenderer());
 		
 		endCount = SDL_GetPerformanceCounter();
 		Uint32 countElapsed = (Uint32)(endCount - startCount);
@@ -69,7 +105,7 @@ int main(int argc, char* argv[])
 			//display fps text in title
 			std::string title("Beat Em Left");
 			title += std::string(" | FPS: ") + std::to_string(observedFPS);
-			SDL_SetWindowTitle(core.getMainWindow(), title.c_str());
+			SDL_SetWindowTitle(core.getWindow(), title.c_str());
 		}
 
 		float msDifference = core.getTargetDeltaTime() - observedDeltaTime;
@@ -89,6 +125,8 @@ int main(int argc, char* argv[])
 	}
 
 	// ---------------------------------------- End Game Loop ----------------------------------------/
+
+	firstSprite.FreeSprite();
 
 	return 0;
 }

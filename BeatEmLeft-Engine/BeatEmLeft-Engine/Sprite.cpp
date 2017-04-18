@@ -26,6 +26,7 @@ Sprite::Sprite(int x, int y)
 }
 
 
+//Loads the sprite with its default width and height in pixel properties read from the texture file.
 bool Sprite::LoadSprite(SDL_Renderer * renderer, const char * filepath)
 {
 	if (texture->LoadTexture(renderer, filepath))
@@ -49,16 +50,30 @@ bool Sprite::DrawSprite(SDL_Renderer* renderer)
 		printf("Error: %s\n", SDL_GetError());
 		return false;
 	}
+
+	SDL_RenderPresent(renderer);	
 	return true;
 }
 
-void Sprite::MoveSprite(int x, int y)
+void Sprite::MoveSprite(int dx, int dy)
+{
+	bounds.x += dx;
+	bounds.y += dy;
+}
+
+void Sprite::MoveSprite(SDL_Point dPosition)
+{
+	bounds.x += dPosition.x;
+	bounds.y += dPosition.y;
+}
+
+void Sprite::SetLocation(int x, int y)
 {
 	bounds.x = x;
 	bounds.y = y;
 }
 
-void Sprite::MoveSprite(SDL_Point newLocation)
+void Sprite::SetLocation(SDL_Point newLocation)
 {
 	bounds.x = newLocation.x;
 	bounds.y = newLocation.y;

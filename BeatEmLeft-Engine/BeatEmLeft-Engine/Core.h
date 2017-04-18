@@ -1,6 +1,9 @@
 #ifndef CORE_H
 #define CORE_H
 
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+
 struct SDL_Window;
 struct SDL_Renderer;
 
