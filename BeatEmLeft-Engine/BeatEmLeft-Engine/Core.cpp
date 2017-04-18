@@ -31,12 +31,12 @@ float Core::getTargetDeltaTime()
 	return targetDeltaTime;
 }
 
-SDL_Renderer * Core::getMainRenderer()
+SDL_Renderer * Core::getRenderer()
 {
 	return mainRenderer;
 }
 
-SDL_Window * Core::getMainWindow()
+SDL_Window * Core::getWindow()
 {
 	return mainWindow;
 }

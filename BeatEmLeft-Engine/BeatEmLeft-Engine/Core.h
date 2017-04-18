@@ -12,8 +12,8 @@ public:
 public:
 	int getTargetFPS();
 	float getTargetDeltaTime();
-	SDL_Renderer* getMainRenderer();
-	SDL_Window* getMainWindow();
+	SDL_Renderer* getRenderer();
+	SDL_Window* getWindow();
 private:
 	//Initializes SDL Subsystems, creates game window, and renderer.
 	//returns true on successful initialization; false otherwise.

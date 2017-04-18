@@ -5,6 +5,7 @@
 #include <string>
 #include <SDL2/SDL_image.h>
 //#include <vld.h>
+#include "Sprite.h"
 
 
 //long term goal: condense low level sdl function calls into user friendly high level function calls
@@ -19,92 +20,20 @@ int main(int argc, char* argv[])
 	float observedDeltaTime;
 	Core core;
 
-	TTF_Font* font;
+	//Question: Should I put this in its own static helper class?
 	std::string mainPath(SDL_GetBasePath());
 	mainPath += std::string("resources\\");
 
-	std::string fontPath(mainPath);
-	fontPath += std::string("RubikMonoOne-Regular.ttf");
-	font = TTF_OpenFont(fontPath.c_str(), 24);
-	if (!font)
-	{
-		printf("Error: %s\n", TTF_GetError());
-		return 2;
-	}
-
-
-	int width, height;
-	SDL_RenderSetLogicalSize(core.getMainRenderer(), 640, 480);
-	SDL_RenderGetLogicalSize(core.getMainRenderer(), &width, &height);
-	char t1[10];
-	char t2[10];
-
-	SDL_itoa(width, t1, 10);
-	SDL_itoa(height, t2, 10);
-
-	float scaleX, scaleY;
-	SDL_RenderGetScale(core.getMainRenderer(), &scaleX, &scaleY);
-	std::string s1 = std::to_string(scaleX);
-	std::string s2 = std::to_string(scaleY);
-
-	SDL_Color Black = {0,0,0};
-	SDL_Surface* text_surface = TTF_RenderText_Solid(font, s1.c_str(), Black);
-	if (!text_surface)
-	{
-		printf("%s\n", TTF_GetError());
-		return 2;
-	}
-
-	SDL_Texture* text = SDL_CreateTextureFromSurface(core.getMainRenderer(), text_surface);
-	SDL_FreeSurface(text_surface);
-	if (!text)
-	{
-		printf("%s\n", TTF_GetError());
-		return 2;
-	}
-
-	SDL_Rect Message_rect;
-	Message_rect.x = 0;
-	Message_rect.y = 0;
-	Message_rect.w = 100;
-	Message_rect.h = 100;
-
-	SDL_Color White = { 255,255,255 };
-	std::string bgPath(mainPath);
-	bgPath += std::string("hello_world.bmp");
-	SDL_Surface* surf = SDL_LoadBMP(bgPath.c_str());
-	SDL_Texture* bgText = SDL_CreateTextureFromSurface(core.getMainRenderer(), surf);
-	SDL_FreeSurface(surf);
-	
-	SDL_Rect dstRect;
-	dstRect.h = 150;
-	dstRect.w = 150;
-	dstRect.x = 50;
-	dstRect.y = 50;
-
-	/*IMG_LoadTexture(core.getMainRenderer(), bgPath.c_str());*/
-	//SDL_Texture* bad = IMG_LoadTexture(core.getMainRenderer(), "badPath!");
-	//if (bad == NULL)
-	//{
-	//	printf("Bad path: %s\n", IMG_GetError());
-	//	return 5;
-	//}
-
-	//~ can use this to hide objects from screen hehe
-	//SDL_RenderGetClipRect(core.getMainRenderer(), &dstRect);
-
-	SDL_SetRenderDrawColor(core.getMainRenderer(), 255, 0, 255, 255);
-	SDL_RenderClear(core.getMainRenderer());
-	SDL_RenderSetScale(core.getMainRenderer(), 1.0f, 1.0f);
-	SDL_RenderCopy(core.getMainRenderer(), bgText, NULL, &dstRect);
-	SDL_RenderSetScale(core.getMainRenderer(), 1.0f, 1.0f);
-	SDL_RenderCopy(core.getMainRenderer(), text, NULL, &Message_rect);
-	SDL_RenderPresent(core.getMainRenderer());
-
+	//Load Sprite from disk
+	std::string spritePath(mainPath);
+	spritePath += std::string("block.jpg");
+	Sprite firstSprite;
+	firstSprite.LoadSprite(core.getRenderer(), spritePath.c_str());
+	firstSprite.DrawSprite(core.getRenderer());
 
 	//definitely need a texture store class.
-#define SIZE 2
-	SDL_Texture* textures[SIZE];
+//#define SIZE 2
+//	SDL_Texture* textures[SIZE];
 
 	//-------------------------- Game Loop ------------------------------------
 	//measured in ms ~ does not count starting from SDL system initialization.
@@ -127,52 +56,6 @@ int main(int argc, char* argv[])
 		//TODO: process game logic updates
 
 		//TODO: render game
-
-		//fps seems to drop by 10 frames when having these lines here.
-		//observation ~ loading bmps to a surface, converting them into a texture, and freeing their surfaces costs ~10 frames.
-	/*	SDL_Color White = { 255,255,255 };
-		std::string bgPath(mainPath);
-		bgPath += std::string("hello_world.bmp");
-		SDL_Surface* surf = SDL_LoadBMP(bgPath.c_str());
-		SDL_Texture* bgText = SDL_CreateTextureFromSurface(core.getMainRenderer(), surf);
-		SDL_FreeSurface(surf);
-		SDL_DestroyTexture(bgText);*/
-
-		//SDL_RenderClear(core.getMainRenderer());
-
-		//load in the same texture 500 times
-		//SDL_Surface* loadSurf = NULL;
-		//std::string imgPath(mainPath);
-		//imgPath += std::string("block.png");
-		//for (int i = 0;i < SIZE; ++i)
-		//{	
-		//	loadSurf = IMG_Load(imgPath.c_str());
-		//	textures[i] = SDL_CreateTextureFromSurface(core.getMainRenderer(), loadSurf);
-		//	SDL_FreeSurface(loadSurf);
-		//}
-
-		////Draw images onto renderer back buffer
-		////32 wide x 24 tall, x = 0px, y = 0px
-		//SDL_Rect dstRect;
-		//dstRect.w = 32;
-		//dstRect.h = 24;
-		//dstRect.x = 0;
-		//dstRect.y = 0;
-		//for (int i = 0; i < SIZE; ++i)
-		//{
-		//	dstRect.x = i * 32;
-		//	dstRect.y = i * 24;
-		//	SDL_RenderCopy(core.getMainRenderer(), textures[i], NULL, &dstRect);
-		//}
-
-		////flip images to front buffer
-		//SDL_RenderPresent(core.getMainRenderer());
-
-		////Destroy all 500 textures
-		//for (int i = 0; i < SIZE; ++i)
-		//{
-		//	SDL_DestroyTexture(textures[i]);
-		//}
 		
 		endCount = SDL_GetPerformanceCounter();
 		Uint32 countElapsed = (Uint32)(endCount - startCount);
@@ -207,10 +90,53 @@ int main(int argc, char* argv[])
 
 	// ---------------------------------------- End Game Loop ----------------------------------------/
 
-	//if (TTF_WasInit())
-	//	TTF_Quit();
-	//
-	//IMG_Quit();
-
 	return 0;
 }
+
+//PUT UNDER TODO RENDER!
+
+//fps seems to drop by 10 frames when having these lines here.
+//observation ~ loading bmps to a surface, converting them into a texture, and freeing their surfaces costs ~10 frames.
+/*	SDL_Color White = { 255,255,255 };
+std::string bgPath(mainPath);
+bgPath += std::string("hello_world.bmp");
+SDL_Surface* surf = SDL_LoadBMP(bgPath.c_str());
+SDL_Texture* bgText = SDL_CreateTextureFromSurface(core.getMainRenderer(), surf);
+SDL_FreeSurface(surf);
+SDL_DestroyTexture(bgText);*/
+
+//SDL_RenderClear(core.getMainRenderer());
+
+//load in the same texture 500 times
+//SDL_Surface* loadSurf = NULL;
+//std::string imgPath(mainPath);
+//imgPath += std::string("block.png");
+//for (int i = 0;i < SIZE; ++i)
+//{	
+//	loadSurf = IMG_Load(imgPath.c_str());
+//	textures[i] = SDL_CreateTextureFromSurface(core.getMainRenderer(), loadSurf);
+//	SDL_FreeSurface(loadSurf);
+//}
+
+////Draw images onto renderer back buffer
+////32 wide x 24 tall, x = 0px, y = 0px
+//SDL_Rect dstRect;
+//dstRect.w = 32;
+//dstRect.h = 24;
+//dstRect.x = 0;
+//dstRect.y = 0;
+//for (int i = 0; i < SIZE; ++i)
+//{
+//	dstRect.x = i * 32;
+//	dstRect.y = i * 24;
+//	SDL_RenderCopy(core.getMainRenderer(), textures[i], NULL, &dstRect);
+//}
+
+////flip images to front buffer
+//SDL_RenderPresent(core.getMainRenderer());
+
+////Destroy all 500 textures
+//for (int i = 0; i < SIZE; ++i)
+//{
+//	SDL_DestroyTexture(textures[i]);
+//}
