@@ -99,9 +99,15 @@ void Core::appCleanUp()
 	if (TTF_WasInit())
 		TTF_Quit();
 	if (mainRenderer != NULL)
+	{
 		SDL_DestroyRenderer(mainRenderer);
+		mainRenderer = NULL;
+	}
 	if (mainWindow != NULL)
+	{
 		SDL_DestroyWindow(mainWindow);
+		mainWindow = NULL;
+	}
 	SDL_Quit();
 }
 
