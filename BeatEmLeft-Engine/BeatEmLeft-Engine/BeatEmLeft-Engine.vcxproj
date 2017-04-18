@@ -21,10 +21,12 @@
   <ItemGroup>
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h" />
+    <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

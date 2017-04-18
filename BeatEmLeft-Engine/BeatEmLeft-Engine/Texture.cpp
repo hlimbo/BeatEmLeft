@@ -1,6 +1,6 @@
 #include "Texture.h"
-#include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_render.h>
 #include <stdio.h>
 
 /*
@@ -56,4 +56,9 @@ bool Texture::FreeTexture()
 		return false;
 	SDL_DestroyTexture(texture);
 	return true;
+}
+/* Returns the source texture of SDL_Texture*/
+SDL_Texture * Texture::GetSource()
+{
+	return texture;
 }

@@ -11,6 +11,7 @@ public:
 	~Texture();
 	bool LoadTexture(SDL_Renderer* renderer, const char* filepath);
 	bool FreeTexture();
+	SDL_Texture* GetSource();
 private:
 	SDL_Texture* texture;
 };
