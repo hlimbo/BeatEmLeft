@@ -6,6 +6,7 @@
 #include <SDL2/SDL_image.h>
 //#include <vld.h>
 #include "Sprite.h"
+#include "SpriteSheet.h"
 
 
 //long term goal: condense low level sdl function calls into user friendly high level function calls
@@ -17,14 +18,14 @@
 int main(int argc, char* argv[])
 {
 	Uint32 observedFPS;
-	float observedDeltaTime;
+	float observedDeltaTime = 0.0f;
 	Core core;
 
 	//Question: Should I put this in its own static helper class?
 	std::string mainPath(SDL_GetBasePath());
 	mainPath += std::string("resources\\");
 
-	//Load Sprite from disk
+	//Load Sprite from disk ~ TESTING
 	std::string spritePath(mainPath);
 	spritePath += std::string("block.jpg");
 	Sprite firstSprite;
@@ -37,9 +38,21 @@ int main(int argc, char* argv[])
 
 	firstSprite.MoveSprite(newLocation);
 	firstSprite.DrawSprite(core.getRenderer());
-	int move = 10;
+	int move = 500;//moving pixels per frame
 
-	printf("Sprite dimensions: %d, %d", firstSprite.GetWidth(), firstSprite.GetHeight());
+	//Load Sprite Sheet from disk ~ TESTING
+	std::string spriteSheetPath(mainPath);
+	spriteSheetPath += std::string("treyArt.png");
+
+	SpriteSheet spriteSheet;
+	spriteSheet.LoadSpriteSheet(core.getRenderer(), spriteSheetPath.c_str());
+	spriteSheet.SliceWidth = 300;
+	spriteSheet.SliceHeight = 450;
+	/*spriteSheet.SliceWidth = 30;
+	spriteSheet.SliceHeight = 45;*/
+	
+	int currentFrame = 0;
+
 
 	//definitely need a texture store class.
 //#define SIZE 2
@@ -64,24 +77,62 @@ int main(int argc, char* argv[])
 			//temporary code.
 			if (event.type == SDL_KEYDOWN)
 			{
+				//swap over sprite frames
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_LEFT:
+					if (currentFrame - 1 >= 0)
+						--currentFrame;
+					break;
+				case SDLK_RIGHT:
+					if (currentFrame + 1 < spriteSheet.GetFramesLength())
+						++currentFrame;
+					break;
+				default:
+					currentFrame = 0;
+					break;
+				}
+
+				//moves pixels per second
 				switch (event.key.keysym.sym)
 				{
 				case SDLK_w:
-					firstSprite.MoveSprite(0, -move);
+					firstSprite.MoveSprite(0, -move * (observedDeltaTime / 1000.0f));
 					break;
 				case SDLK_s:
-					firstSprite.MoveSprite(0, move);
+					firstSprite.MoveSprite(0, move * (observedDeltaTime / 1000.0f));
 					break;
 				case SDLK_a:
-					firstSprite.MoveSprite(-move, 0);
+					firstSprite.MoveSprite(-move * (observedDeltaTime / 1000.0f), 0);
 					break;
 				case SDLK_d:
-					firstSprite.MoveSprite(move, 0);
+					firstSprite.MoveSprite(move * (observedDeltaTime / 1000.0f), 0);
 					break;
 				default:
 					firstSprite.SetLocation(newLocation);
 					break;
 				}
+
+				//moves pixels per frame
+		/*		move = 10;
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_w:
+				firstSprite.MoveSprite(0, -move);
+				break;
+				case SDLK_s:
+				firstSprite.MoveSprite(0, move);
+				break;
+				case SDLK_a:
+				firstSprite.MoveSprite(-move, 0);
+				break;
+				case SDLK_d:
+				firstSprite.MoveSprite(move, 0);
+				break;
+				default:
+				firstSprite.SetLocation(newLocation);
+				break;
+				}*/
 			}
 		}
 
@@ -90,8 +141,15 @@ int main(int argc, char* argv[])
 
 		//TODO: render game
 		//core.render();
+
+		//render red moving block
 		SDL_RenderClear(core.getRenderer());
+		spriteSheet.DrawFrame(core.getRenderer(), currentFrame);
 		firstSprite.DrawSprite(core.getRenderer());
+
+		//render flipping sprite images
+	/*	SDL_RenderClear(core.getRenderer());*/
+		SDL_RenderPresent(core.getRenderer());
 		
 		endCount = SDL_GetPerformanceCounter();
 		Uint32 countElapsed = (Uint32)(endCount - startCount);
@@ -127,6 +185,7 @@ int main(int argc, char* argv[])
 	// ---------------------------------------- End Game Loop ----------------------------------------/
 
 	firstSprite.FreeSprite();
+	spriteSheet.FreeSpriteSheet();
 
 	return 0;
 }

@@ -5,7 +5,7 @@
 
 /*
 	Wrapper class to SDL_Texture which accomplishes to 
-	make SDL_Texture function calls easier to make.
+	make SDL_Texture function calls error safe to call.
 */
 
 Texture::Texture()

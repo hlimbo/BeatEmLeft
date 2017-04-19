@@ -51,7 +51,7 @@ bool Sprite::DrawSprite(SDL_Renderer* renderer)
 		return false;
 	}
 
-	SDL_RenderPresent(renderer);	
+	//SDL_RenderPresent(renderer);	
 	return true;
 }
 
@@ -109,6 +109,7 @@ void Sprite::SetSize(int w, int h)
 	bounds.h = h;
 }
 
+//Question: Should I explicitly have the user (me) call this function to free the resource or should I let the destructor handle that?
 bool Sprite::FreeSprite()
 {
 	return texture->FreeTexture();
