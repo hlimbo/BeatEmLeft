@@ -9,6 +9,8 @@
 #include "SpriteSheet.h"
 
 
+int event_filter(void* unused, SDL_Event* event);
+
 //long term goal: condense low level sdl function calls into user friendly high level function calls
 
 //sprite can be defined as a subset of a texture or a sprite can be treated as one texture.
@@ -36,7 +38,7 @@ int main(int argc, char* argv[])
 	newLocation.x = SCREEN_WIDTH / 2 - firstSprite.GetWidth() / 2;
 	newLocation.y = SCREEN_HEIGHT / 2 - firstSprite.GetHeight() / 2;
 
-	firstSprite.MoveSprite(newLocation);
+	firstSprite.SetLocation(newLocation);
 	firstSprite.DrawSprite(core.getRenderer());
 	int move = 500;//moving pixels per frame
 
@@ -54,6 +56,29 @@ int main(int argc, char* argv[])
 	int currentFrame = 0;
 
 
+	//testing sdl_gamecontroller
+	SDL_GameController* controller = SDL_GameControllerOpen(0);
+	if (controller == NULL)
+	{
+		printf("Error: Controller: %s\n", SDL_GetError());
+	}
+
+	if (SDL_GameControllerGetAttached(controller))
+	{
+		const char* something = SDL_GameControllerName(controller);
+		printf("Controller: %s is attached\n", something);
+	}
+
+	//setup event filter
+	//SDL_SetEventFilter(event_filter, controller);
+
+	//force an event to happen. ~ possibly useful for AI later on hehehehe
+	SDL_Event forcedEvent;
+	forcedEvent.type = SDL_KEYDOWN;
+	forcedEvent.key.keysym.sym = SDLK_RIGHT;
+	if (SDL_PushEvent(&forcedEvent) == 1)
+		printf("forced event is successfully placed on the queue");
+
 	//definitely need a texture store class.
 //#define SIZE 2
 //	SDL_Texture* textures[SIZE];
@@ -69,72 +94,103 @@ int main(int argc, char* argv[])
 	while (running)
 	{
 		//TODO: process inputs
-		SDL_Event event;
-		if(SDL_PollEvent(&event))
+		SDL_Event event;//probably should make different event for controller joystick movement
+		if (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
 				running = false;
 			//temporary code.
-			if (event.type == SDL_KEYDOWN)
+			else
 			{
-				//swap over sprite frames
-				switch (event.key.keysym.sym)
+				if (event.type == SDL_KEYDOWN)
 				{
-				case SDLK_LEFT:
-					if (currentFrame - 1 >= 0)
-						--currentFrame;
-					break;
-				case SDLK_RIGHT:
-					if (currentFrame + 1 < spriteSheet.GetFramesLength())
-						++currentFrame;
-					break;
-				default:
-					currentFrame = 0;
-					break;
-				}
+					//swap over sprite frames
+					switch (event.key.keysym.sym)
+					{
+					case SDLK_LEFT:
+						if (currentFrame - 1 >= 0)
+							--currentFrame;
+						break;
+					case SDLK_RIGHT:
+						if (currentFrame + 1 < spriteSheet.GetFramesLength())
+							++currentFrame;
+						break;
+					default:
+						currentFrame = 0;
+						break;
+					}
 
-				//moves pixels per second
-				switch (event.key.keysym.sym)
-				{
-				case SDLK_w:
-					firstSprite.MoveSprite(0, -move * (observedDeltaTime / 1000.0f));
+					//moves pixels per second
+					switch (event.key.keysym.sym)
+					{
+					case SDLK_w:
+						firstSprite.MoveSprite(0, (float)-move * (observedDeltaTime / 1000.0f));
+						break;
+					case SDLK_s:
+						firstSprite.MoveSprite(0, (float)move * (observedDeltaTime / 1000.0f));
+						break;
+					case SDLK_a:
+						firstSprite.MoveSprite((float)-move * (observedDeltaTime / 1000.0f), 0);
+						break;
+					case SDLK_d:
+						firstSprite.MoveSprite((float)move * (observedDeltaTime / 1000.0f), 0);
+						break;
+					default:
+						firstSprite.SetLocation(newLocation);
+						break;
+					}
+
+					//moves pixels per frame
+			/*		move = 10;
+					switch (event.key.keysym.sym)
+					{
+					case SDLK_w:
+					firstSprite.MoveSprite(0, -move);
 					break;
-				case SDLK_s:
-					firstSprite.MoveSprite(0, move * (observedDeltaTime / 1000.0f));
+					case SDLK_s:
+					firstSprite.MoveSprite(0, move);
 					break;
-				case SDLK_a:
-					firstSprite.MoveSprite(-move * (observedDeltaTime / 1000.0f), 0);
+					case SDLK_a:
+					firstSprite.MoveSprite(-move, 0);
 					break;
-				case SDLK_d:
-					firstSprite.MoveSprite(move * (observedDeltaTime / 1000.0f), 0);
+					case SDLK_d:
+					firstSprite.MoveSprite(move, 0);
 					break;
-				default:
+					default:
 					firstSprite.SetLocation(newLocation);
 					break;
+					}*/
 				}
 
-				//moves pixels per frame
-		/*		move = 10;
-				switch (event.key.keysym.sym)
+				else if (event.type == SDL_CONTROLLERBUTTONDOWN)
 				{
-				case SDLK_w:
-				firstSprite.MoveSprite(0, -move);
-				break;
-				case SDLK_s:
-				firstSprite.MoveSprite(0, move);
-				break;
-				case SDLK_a:
-				firstSprite.MoveSprite(-move, 0);
-				break;
-				case SDLK_d:
-				firstSprite.MoveSprite(move, 0);
-				break;
-				default:
-				firstSprite.SetLocation(newLocation);
-				break;
+					if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
+						puts("A");
+					if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B))
+						puts("B");
+					if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X))
+						puts("X");
+					if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y))
+						puts("Y");
+
+				}
+
+				// PROBLEM: polling for joystick axes causes other buttons in the event list to not be fired.
+				////issue: there is a delay in other key presses when axis motion is detected.
+	/*			else if (event.type == SDL_CONTROLLERAXISMOTION)
+				{
+					const int JOYSTICK_DEADZONE = 3277;
+					int xAxis = SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
+					int yAxis = SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);
+					if (xAxis < -JOYSTICK_DEADZONE) firstSprite.MoveSprite( (float)-move * (observedDeltaTime / 1000.0f), 0);
+					if (xAxis > JOYSTICK_DEADZONE) firstSprite.MoveSprite( (float)move * (observedDeltaTime / 1000.0f), 0);
+					if (yAxis > JOYSTICK_DEADZONE) firstSprite.MoveSprite(0, (float)move * (observedDeltaTime / 1000.0f));
+					if (yAxis < -JOYSTICK_DEADZONE) firstSprite.MoveSprite(0, (float)-move * (observedDeltaTime / 1000.0f));
 				}*/
 			}
+
 		}
+
 
 		//TODO: process game logic updates
 		//core.update();
@@ -168,7 +224,7 @@ int main(int argc, char* argv[])
 
 		float msDifference = core.getTargetDeltaTime() - observedDeltaTime;
 
-		//if device finishes a cycle faster than targetDeltaTime, sleep for a bit.
+		////if device finishes a cycle faster than targetDeltaTime, sleep for a bit.
 		if (msDifference > 0)
 		{
 			Uint32 msToSleep = (Uint32)(observedDeltaTime + msDifference);
@@ -184,11 +240,48 @@ int main(int argc, char* argv[])
 
 	// ---------------------------------------- End Game Loop ----------------------------------------/
 
+
+	//Probably create a cleanup function that frees all subsystems being used.
+	if (controller != NULL)
+		SDL_GameControllerClose(controller);
+
 	firstSprite.FreeSprite();
 	spriteSheet.FreeSpriteSheet();
 
 	return 0;
 }
+
+//Event FILTERS ~ update: if analog stick is moved around... it takes awhile for the event system to notice the exit command.
+//~ other events like keyboard events get ignored still for some reason.
+
+int event_filter(void* unused, SDL_Event* event)
+{
+	SDL_GameController* controller = static_cast<SDL_GameController*>(unused);
+
+	if (controller == NULL)
+	{
+		printf("Warning.. there is something wrong with the controller in filter: %s\n", SDL_GetError());
+		return 0;
+	}
+
+	if (event->type == SDL_CONTROLLERAXISMOTION)
+	{
+		//16 bit values = 2^16
+		//raw input joystick values that range from -32767 to 32767
+
+		int rawX = SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
+		int rawY = SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);
+		
+		printf("Raw X: %d\nRaw Y: %d\n", rawX, rawY);
+
+		//ignore this analog input
+		return 0;
+	}
+
+	//let other events be added into queue.
+	return 1;
+}
+
 
 //PUT UNDER TODO RENDER!
 

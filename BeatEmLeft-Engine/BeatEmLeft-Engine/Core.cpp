@@ -41,7 +41,7 @@ SDL_Window * Core::getWindow()
 
 bool Core::appInitialization()
 {
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
 
 	if (SDL_GetNumVideoDisplays() <= 0)
 	{
