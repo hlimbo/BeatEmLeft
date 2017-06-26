@@ -7,10 +7,7 @@
 //#include <vld.h>
 #include "Sprite.h"
 #include "SpriteSheet.h"
-
-
-int event_filter(void* unused, SDL_Event* event);
-
+ 
 //long term goal: condense low level sdl function calls into user friendly high level function calls
 
 //sprite can be defined as a subset of a texture or a sprite can be treated as one texture.
@@ -55,30 +52,6 @@ int main(int argc, char* argv[])
 	
 	int currentFrame = 0;
 
-
-	//testing sdl_gamecontroller
-	SDL_GameController* controller = SDL_GameControllerOpen(0);
-	if (controller == NULL)
-	{
-		printf("Error: Controller: %s\n", SDL_GetError());
-	}
-
-	if (SDL_GameControllerGetAttached(controller))
-	{
-		const char* something = SDL_GameControllerName(controller);
-		printf("Controller: %s is attached\n", something);
-	}
-
-	//setup event filter
-	//SDL_SetEventFilter(event_filter, controller);
-
-	//force an event to happen. ~ possibly useful for AI later on hehehehe
-	SDL_Event forcedEvent;
-	forcedEvent.type = SDL_KEYDOWN;
-	forcedEvent.key.keysym.sym = SDLK_RIGHT;
-	if (SDL_PushEvent(&forcedEvent) == 1)
-		printf("forced event is successfully placed on the queue");
-
 	//definitely need a texture store class.
 //#define SIZE 2
 //	SDL_Texture* textures[SIZE];
@@ -93,8 +66,7 @@ int main(int argc, char* argv[])
 	bool running = true;
 	while (running)
 	{
-		//TODO: process inputs
-		SDL_Event event;//probably should make different event for controller joystick movement
+		SDL_Event event;
 		if (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
@@ -162,31 +134,6 @@ int main(int argc, char* argv[])
 					}*/
 				}
 
-				else if (event.type == SDL_CONTROLLERBUTTONDOWN)
-				{
-					if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
-						puts("A");
-					if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B))
-						puts("B");
-					if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X))
-						puts("X");
-					if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y))
-						puts("Y");
-
-				}
-
-				// PROBLEM: polling for joystick axes causes other buttons in the event list to not be fired.
-				////issue: there is a delay in other key presses when axis motion is detected.
-	/*			else if (event.type == SDL_CONTROLLERAXISMOTION)
-				{
-					const int JOYSTICK_DEADZONE = 3277;
-					int xAxis = SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
-					int yAxis = SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);
-					if (xAxis < -JOYSTICK_DEADZONE) firstSprite.MoveSprite( (float)-move * (observedDeltaTime / 1000.0f), 0);
-					if (xAxis > JOYSTICK_DEADZONE) firstSprite.MoveSprite( (float)move * (observedDeltaTime / 1000.0f), 0);
-					if (yAxis > JOYSTICK_DEADZONE) firstSprite.MoveSprite(0, (float)move * (observedDeltaTime / 1000.0f));
-					if (yAxis < -JOYSTICK_DEADZONE) firstSprite.MoveSprite(0, (float)-move * (observedDeltaTime / 1000.0f));
-				}*/
 			}
 
 		}
@@ -240,46 +187,10 @@ int main(int argc, char* argv[])
 
 	// ---------------------------------------- End Game Loop ----------------------------------------/
 
-
-	//Probably create a cleanup function that frees all subsystems being used.
-	if (controller != NULL)
-		SDL_GameControllerClose(controller);
-
 	firstSprite.FreeSprite();
 	spriteSheet.FreeSpriteSheet();
 
 	return 0;
-}
-
-//Event FILTERS ~ update: if analog stick is moved around... it takes awhile for the event system to notice the exit command.
-//~ other events like keyboard events get ignored still for some reason.
-
-int event_filter(void* unused, SDL_Event* event)
-{
-	SDL_GameController* controller = static_cast<SDL_GameController*>(unused);
-
-	if (controller == NULL)
-	{
-		printf("Warning.. there is something wrong with the controller in filter: %s\n", SDL_GetError());
-		return 0;
-	}
-
-	if (event->type == SDL_CONTROLLERAXISMOTION)
-	{
-		//16 bit values = 2^16
-		//raw input joystick values that range from -32767 to 32767
-
-		int rawX = SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
-		int rawY = SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);
-		
-		printf("Raw X: %d\nRaw Y: %d\n", rawX, rawY);
-
-		//ignore this analog input
-		return 0;
-	}
-
-	//let other events be added into queue.
-	return 1;
 }
 
 

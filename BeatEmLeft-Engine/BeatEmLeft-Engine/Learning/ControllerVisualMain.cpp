@@ -7,6 +7,7 @@ using namespace Contants;
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
+#include <Vect2.h>// this is my own static library lol
 
 /*
 	Description: This main class will illustrate 
@@ -51,6 +52,7 @@ int AnalogStickFilter(void* controllerdata, SDL_Event* event);
 
 int main(int argc, char* argv[])
 {
+
 	//Setup renderer and other sdl subsystems.
 	Core core;
 
@@ -155,9 +157,9 @@ int main(int argc, char* argv[])
 		}
 
 		//frames drop by 10-15 when I draw these on screen.
-		DrawAnalogDisplay(&core);
-		DrawRawInput(&core, rawInputPos);
-		DrawProcessedInput(&core, processedInputPos);
+		//DrawAnalogDisplay(&core);
+		//DrawRawInput(&core, rawInputPos);
+		//DrawProcessedInput(&core, processedInputPos);
 
 		SDL_RenderPresent(core.getRenderer());
 		SDL_RenderClear(core.getRenderer());
@@ -176,7 +178,7 @@ int main(int argc, char* argv[])
 			Uint32 msToSleep = (Uint32)(observedDeltaTime + msDifference);
 			SDL_Delay(msToSleep);
 		}
-		else //if device is taking longer to process due to OS scheduling, try to sleep enough to hit targetFPS
+		else //if device is taking longer to process due to OS scheduling, try to sleep enough to hit targetFPS - don't sleep at all possibly
 		{
 			SDL_Delay((Uint32)core.getTargetDeltaTime());
 		}
