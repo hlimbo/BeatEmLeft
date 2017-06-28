@@ -27,7 +27,7 @@
     <ClCompile Include="SpriteSheet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DrawCircle.cpp">
+    <ClCompile Include="AnalogStickRevisited.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

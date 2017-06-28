@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
 				//causes massive input lag here! ~ should be fixed with eventfilter
 				else if (event.type == SDL_CONTROLLERAXISMOTION)
 				{
-					int maxValue = 32767;
+					int maxValue = 32768;
 
 					//if analogInput is accepted, process the event!
 					if (analogInput.returnCode == 1)
@@ -151,15 +151,22 @@ int main(int argc, char* argv[])
 						float unitX2 = (float)analogInput.rawX / maxValue;
 						float unitY2 = (float)analogInput.rawY / maxValue;
 						rawInputPos = SDL_Point{ (int)(unitX2 * scale) + center.x, (int)(unitY2 * scale) + center.y };
+						processedInputPos.x = center.x;
+						processedInputPos.y = center.y;
+					}
+					else
+					{
+						processedInputPos.x = center.x;
+						processedInputPos.y = center.y;
 					}
 				}
 			}
 		}
 
 		//frames drop by 10-15 when I draw these on screen.
-		//DrawAnalogDisplay(&core);
-		//DrawRawInput(&core, rawInputPos);
-		//DrawProcessedInput(&core, processedInputPos);
+		DrawAnalogDisplay(&core);
+		DrawRawInput(&core, rawInputPos);
+		DrawProcessedInput(&core, processedInputPos);
 
 		SDL_RenderPresent(core.getRenderer());
 		SDL_RenderClear(core.getRenderer());
@@ -234,7 +241,7 @@ int AnalogStickFilter(void* analogData, SDL_Event* event)
 		float mag = SDL_sqrtf((float)(rawX * rawX) + (float)(rawY * rawY));
 
 		//ignore analog inputs if the square magnitude of the raw input vector is within the inner deadzone.
-		if ((float)mag / 32767 < (float)INNER_DEADZONE / 32767)
+		if ((float)mag / 32768 < (float)INNER_DEADZONE / 32768)
 		{
 			analog->rawX = rawX;
 			analog->rawY = rawY;

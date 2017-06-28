@@ -72,36 +72,6 @@ void DrawCircle(SDL_Renderer* renderer, int cx, int cy,int radius)
 	//printf("Number of calls to DrawPoints: %d\n", p * 2);
 }
 
-////http://willperone.net/Code/codecircle.php
-//void CircleOptimized(SDL_Renderer* renderer, int xc, int yc, int r)
-//{
-//	int x = r, y = 0;
-//	int cd2 = 0; // current distance squared - radius squared
-//
-//	SDL_RenderDrawPoint(renderer, xc, yc);
-//
-//	SDL_Point p[4];
-//	p[0] = { xc - r, yc };
-//	p[1] = { xc + r, yc };
-//	p[2] = { xc, yc - r };
-//	p[3] = { xc, yc + r };
-//	SDL_RenderDrawPoints(renderer, p, 4);
-//	
-//	SDL_Point* pts = (SDL_Point*)malloc(sizeof(SDL_Point) * r * 8);
-//	int i = 0;
-//	while (x > y) //only formulate 1/8th of the circle
-//	{
-//		cd2 -= (--x) - (++y);
-//		if (cd2 < 0) cd2 += x++;
-//
-//		CalcPointsForCircle(pts, 8 * i++, xc, yc, x, y);
-//	}
-//
-//	SDL_RenderDrawPoints(renderer, pts, r * 8);
-//	free(pts);
-//	printf("Circle Optimized number of pixels drawn: %d\n", r * 8);
-//}
-
 int main(int argc, char* argv[])
 {
 	Core core;//initializes all necessary SDL Subsystems, and sets the window size
@@ -111,7 +81,7 @@ int main(int argc, char* argv[])
 	SDL_RenderPresent(core.getRenderer());
 
 	SDL_SetRenderDrawColor(core.getRenderer(), 0, 255, 0, 0);
-	DrawCircle(core.getRenderer(), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 100);
+	DrawCircle(core.getRenderer(), 250, 0, 100);
 	SDL_RenderPresent(core.getRenderer());
 
 	//---------------- Game Loop ------------------//
@@ -132,10 +102,10 @@ int main(int argc, char* argv[])
 				running = false;
 		}
 
-		for (int i = 0;i < 50;++i)//wow frames aren't dropping hard!
-		{
-			DrawCircle(core.getRenderer(), (i * 20) + 10, SCREEN_HEIGHT / 2, 10);
-		}
+		//for (int i = 0;i < 50;++i)//wow frames aren't dropping hard!
+		//{
+		//	DrawCircle(core.getRenderer(), (i * 20) + 10, SCREEN_HEIGHT / 2, 10);
+		//}
 
 		SDL_RenderPresent(core.getRenderer());
 
