@@ -29,19 +29,14 @@ struct Entity
 class EntitySystem
 {
 public:
-	EntitySystem()
-	{
-	}
-
-	~EntitySystem() 
-	{
-	}
+	EntitySystem() {}
+	~EntitySystem(){}
 
 	bool ContainsEntityType(const string& type)
 	{
 		return entitiesByType.find(type) != entitiesByType.end();
 	}
-	
+
 	//bug that can be introduced is if key mappings cannot be removed...
 	//then an entity mapping of vector size 0 will return true even though
 	//it was already inserted..
@@ -55,42 +50,94 @@ public:
 
 	//returns the id of the entity after creation of entity
 	//otherwise return -1 indicating that the entity has already been 
-	//created and placed in the system.
-	int CreateEntity(Entity* entity)
+	//created as a new copy and placed in the system.
+	int CreateEntity(Entity& entity)
 	{
-		if (entity->id != -1)
+		//TODO: if an entity was removed, make sure to reuse
+		//the id of the entity that was just removed..
+		//store ids that were removed from the system into a priority queue
+		//where the lowest available id for a type is available
+
+		//this will work similar to how fds get reused in C
+
+		if (entity.id != -1)
 			return -1;
 
 		//generate a unique id based on its type
 		int newID;
-		if (AddEntityType(entity->type))
+		if (AddEntityType(entity.type))
 		{
 			newID = 0;
 		}
 		else
 		{
-			newID = entitiesByType[entity->type].size();
+			newID = entitiesByType[entity.type].size();
 		}
 
-		entity->id = newID;
-		entity->name = entity->type + to_string(newID);
-		entitiesByType[entity->type].push_back(entity);
+		entity.id = newID;
+		entity.name = entity.type + to_string(newID);
+		entitiesByType[entity.type].push_back(entity);
 
 		return newID;
 	}
 
-	int EntityCount(string type)
+	//returns the id the entity to be removed on success
+	//returns -1 on failure
+	int RemoveEntity(string type, int id)
 	{
-		return entitiesByType[type].size();
+		if (!ContainsEntityType(type))
+			return -1;
+		else
+		{
+			auto it = entitiesByType[type].begin();
+			for (;it != entitiesByType[type].end();++it)
+			{
+				if (it->id == id)
+					break;
+			}
+
+			if (it != entitiesByType[type].end())
+			{
+				int removedID = it->id;
+				swap(*it, entitiesByType[type].back());
+				entitiesByType[type].pop_back();
+				return removedID;
+			}
+	
+		}
+
+		return -1;
 	}
 
-	vector<Entity*> GetEntities(string type)
+	int EntityCount(string type)
 	{
-		return entitiesByType[type];
+		return entitiesByType.at(type).size();
+	}
+
+	vector<Entity>* GetEntities(string type)
+	{
+		return &entitiesByType.at(type);
+	}
+
+	int TypesCount()
+	{
+		return entitiesByType.size();
+	}
+
+	bool RemoveEntityType(string type)
+	{
+		auto it = entitiesByType.find(type);
+		if (it != entitiesByType.end())
+		{
+			int val = entitiesByType.erase(type);
+			return true;
+		}
+
+		return false;
 	}
 
 private:
-	unordered_map<string, vector<Entity*>> entitiesByType;
+	unordered_map<string, vector<Entity>> entitiesByType;
 
 };
 
