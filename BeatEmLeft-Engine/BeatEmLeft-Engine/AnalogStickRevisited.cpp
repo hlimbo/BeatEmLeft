@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 	SDL_Point stickLocation{ center.x, center.y };
 	SDL_Point rawLocation{ center.x, center.y };
 
-	//setup and initialize game controller
+	//setup and initialize game controller - can open either an XInput (xbox controller) OR PS4 controller
 	SDL_GameController* controller = SDL_GameControllerOpen(0);
 	if(controller == NULL)
 		fprintf(stderr,"Error: Controller: %s\n", SDL_GetError());

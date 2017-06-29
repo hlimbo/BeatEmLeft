@@ -19,17 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AnalogStickRevisited.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
+    <ClCompile Include="Systems\EntitySystem.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="UnitTesting\EntitySystemUnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteSheet.h" />
+    <ClInclude Include="Systems\EntitySystem.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -83,19 +85,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\Harvey Games\SDL\MyStaticLibs;D:\SDL\whats-needed;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Learning\Learning TDD\GTest\packages\googletest.1.8.0.0\build\native\include;D:\Harvey Games\SDL\MyStaticLibs;D:\SDL\whats-needed;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Harvey Games\SDL\whats-needed\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Learning\Learning TDD\GTest\packages\googletest.1.8.0.0\build\native\include;D:\Harvey Games\SDL\whats-needed\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Harvey Games\SDL\MyStaticLibs;D:\Harvey Games\SDL\whats-needed\libs\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;Vect2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Learning\Learning TDD\GTest\packages\googletest.1.8.0.0\build\native\lib\Win32\v140\Debug;D:\Harvey Games\SDL\MyStaticLibs;D:\Harvey Games\SDL\whats-needed\libs\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;Vect2.lib;googletest_v140.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
