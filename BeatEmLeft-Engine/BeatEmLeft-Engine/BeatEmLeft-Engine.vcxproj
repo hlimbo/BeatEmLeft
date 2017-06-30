@@ -19,14 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Systems\ECS.cpp" />
+    <ClCompile Include="Systems\ComponentSystem.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="Systems\EntitySystem.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="UnitTesting\EntitySystemUnitTest.cpp" />
+    <ClCompile Include="UnitTesting\ComponentSystemUnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Systems\Component.h" />
+    <ClInclude Include="Systems\ECS.h" />
+    <ClInclude Include="Systems\ComponentSystem.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Sprite.h" />

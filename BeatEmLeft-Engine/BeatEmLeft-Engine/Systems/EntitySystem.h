@@ -33,7 +33,7 @@ struct Entity
 class EntitySystem
 {
 public:
-	EntitySystem() {}
+	EntitySystem() { idCount = 0; }
 	~EntitySystem(){}
 
 	bool ContainsEntityType(const string& type)
@@ -62,25 +62,39 @@ public:
 			return -1;
 		
 		//id generation system
+		//int newID;
+		//if (AddEntityType(entity.type))
+		//{
+		//	newID = 0;
+		//}
+		//else
+		//{
+		//	//reuse ids that were removed from the system
+		//	if (!unusedIDs[entity.type].empty())
+		//	{
+		//		newID = unusedIDs[entity.type].top();
+		//		unusedIDs[entity.type].pop();
+		//	}
+		//	else
+		//	{
+		//		newID = entitiesByType[entity.type].size();
+		//	}
+		//}
+
+		//this will break all my tests but is much simpler :)
+		AddEntityType(entity.type);
 		int newID;
-		if (AddEntityType(entity.type))
+		//reuse ids that were removed from the system
+		if (!unusedIDs2.empty())
 		{
-			newID = 0;
+			newID = unusedIDs2.top();
+			unusedIDs2.pop();
 		}
 		else
 		{
-			//reuse ids that were removed from the system
-			if (!unusedIDs[entity.type].empty())
-			{
-				newID = unusedIDs[entity.type].top();
-				unusedIDs[entity.type].pop();
-			}
-			else
-			{
-				newID = entitiesByType[entity.type].size();
-			}
+			newID = idCount++;
 		}
-
+		
 		entity.id = newID;
 		entity.name = entity.type + to_string(newID);
 		entitiesByType[entity.type].push_back(entity);
@@ -117,7 +131,8 @@ public:
 
 				//whenever an entity is removed, removedIDs should be recycled when
 				//creating new Entities of the same type
-				unusedIDs[type].push(removedID);
+				//unusedIDs[type].push(removedID);
+				unusedIDs2.push(removedID);
 
 				return removedID;
 			}
@@ -149,7 +164,7 @@ public:
 	//where the entity's variables cannot be modified due to the const keyword
 	//const Entity* GetEntity(string type, int id)
 	//{
-	//	return entitiesByType.at(type)[id];
+	//	return &entitiesByType.at(type)[id];
 	//}
 
 	int TypesCount()
@@ -166,7 +181,7 @@ public:
 		if (it != entitiesByType.end())
 		{
 			entitiesByType.erase(type);
-			unusedIDs.erase(type);
+			//unusedIDs.erase(type);
 			return true;
 		}
 
@@ -180,6 +195,8 @@ private:
 	//from the entity system sorted by lowest integer value going first.
 	unordered_map < string, priority_queue<int, vector<int>, greater<int>>> unusedIDs;
 
+	priority_queue<int, vector<int>, greater<int>> unusedIDs2;
+	int idCount;
 };
 
 
