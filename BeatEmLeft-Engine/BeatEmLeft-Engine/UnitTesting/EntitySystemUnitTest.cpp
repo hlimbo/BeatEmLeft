@@ -3,6 +3,23 @@
 #include <gtest/gtest.h>
 #include "../Systems/EntitySystem.h"
 
+namespace misc_functions
+{
+	void InitType(Entity* e, int size, string type)
+	{
+		for (int i = 0;i < size;++i)
+		{
+			e[i].type = type;
+		}
+	}
+
+	void PrintNames(const Entity* e, int size)
+	{
+		for (int i = 0;i < size;++i)
+			cout << e[i].name << endl;
+	}
+}
+
 TEST(EntityStruct, EntityType)
 {
 	Entity e1;
@@ -126,7 +143,7 @@ TEST(RemoveEntity, RemoveEntity1)
 	}
 	
 	EXPECT_EQ(system.EntityCount("rice"), 10);
-	vector<Entity>* entities = system.GetEntities("rice");
+	const vector<Entity>* entities = system.GetEntities("rice");
 
 	for (int i = 0;i < system.EntityCount("rice"); ++i)
 	{
@@ -169,6 +186,19 @@ TEST(RemoveEntity, RemoveEntity1)
 
 }
 
+TEST(RemoveEntity, CantRemoveNonExistentEntityType)
+{
+	EntitySystem system;
+	Entity horses[10];
+	misc_functions::InitType(horses, 10, "horses");
+
+	for (int i = 0;i < 10;++i)
+		system.CreateEntity(horses[i]);
+
+	int removed = system.RemoveEntity("unicorn", 2);
+	EXPECT_EQ(removed, -1);
+}
+
 TEST(RemoveEntityType, RemoveEntityType1)
 {
 	EntitySystem system;
@@ -193,6 +223,165 @@ TEST(RemoveEntityType, RemoveEntityType1)
 
 	EXPECT_TRUE(system.RemoveEntityType("cheese"));
 	EXPECT_EQ(system.TypesCount(), 0);
+
+}
+
+TEST(CreateAndRemove, UniqueIDsPerType)
+{
+	EntitySystem system;
+
+	Entity e[10];
+	misc_functions::InitType(e, 10, "cheese");
+	
+	for (int i = 0;i < 10;++i)
+	{
+		system.CreateEntity(e[i]);
+	}
+
+	const Entity* ePointer = &(*system.GetEntities("cheese"))[0];
+
+	//2 ways of getting the same thing
+	for (int i = 0;i < 10;++i)
+	{
+		printf("ePointer: %04x | ePtr Long: %04x\n", &ePointer[i], &(*system.GetEntities("cheese"))[i]);
+		EXPECT_EQ(&ePointer[i], &(*system.GetEntities("cheese"))[i]);
+	}
+	cout << endl;
+	//my internal unordered_map creates a copy of the Entity into its system
+	//This just means another memory address is assigned to the copy of the Entity
+	//where the copy of the Entity's address != original Entity's address
+	for (int i = 0;i < 10;++i)
+	{
+		printf("ePointer: %04x | e: %04x\n", &ePointer[i], &e[i]);
+		EXPECT_NE(&ePointer[i], &e[i]);
+	}
+	cout << endl;
+
+	misc_functions::PrintNames(ePointer,10);
+	cout << endl;
+
+	system.RemoveEntity("cheese", 2);
+	system.RemoveEntity("cheese", 7);
+	EXPECT_EQ(system.EntityCount("cheese"), 8);
+
+	misc_functions::PrintNames(ePointer, 10);
+	cout << endl;
+
+	Entity e2{ "cheese" };
+	Entity e3{ "cheese" };
+
+	system.CreateEntity(e2);
+	EXPECT_EQ(9, system.EntityCount("cheese"));
+
+	misc_functions::PrintNames(ePointer, 10);
+	cout << endl;
+
+	system.CreateEntity(e3);
+	misc_functions::PrintNames(ePointer, 10);
+	cout << endl;
+	EXPECT_EQ(10, system.EntityCount("cheese"));
+
+
+	system.CreateEntity(e3);
+	misc_functions::PrintNames(ePointer, 10);
+	cout << endl;
+	EXPECT_NE(11, system.EntityCount("cheese"));
+
+	Entity e4{ "cheese" };
+	system.CreateEntity(e4);
+	misc_functions::PrintNames(ePointer, 11);
+	EXPECT_EQ(11, system.EntityCount("cheese"));
+
+}
+
+TEST(CreateAndRemove, UniqueIDsPerType2)
+{
+	EntitySystem system;
+
+	Entity e[10];
+	misc_functions::InitType(e, 10, "bagel");
+
+	Entity e2[10];
+	misc_functions::InitType(e2, 10, "jeep");
+
+	Entity e3[5];
+	misc_functions::InitType(e3, 5, "unicorn");
+
+	for (int i = 0;i < 10;++i)
+		system.CreateEntity(e[i]);
+	for (int i = 0;i < 10;++i)
+		system.CreateEntity(e2[i]);
+	for (int i = 0;i < 5;++i)
+		system.CreateEntity(e3[i]);
+
+	EXPECT_EQ(system.EntityCount("bagel"), 10);
+	EXPECT_EQ(system.EntityCount("jeep"), 10);
+	EXPECT_EQ(system.EntityCount("unicorn"), 5);
+	EXPECT_EQ(system.TypesCount(), 3);
+
+	system.RemoveEntityType("unicorn");
+	EXPECT_EQ(system.TypesCount(), 2);
+
+	cout << "Before Removal::" << endl;
+	misc_functions::PrintNames(&(*system.GetEntities("jeep"))[0], 10);
+	cout << " ---------------- " << endl;
+	misc_functions::PrintNames(&(*system.GetEntities("bagel"))[0], 10);
+	cout << " ******************************* " << endl << endl;
+
+	//remove every even numbered id in jeep
+	for (int i = 0;i < 10; ++i)
+	{
+		if(i % 2 == 0)
+			system.RemoveEntity("jeep", i);
+	}
+
+	//remove every odd numbered id in bagel
+	for (int i = 0;i < 10; ++i)
+	{
+		if (i % 2 != 0)
+			system.RemoveEntity("bagel", i);
+	}
+
+	EXPECT_EQ(system.EntityCount("jeep"), 5);
+	EXPECT_EQ(system.EntityCount("bagel"), 5);
+
+	cout << "After Removal::" << endl;
+	misc_functions::PrintNames(&(*system.GetEntities("jeep"))[0], 5);
+	cout << " ---------------- " << endl;
+	misc_functions::PrintNames(&(*system.GetEntities("bagel"))[0], 5);
+	cout << endl << endl;
+
+	//add new entities into the system
+	Entity newJeeps[15];
+	misc_functions::InitType(newJeeps, 15, "jeep");
+
+	Entity newBagels[6];
+	misc_functions::InitType(newBagels, 6, "bagel");
+
+	Entity u[3];
+	misc_functions::InitType(u, 3, "unicorn");
+
+	for (int i = 0;i < 15;++i)
+		system.CreateEntity(newJeeps[i]);
+	for (int i = 0;i < 6;++i)
+		system.CreateEntity(newBagels[i]);
+	for (int i = 0;i < 3;++i)
+		system.CreateEntity(u[i]);
+
+	EXPECT_EQ(20, system.EntityCount("jeep"));
+	EXPECT_EQ(11, system.EntityCount("bagel"));
+	EXPECT_EQ(3, system.EntityCount("unicorn"));
+
+	cout << "After Creation::" << endl;
+	for(int i = 0;i < 20;++i)
+		cout << system.GetEntity("jeep", i).name << endl;
+	cout << "----------------------------" << endl;
+	for (int i = 0;i < 11;++i)
+		cout << system.GetEntity("bagel", i).name << endl;
+	cout << "----------------------------" << endl;
+	for (int i = 0;i < 3;++i)
+		cout << system.GetEntity("unicorn", i).name << endl;
+	cout << "----------------------------" << endl;
 
 }
 
