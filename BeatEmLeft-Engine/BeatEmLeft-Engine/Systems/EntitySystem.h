@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <queue>
+#include <functional>
 using namespace std;
 
 //ECS - Entity Component System
@@ -22,9 +24,11 @@ struct Entity
 
 
 //Entity System will manage
-//1. creation of entities through unique id generation based on type **
-//2. deletion of entities by id
-//		a. will also delete components "attached" to this entity
+//1. creation of entities through unique id generation based on type ~ done
+//2. deletion of entities by id ~ done
+//		a. will also delete components "attached" to this entity ? ~ I will need the component part of this to test
+//		a. can probably be handled in the component system part since the EntitySystem can return the ids
+//		a. of the type that was removed.
 
 class EntitySystem
 {
@@ -53,17 +57,11 @@ public:
 	//created as a new copy and placed in the system.
 	int CreateEntity(Entity& entity)
 	{
-		//TODO: if an entity was removed, make sure to reuse
-		//the id of the entity that was just removed..
-		//store ids that were removed from the system into a priority queue
-		//where the lowest available id for a type is available
-
-		//this will work similar to how fds get reused in C
 
 		if (entity.id != -1)
 			return -1;
-
-		//generate a unique id based on its type
+		
+		//id generation system
 		int newID;
 		if (AddEntityType(entity.type))
 		{
@@ -71,7 +69,16 @@ public:
 		}
 		else
 		{
-			newID = entitiesByType[entity.type].size();
+			//reuse ids that were removed from the system
+			if (!unusedIDs[entity.type].empty())
+			{
+				newID = unusedIDs[entity.type].top();
+				unusedIDs[entity.type].pop();
+			}
+			else
+			{
+				newID = entitiesByType[entity.type].size();
+			}
 		}
 
 		entity.id = newID;
@@ -101,6 +108,17 @@ public:
 				int removedID = it->id;
 				swap(*it, entitiesByType[type].back());
 				entitiesByType[type].pop_back();
+
+				//delete the entity type from the system 
+				//could be bad for performance if constantly creating and deleting
+				//the same entity types
+				if (entitiesByType[type].empty())
+					entitiesByType.erase(type);
+
+				//whenever an entity is removed, removedIDs should be recycled when
+				//creating new Entities of the same type
+				unusedIDs[type].push(removedID);
+
 				return removedID;
 			}
 	
@@ -114,22 +132,41 @@ public:
 		return entitiesByType.at(type).size();
 	}
 
-	vector<Entity>* GetEntities(string type)
+	//this returns a pointer to the internal unorder_map datamember where
+	//its members cannot be modified
+	const vector<Entity>* GetEntities(string type)
 	{
 		return &entitiesByType.at(type);
 	}
+
+	//returns a separate copy of the entity object from the internal map
+	Entity GetEntity(string type, int index)
+	{
+		return entitiesByType.at(type).at(index);
+	}
+
+	//returns a pointer to the entity object contained in this service
+	//where the entity's variables cannot be modified due to the const keyword
+	//const Entity* GetEntity(string type, int id)
+	//{
+	//	return entitiesByType.at(type)[id];
+	//}
 
 	int TypesCount()
 	{
 		return entitiesByType.size();
 	}
 
+	//This function not only removes the Entity Type from the system,
+	//it also removes all entities with the matching type from the system
+	//use this function carefully ~ could rename to RemoveAllEntities(string type)
 	bool RemoveEntityType(string type)
 	{
 		auto it = entitiesByType.find(type);
 		if (it != entitiesByType.end())
 		{
-			int val = entitiesByType.erase(type);
+			entitiesByType.erase(type);
+			unusedIDs.erase(type);
 			return true;
 		}
 
@@ -138,6 +175,10 @@ public:
 
 private:
 	unordered_map<string, vector<Entity>> entitiesByType;
+	//key = entity type
+	//value is a priority queue that holds a list of ids that have been removed
+	//from the entity system sorted by lowest integer value going first.
+	unordered_map < string, priority_queue<int, vector<int>, greater<int>>> unusedIDs;
 
 };
 
