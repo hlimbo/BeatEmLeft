@@ -59,14 +59,14 @@ TEST(SimpleECS, GameControllerInitAndUpdate)
 	while (true)
 	{
 		ecs.Update(1.0f);
-		if (gc->buttonPressed("A"))
+	/*	if (gc->buttonPressed("A"))
 			puts("A");
 		if (gc->buttonPressed("B"))
 			puts("B");
 		if (gc->buttonPressed("X"))
 			puts("X");
 		if (gc->buttonPressed("Y"))
-			puts("Y");
+			puts("Y");*/
 	}
 	SDL_Quit();
 }

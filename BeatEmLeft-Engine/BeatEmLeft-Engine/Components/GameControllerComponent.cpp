@@ -33,7 +33,8 @@ void GameControllerComponent::Init()
 		buttonMap["X"] = ButtonStates::RELEASED;
 		buttonMap["Y"] = ButtonStates::RELEASED;
 
-		releasedTime = pressedTime = 0;
+		pressedTime = 0;
+		timeHeldDelta = 300;
 	}
 }
 
@@ -45,55 +46,38 @@ void GameControllerComponent::Init()
 
 void GameControllerComponent::Update(float deltaTime)
 {
-	if (buttonMap["A"] == ButtonStates::PRESSED)
-	{
-		buttonMap["A"] = ButtonStates::HELD;
-	}
-
-	if (buttonMap["B"] == ButtonStates::PRESSED)
-	{
-		buttonMap["B"] = ButtonStates::HELD;
-	}
-
-	if (buttonMap["X"] == ButtonStates::PRESSED)
-	{
-		buttonMap["X"] = ButtonStates::HELD;
-	}
-
-	if (buttonMap["Y"] == ButtonStates::PRESSED)
-	{
-		buttonMap["Y"] = ButtonStates::HELD;
-	}
-
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
 		if (event.type == SDL_CONTROLLERBUTTONUP)
 		{
-			int releasedTimeDelta = event.cbutton.timestamp - pressedTime;
-			releasedTime = event.cbutton.timestamp;
+			int heldTimeDuration = event.cbutton.timestamp - pressedTime;
 			printf("Button Up: %d\n",event.cbutton.timestamp);
-			printf("ReleasedTimeDelta: %d\n", releasedTimeDelta);
+			printf("HeldTimeDuration: %d\n", heldTimeDuration);
 			//buttonMap["A"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A);
 			//buttonMap["B"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B);
 			//buttonMap["X"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X);
 			//buttonMap["Y"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y);
 
-			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
+			if (!SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
 			{
 				buttonMap["A"] = ButtonStates::RELEASED;
+				//puts("A released");
 			}
-			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B))
+			if (!SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B))
 			{
 				buttonMap["B"] = ButtonStates::RELEASED;
+				//puts("B released");
 			}
-			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X))
+			if (!SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X))
 			{
 				buttonMap["X"] = ButtonStates::RELEASED;
+				//puts("X released");
 			}
-			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y))
+			if (!SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y))
 			{
 				buttonMap["Y"] = ButtonStates::RELEASED;
+				//puts("Y released");
 			}
 		}
 
@@ -109,18 +93,48 @@ void GameControllerComponent::Update(float deltaTime)
 			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
 			{
 				buttonMap["A"] = ButtonStates::PRESSED;
+				puts("A pressed");
 			}
 			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B))
 			{
 				buttonMap["B"] = ButtonStates::PRESSED;
+				puts("B pressed");
 			}
 			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X))
 			{
 				buttonMap["X"] = ButtonStates::PRESSED;
+				puts("X pressed");
 			}
 			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y))
 			{
 				buttonMap["Y"] = ButtonStates::PRESSED;
+				puts("Y pressed");
+			}
+		}
+		else if(event.cbutton.timestamp - pressedTime > timeHeldDelta)
+		{
+			if (buttonMap["A"] == ButtonStates::PRESSED)
+			{
+				buttonMap["A"] = ButtonStates::HELD;
+				puts("A held");
+			}
+
+			if (buttonMap["B"] == ButtonStates::PRESSED)
+			{
+				buttonMap["B"] = ButtonStates::HELD;
+				puts("B held");
+			}
+
+			if (buttonMap["X"] == ButtonStates::PRESSED)
+			{
+				buttonMap["X"] = ButtonStates::HELD;
+				puts("X held");
+			}
+
+			if (buttonMap["Y"] == ButtonStates::PRESSED)
+			{
+				buttonMap["Y"] = ButtonStates::HELD;
+				puts("Y held");
 			}
 		}
 
