@@ -49,6 +49,9 @@ void ECS::Update(float deltaTime)
 		{
 			system->GetComponent(id)->Update(deltaTime);
 		}
+
+		//will be this instead
+		//system->Update(deltaTime);
 	}
 }
 
@@ -77,8 +80,10 @@ bool ECS::AddComponentType(std::string newType)
 	return true;
 }
 
-bool ECS::RegisterComponentToEntity(std::string componentType, int id, Component* component)
+//initialize all components from heap
+bool ECS::RegisterComponentToEntity(int id, Component* component)
 {	
+	string componentType = component->GetType();
 	return componentSystems[componentType]->AddComponent(id, component);
 }
 
@@ -107,6 +112,15 @@ void ECS::DeleteComponentSystem(string type)
 {
 	ComponentSystem* system = componentSystems[type];
 	componentSystems.erase(type);
+
+	//remove componentType from the system
+	auto it = find(componentTypes.begin(), componentTypes.end(), type);
+	if (it != componentTypes.end())
+	{
+		swap(*it, componentTypes.back());
+		componentTypes.pop_back();
+	}
+
 	if (system != nullptr)
 	{
 		delete system;
@@ -134,7 +148,8 @@ int ECS::RemoveEntity(std::string entityType, int id)
 
 		for (string componentType : componentTypes)
 		{
-			UnregisterComponentFromEntity(componentType, idt);
+			Component* component = UnregisterComponentFromEntity(componentType, idt);
+			delete component;
 		}
 	}
 

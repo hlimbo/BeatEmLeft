@@ -10,10 +10,10 @@ ComponentSystem::~ComponentSystem()
 	for (auto it = components.begin();it != components.end(); /* Empty */)
 	{
 		//might not need since testing is only happening when allocating components to the stack..
-		//Component* component = it->second;
+		Component* component = it->second;
 		//components.erase(it) returns the next iterator after the erased one.
 		it = components.erase(it);
-		//delete component;
+		delete component;
 	
 	}
 }
