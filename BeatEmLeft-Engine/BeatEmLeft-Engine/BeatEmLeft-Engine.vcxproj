@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Components\GameControllerComponent.cpp" />
     <ClCompile Include="Systems\ECS.cpp" />
     <ClCompile Include="Systems\ComponentSystem.cpp" />
     <ClCompile Include="Core.cpp" />
@@ -26,9 +27,10 @@
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="Systems\EntitySystem.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="UnitTesting\ComponentSystemUnitTest.cpp" />
+    <ClCompile Include="UnitTesting\ECSUnitTesting.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Components\GameControllerComponent.h" />
     <ClInclude Include="Systems\Component.h" />
     <ClInclude Include="Systems\ECS.h" />
     <ClInclude Include="Systems\ComponentSystem.h" />

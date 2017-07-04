@@ -40,6 +40,10 @@ public:
 	bool IsEmpty() { return components.empty();  }
 	string GetType() { return type; }
 
+	//TODO: Create virtual Init and Update() functions ~ this will serve as a base class..
+	//virtual void Init();
+	//virtual void Update(float deltaTime);
+
 private:
 	//key = component type, value = map<key = id,value = component>
 	//unordered_map<string, unordered_map<int, Component*>> components;
