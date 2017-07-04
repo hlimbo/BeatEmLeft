@@ -52,6 +52,38 @@ public:
 		return entitiesByType[type].empty();
 	}
 
+
+	//TODO: instead of passing in an entity reference object...
+	//just pass in the entity type name I want to create as a string.
+	//e.g. CreateEntity(string entityTypeName);
+	//e.g. system.CreateEntity("Player");
+	//returns the newID the entity was just set to.
+	int CreateEntity(string entityTypeName)
+	{
+		Entity e{ entityTypeName };
+
+		int newID;
+		if (!unusedIDs.empty())
+		{
+			newID = unusedIDs.top();
+			unusedIDs.pop();
+		}
+		else
+		{
+			newID = idCount++;
+		}
+
+		e.id = newID;
+		e.name = e.type + to_string(e.id);
+		entitiesByType[e.type].push_back(e);
+
+		//need this one here so I can use 1 loop 
+		//in ECS::Update() as opposed to 2 loops
+		entities.push_back(e);
+
+		return e.id;
+	}
+	
 	//returns the id of the entity after creation of entity
 	//otherwise return -1 indicating that the entity has already been 
 	//created as a new copy and placed in the system.
@@ -60,35 +92,13 @@ public:
 
 		if (entity.id != -1)
 			return -1;
-		
-		//id generation system
-		//int newID;
-		//if (AddEntityType(entity.type))
-		//{
-		//	newID = 0;
-		//}
-		//else
-		//{
-		//	//reuse ids that were removed from the system
-		//	if (!unusedIDs[entity.type].empty())
-		//	{
-		//		newID = unusedIDs[entity.type].top();
-		//		unusedIDs[entity.type].pop();
-		//	}
-		//	else
-		//	{
-		//		newID = entitiesByType[entity.type].size();
-		//	}
-		//}
 
-		//this will break all my tests but is much simpler :)
-		AddEntityType(entity.type);
 		int newID;
 		//reuse ids that were removed from the system
-		if (!unusedIDs2.empty())
+		if (!unusedIDs.empty())
 		{
-			newID = unusedIDs2.top();
-			unusedIDs2.pop();
+			newID = unusedIDs.top();
+			unusedIDs.pop();
 		}
 		else
 		{
@@ -98,6 +108,10 @@ public:
 		entity.id = newID;
 		entity.name = entity.type + to_string(newID);
 		entitiesByType[entity.type].push_back(entity);
+
+		//need this one here so I can use 1 loop 
+		//in ECS::Update() as opposed to 2 loops
+		entities.push_back(entity);
 
 		return newID;
 	}
@@ -123,6 +137,8 @@ public:
 				swap(*it, entitiesByType[type].back());
 				entitiesByType[type].pop_back();
 
+				//TODO: Remove entities here as well
+
 				//delete the entity type from the system 
 				//could be bad for performance if constantly creating and deleting
 				//the same entity types
@@ -131,8 +147,7 @@ public:
 
 				//whenever an entity is removed, removedIDs should be recycled when
 				//creating new Entities of the same type
-				//unusedIDs[type].push(removedID);
-				unusedIDs2.push(removedID);
+				unusedIDs.push(removedID);
 
 				return removedID;
 			}
@@ -160,13 +175,6 @@ public:
 		return entitiesByType.at(type).at(index);
 	}
 
-	//returns a pointer to the entity object contained in this service
-	//where the entity's variables cannot be modified due to the const keyword
-	//const Entity* GetEntity(string type, int id)
-	//{
-	//	return &entitiesByType.at(type)[id];
-	//}
-
 	int TypesCount()
 	{
 		return entitiesByType.size();
@@ -181,7 +189,6 @@ public:
 		if (it != entitiesByType.end())
 		{
 			entitiesByType.erase(type);
-			//unusedIDs.erase(type);
 			return true;
 		}
 
@@ -191,11 +198,10 @@ public:
 private:
 	unordered_map<string, vector<Entity>> entitiesByType;
 	//key = entity type
-	//value is a priority queue that holds a list of ids that have been removed
-	//from the entity system sorted by lowest integer value going first.
-	unordered_map < string, priority_queue<int, vector<int>, greater<int>>> unusedIDs;
 
-	priority_queue<int, vector<int>, greater<int>> unusedIDs2;
+	vector<Entity> entities;
+
+	priority_queue<int, vector<int>, greater<int>> unusedIDs;
 	int idCount;
 };
 
