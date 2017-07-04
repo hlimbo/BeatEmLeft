@@ -27,9 +27,8 @@ public:
 private:
 	SDL_GameController* controller;
 	std::unordered_map<std::string, ButtonStates> buttonMap;
-
-	int releasedTime;
 	int pressedTime;
+	int timeHeldDelta;//the number of milliseconds required to consider a button press to be a button held down.
 };
 
 #endif
