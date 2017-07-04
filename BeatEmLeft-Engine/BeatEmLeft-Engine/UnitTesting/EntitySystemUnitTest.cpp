@@ -332,7 +332,7 @@ TEST(CreateAndRemove, UniqueIDsPerType2)
 	for (int i = 0;i < 10; ++i)
 	{
 		if(i % 2 == 0)
-			system.RemoveEntity("jeep", i);
+			system.RemoveEntity("jeep", i + 10);
 	}
 
 	//remove every odd numbered id in bagel
