@@ -32,7 +32,7 @@ public:
 	bool AddEntityType(std::string newType);
 	bool AddComponentType(std::string newType);
 
-	bool RegisterComponentToEntity(std::string componentType, int id, Component* component);
+	bool RegisterComponentToEntity(int id, Component* component);
 	Component* UnregisterComponentFromEntity(std::string componentType, int id);
 
 	bool CreateComponentSystem(ComponentSystem* componentSystem);
