@@ -97,15 +97,19 @@ int main(int argc, char* argv[])
 					{
 					case SDLK_w:
 						firstSprite.MoveSprite(0, (float)-move * (observedDeltaTime / 1000.0f));
+						puts("w pressed");
 						break;
 					case SDLK_s:
 						firstSprite.MoveSprite(0, (float)move * (observedDeltaTime / 1000.0f));
+						puts("s pressed");
 						break;
 					case SDLK_a:
 						firstSprite.MoveSprite((float)-move * (observedDeltaTime / 1000.0f), 0);
+						puts("a pressed");
 						break;
 					case SDLK_d:
 						firstSprite.MoveSprite((float)move * (observedDeltaTime / 1000.0f), 0);
+						puts("d pressed");
 						break;
 					default:
 						firstSprite.SetLocation(newLocation);

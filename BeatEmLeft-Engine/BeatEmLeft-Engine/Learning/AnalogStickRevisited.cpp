@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string>
 
-#include "Core.h"
+#include "../Core.h"
 #define WIDTH 480
 #define HEIGHT 480
 
