@@ -28,6 +28,9 @@ void GameControllerComponent::Init()
 	{
 		//SDL_Log("%s\n",SDL_GameControllerMapping(controller));
 		
+		//TODO: Read from SDL_GameControllerMapping string
+		//	    Extract buttonMappings supplied in the string (parse it prob by using strtok)
+		//		Use each buttonmapping in the string as a key to the buttonMap data structure
 		buttonMap["A"] = ButtonStates::RELEASED;
 		buttonMap["B"] = ButtonStates::RELEASED;
 		buttonMap["X"] = ButtonStates::RELEASED;
@@ -54,10 +57,6 @@ void GameControllerComponent::Update(float deltaTime)
 			int heldTimeDuration = event.cbutton.timestamp - pressedTime;
 			printf("Button Up: %d\n",event.cbutton.timestamp);
 			printf("HeldTimeDuration: %d\n", heldTimeDuration);
-			//buttonMap["A"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A);
-			//buttonMap["B"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B);
-			//buttonMap["X"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X);
-			//buttonMap["Y"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y);
 
 			if (!SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
 			{
@@ -85,10 +84,6 @@ void GameControllerComponent::Update(float deltaTime)
 		{
 			pressedTime = event.cbutton.timestamp;
 			printf("Button Down: %d\n", event.cbutton.timestamp);
-			//buttonMap["A"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A);
-			//buttonMap["B"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B);
-			//buttonMap["X"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X);
-			//buttonMap["Y"] = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y);
 
 			if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
 			{
@@ -138,22 +133,60 @@ void GameControllerComponent::Update(float deltaTime)
 			}
 		}
 
+		if (event.type == SDL_CONTROLLERAXISMOTION)
+		{
+			//raw left and right analog stick inputs
+			int lx= SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
+			int ly = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
+			int rx = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX);
+			int ry = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY);
+	
+			//Inner Deadzones
+			//adjust for deadzones 1639 / 32768 is about 5%  inner deadzone
+			leftAnalogInput = adjustAnalogInput(lx, ly);
+			rightAnalogInput = adjustAnalogInput(rx, ry);
+
+			//printf("leftAnalogInput (%f, %f)\n", leftAnalogInput.x, leftAnalogInput.y);
+			//printf("rightAnalogInput (%f, %f)\n", rightAnalogInput.x, rightAnalogInput.y);
+		}
+
 
 	}
 }
 
-bool GameControllerComponent::buttonPressed(std::string buttonName)
+bool GameControllerComponent::ButtonPressed(std::string buttonName)
 {
 	return buttonMap.at(buttonName) == ButtonStates::PRESSED;
 }
 
-bool GameControllerComponent::buttonHeld(std::string buttonName)
+bool GameControllerComponent::ButtonHeld(std::string buttonName)
 {
 	return buttonMap.at(buttonName) == ButtonStates::HELD;
 }
 
-bool GameControllerComponent::buttonReleased(std::string buttonName)
+bool GameControllerComponent::ButtonReleased(std::string buttonName)
 {
 	return buttonMap.at(buttonName) == ButtonStates::RELEASED;
+}
+
+Vect2 GameControllerComponent::LeftAnalogInput()
+{
+	return leftAnalogInput;
+}
+
+Vect2 GameControllerComponent::RightAnalogInput()
+{
+	return rightAnalogInput;
+}
+
+//ax = raw analog input value along x axis
+//ay = raw analog input value along y axis
+Vect2 GameControllerComponent::adjustAnalogInput(int ax, int ay)
+{
+	float ux, uy;
+	ux = (ax < -DEADZONE || ax > DEADZONE) ? (float)ax / MAX_VALUE : 0.0f;
+	uy = (ay < -DEADZONE || ay > DEADZONE) ? (float)ay / MAX_VALUE : 0.0f;
+
+	return Vect2(ux, uy);
 }
 

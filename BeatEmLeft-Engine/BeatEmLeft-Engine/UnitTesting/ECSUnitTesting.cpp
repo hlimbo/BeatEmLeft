@@ -44,6 +44,7 @@ TEST(SimpleECS, GameController)
 
 }
 
+//interactive unit test... can comment out to run non-interactive tests.
 TEST(SimpleECS, GameControllerInitAndUpdate)
 {
 	ECS ecs;
@@ -54,19 +55,13 @@ TEST(SimpleECS, GameControllerInitAndUpdate)
 	ecs.RegisterComponentToEntity(playerID, gc);
 
 	SDL_Init(SDL_INIT_GAMECONTROLLER);
-
+	int startTime = SDL_GetTicks();
+	int timeToRunLoop = 15000;//milliseconds
 	ecs.Init();
-	while (true)
+	while (timeToRunLoop > SDL_GetTicks() - startTime)
 	{
 		ecs.Update(1.0f);
-	/*	if (gc->buttonPressed("A"))
-			puts("A");
-		if (gc->buttonPressed("B"))
-			puts("B");
-		if (gc->buttonPressed("X"))
-			puts("X");
-		if (gc->buttonPressed("Y"))
-			puts("Y");*/
+		
 	}
 	SDL_Quit();
 }
