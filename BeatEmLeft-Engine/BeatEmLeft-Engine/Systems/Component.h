@@ -11,8 +11,8 @@ public:
 	}
 	virtual ~Component() {}
 
-	virtual void Init() {}
-	virtual void Update(float deltaTime) {}
+	virtual void Init() = 0;
+	virtual void Update(float deltaTime) = 0;
 	
 	std::string GetType() { return componentType;  }
 protected:

@@ -39,7 +39,10 @@
     <ClCompile Include="Components\GameControllerComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UnitTesting\ECSUnitTesting.cpp">
+    <ClCompile Include="Components\KeyboardInputComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Learning\KeyboardInputTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -72,6 +75,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Components\GameControllerComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\KeyboardInputComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

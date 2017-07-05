@@ -2,6 +2,7 @@
 #include "../Systems/ECS.h"
 #include "../Systems/ComponentSystem.h"
 #include "../Components/GameControllerComponent.h"
+#include "../Components/KeyboardInputComponent.h"
 #include "SDL2/SDL.h"
 
 TEST(SimpleECS, firstTest)
@@ -45,26 +46,65 @@ TEST(SimpleECS, GameController)
 }
 
 //interactive unit test... can comment out to run non-interactive tests.
-TEST(SimpleECS, GameControllerInitAndUpdate)
-{
-	ECS ecs;
-	ecs.CreateComponentSystem(new ComponentSystem("GameController"));
+//TEST(InteractiveTest, GameControllerInitAndUpdate)
+//{
+//	ECS ecs;
+//	ecs.CreateComponentSystem(new ComponentSystem("GameController"));
+//
+//	int playerID = ecs.CreateEntity("player");
+//	GameControllerComponent* gc = new GameControllerComponent("GameController");
+//	ecs.RegisterComponentToEntity(playerID, gc);
+//
+//	SDL_Init(SDL_INIT_GAMECONTROLLER);
+//	int startTime = SDL_GetTicks();
+//	int timeToRunLoop = 15000;//milliseconds
+//	ecs.Init();
+//	while (timeToRunLoop > SDL_GetTicks() - startTime)
+//	{
+//		ecs.Update(1.0f);	
+//	}
+//	SDL_Quit();
+//}
 
-	int playerID = ecs.CreateEntity("player");
-	GameControllerComponent* gc = new GameControllerComponent("GameController");
-	ecs.RegisterComponentToEntity(playerID, gc);
 
-	SDL_Init(SDL_INIT_GAMECONTROLLER);
-	int startTime = SDL_GetTicks();
-	int timeToRunLoop = 15000;//milliseconds
-	ecs.Init();
-	while (timeToRunLoop > SDL_GetTicks() - startTime)
-	{
-		ecs.Update(1.0f);
-		
-	}
-	SDL_Quit();
-}
+//can't test keyboard inputs here :(
+//TEST(InteractiveTest, KeyboardInputComponentTest)
+//{
+//	ECS ecs;
+//	ecs.CreateComponentSystem(new ComponentSystem("Keyboard"));
+//
+//	int playerID = ecs.CreateEntity("player");
+//	KeyboardInputComponent* kc = new KeyboardInputComponent("Keyboard");
+//	ecs.RegisterComponentToEntity(playerID, kc);
+//
+//	SDL_Init(SDL_INIT_EVERYTHING);
+//	int startTime = SDL_GetTicks();
+//	int timeToRunLoop = 15000;//ms
+//	ecs.Init();
+//	while (timeToRunLoop > SDL_GetTicks() - startTime)
+//	{
+//		ecs.Update(1.0f);
+//	}
+//
+//	//while (timeToRunLoop > (int)SDL_GetTicks() - startTime)
+//	//{
+//	//	SDL_Event event;
+//	//	while (SDL_PollEvent(&event))
+//	//	{
+//	//		switch (event.type)
+//	//		{
+//	//		case SDL_KEYDOWN:
+//	//			puts("A key was pressed");
+//	//			break;
+//	//		case SDL_KEYUP:
+//	//			puts("A key was released");
+//	//			break;
+//	//		}
+//	//	}
+//	//}
+//
+//	SDL_Quit();
+//}
 
 
 int main(int argc, char* argv[])

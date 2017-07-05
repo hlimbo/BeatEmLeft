@@ -4,6 +4,7 @@
 #include "SDL2/SDL_error.h"
 #include "SDL2/SDL_log.h"
 #include "SDL2/SDL_events.h"
+#include <math.h>
 
 #include <iostream>
 using namespace std;
@@ -20,6 +21,7 @@ void GameControllerComponent::Init()
 {
 	//int numJoySticks = SDL_NumJoysticks();
 
+	//TODO: Add support for multiple controllers taht can be used.
 	//for now assume only one controller can be attached to the computer
 	controller = SDL_GameControllerOpen(0);
 	if (controller == NULL)
@@ -106,7 +108,7 @@ void GameControllerComponent::Update(float deltaTime)
 				puts("Y pressed");
 			}
 		}
-		else if(event.cbutton.timestamp - pressedTime > timeHeldDelta)
+		else if((int)(event.cbutton.timestamp) - pressedTime > timeHeldDelta)
 		{
 			if (buttonMap["A"] == ButtonStates::PRESSED)
 			{
@@ -186,6 +188,15 @@ Vect2 GameControllerComponent::adjustAnalogInput(int ax, int ay)
 	float ux, uy;
 	ux = (ax < -DEADZONE || ax > DEADZONE) ? (float)ax / MAX_VALUE : 0.0f;
 	uy = (ay < -DEADZONE || ay > DEADZONE) ? (float)ay / MAX_VALUE : 0.0f;
+
+	//make sure analog axis values max out to 1.0f when the other axis is at 0.0f
+	//Not sure if this is needed... might remove later on...
+	//float tolerance = 0.001f;
+	//if (ux == 0.0f && fabsf(fabsf(uy) - 1.0f) < tolerance)
+	//	uy = (uy < 0.0f) ? -1.0f : 1.0f;
+
+	//if (uy == 0.0f && fabsf(fabsf(ux) - 1.0f) < tolerance)
+	//	ux = (ux < 0.0f) ? -1.0f : 1.0f;
 
 	return Vect2(ux, uy);
 }
