@@ -63,6 +63,35 @@ TEST(SimpleECS, CheckComponentTypes)
 	delete gamecontroller;
 }
 
+TEST(SimpleECS, CheckComponentTypes2)
+{
+	Component* keyboard = new KeyboardInputComponent("keyboard");
+	Component* gamecontroller = new GameControllerComponent("gamecontroller");
+
+	ECS ecs;
+	ComponentManager* keyManager = new ComponentManager("keyboard");
+	ComponentManager* gameManager = new ComponentManager("gamecontroller");
+	ecs.CreateComponentManager(keyManager);
+	ecs.CreateComponentManager(gameManager);
+
+	int id = ecs.CreateEntity("player");
+	ecs.RegisterComponentToEntity(id, keyboard);
+	ecs.RegisterComponentToEntity(id, gamecontroller);
+
+	auto kc = keyManager->GetComponent<KeyboardInputComponent>(id);
+	auto gc = gameManager->GetComponent<GameControllerComponent>(id);
+
+	//https://stackoverflow.com/questions/351845/finding-the-type-of-an-object-in-c
+	std::string s = typeid(kc).name();
+	printf("%s\n", s.c_str());
+
+	EXPECT_EQ(keyboard, kc);
+	EXPECT_EQ(gamecontroller, gc);
+	EXPECT_EQ(keyboard->GetType(), kc->GetType());
+	EXPECT_EQ(gamecontroller->GetType(), gc->GetType());
+
+}
+
 //interactive unit test... can comment out to run non-interactive tests.
 //TEST(InteractiveTest, GameControllerInitAndUpdate)
 //{
