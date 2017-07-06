@@ -1,10 +1,10 @@
-#include "ComponentSystem.h"
+#include "ComponentManager.h"
 #include "Component.h"
 
 //removes all component pointers from the system
 //I plan to create all components in the heap
 //via function call AddComponent(0,new RenderComponent("render"));
-ComponentSystem::~ComponentSystem()
+ComponentManager::~ComponentManager()
 {
 	//all components pointers registered to the system will be removed once it leaves scope..
 	for (auto it = components.begin();it != components.end(); /* Empty */)
@@ -21,7 +21,7 @@ ComponentSystem::~ComponentSystem()
 //possibly rename to RegisterComponent
 //returns true if component is added into the system
 //false otherwise
-bool ComponentSystem::AddComponent(int id, Component* component)
+bool ComponentManager::AddComponent(int id, Component* component)
 {
 	if (type != "" && component->GetType() != type)
 		return false;
@@ -34,7 +34,7 @@ bool ComponentSystem::AddComponent(int id, Component* component)
 	return true;
 }
 
-Component* ComponentSystem::GetComponent(int id)
+Component* ComponentManager::GetComponent(int id)
 {
 	if (components[id] == nullptr)
 	{
@@ -46,7 +46,7 @@ Component* ComponentSystem::GetComponent(int id)
 }
 
 //possibly rename to UnregisterComponent
-Component* ComponentSystem::RemoveComponent(int id)
+Component* ComponentManager::RemoveComponent(int id)
 {
 	Component* component = components[id];
 	components.erase(id);

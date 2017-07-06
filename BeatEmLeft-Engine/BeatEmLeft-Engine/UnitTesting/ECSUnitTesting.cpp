@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "../Systems/ECS.h"
-#include "../Systems/ComponentSystem.h"
+#include "../Systems/ComponentManager.h"
 #include "../Components/GameControllerComponent.h"
 #include "../Components/KeyboardInputComponent.h"
 #include "SDL2/SDL.h"
@@ -9,10 +9,10 @@ TEST(SimpleECS, firstTest)
 {
 	ECS ecs;
 
-	ecs.CreateComponentSystem(new ComponentSystem("render"));
-	ecs.CreateComponentSystem(new ComponentSystem("collision"));
-	ecs.CreateComponentSystem(new ComponentSystem("physics"));
-	ecs.CreateComponentSystem(new ComponentSystem("boxCollider"));
+	ecs.CreateComponentManager(new ComponentManager("render"));
+	ecs.CreateComponentManager(new ComponentManager("collision"));
+	ecs.CreateComponentManager(new ComponentManager("physics"));
+	ecs.CreateComponentManager(new ComponentManager("boxCollider"));
 
 	EXPECT_EQ(4,ecs.GetComponentTypes().size());
 
@@ -29,7 +29,7 @@ TEST(SimpleECS, firstTest)
 TEST(SimpleECS, GameController)
 {
 	ECS ecs;
-	ecs.CreateComponentSystem(new ComponentSystem("GameController"));
+	ecs.CreateComponentManager(new ComponentManager("GameController"));
 	EXPECT_EQ(1, ecs.GetComponentTypes().size());
 
 	int playerID = ecs.CreateEntity("player");
@@ -40,7 +40,7 @@ TEST(SimpleECS, GameController)
 	EXPECT_EQ(0, idRemoved);
 	EXPECT_EQ(1, ecs.GetComponentTypes().size());
 
-	ecs.DeleteComponentSystem("GameController");
+	ecs.DeleteComponentManager("GameController");
 	EXPECT_EQ(0, ecs.GetComponentTypes().size());
 
 }
@@ -49,7 +49,7 @@ TEST(SimpleECS, GameController)
 //TEST(InteractiveTest, GameControllerInitAndUpdate)
 //{
 //	ECS ecs;
-//	ecs.CreateComponentSystem(new ComponentSystem("GameController"));
+//	ecs.CreateComponentSystem(new ComponentManager("GameController"));
 //
 //	int playerID = ecs.CreateEntity("player");
 //	GameControllerComponent* gc = new GameControllerComponent("GameController");
@@ -71,7 +71,7 @@ TEST(SimpleECS, GameController)
 //TEST(InteractiveTest, KeyboardInputComponentTest)
 //{
 //	ECS ecs;
-//	ecs.CreateComponentSystem(new ComponentSystem("Keyboard"));
+//	ecs.CreateComponentSystem(new ComponentManager("Keyboard"));
 //
 //	int playerID = ecs.CreateEntity("player");
 //	KeyboardInputComponent* kc = new KeyboardInputComponent("Keyboard");
