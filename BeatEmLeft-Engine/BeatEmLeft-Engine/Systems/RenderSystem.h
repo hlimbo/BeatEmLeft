@@ -1,21 +1,26 @@
 #ifndef RENDER_SYSTEM_H
 #define RENDER_SYSTEM_H
 
+class ECS;
 class ComponentManager;
-class EntitySystem;
+struct SDL_Renderer;
 
 class RenderSystem
 {
 public:
 	RenderSystem();
+	RenderSystem(ECS* ecs);
 	~RenderSystem();
 
-	void Update(float deltaTime);
+	void Update(float deltaTime, SDL_Renderer* render);
+	void Draw(SDL_Renderer* render);
 
 private:
-	ComponentManager* spriteManager;
+	//do not need to free these pointers since they get freed in ecs
+	ECS* ecs;
+	//obtained from ecs
 	ComponentManager* transformManager;
-	EntitySystem* entitySystem;
+	ComponentManager* spriteManager;
 };
 
 #endif

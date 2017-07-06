@@ -23,6 +23,7 @@
     <ClCompile Include="Components\GameControllerComponent.cpp" />
     <ClCompile Include="Components\KeyboardInputComponent.cpp" />
     <ClCompile Include="Components\SpriteComponent.cpp" />
+    <ClCompile Include="Learning\RenderSystemTest.cpp" />
     <ClCompile Include="Systems\RenderSystem.cpp" />
     <ClCompile Include="Systems\ECS.cpp" />
     <ClCompile Include="Systems\ComponentManager.cpp" />
@@ -32,7 +33,6 @@
     <ClCompile Include="Systems\EntitySystem.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Components\TransformComponent.cpp" />
-    <ClCompile Include="UnitTesting\ECSUnitTesting.cpp" />
     <ClCompile Include="Utility\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>

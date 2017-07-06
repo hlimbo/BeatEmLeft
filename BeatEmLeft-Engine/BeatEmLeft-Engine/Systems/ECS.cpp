@@ -109,6 +109,17 @@ bool ECS::CreateComponentManager(ComponentManager* componentSystem)
 	return false;
 }
 
+ComponentManager* ECS::GetComponentManager(std::string componentType)
+{
+	if (componentManagers[componentType] == nullptr)
+	{
+		componentManagers.erase(componentType);
+		return nullptr;
+	}
+
+	return componentManagers[componentType];
+}
+
 //type = componentManager container type
 //e.g. type can be a componentManager that only contains renderComponents
 //does not delete a componentManager that is not already in the map
@@ -178,25 +189,27 @@ vector<string> ECS::GetComponentTypes()
 //may not be in use anymore...
 vector<int> ECS::GetEntityIDs()
 {
-	vector<int> entityIDs;
-	//can simplify down to one loop (just use a vector<Entity>)
-	//can probably have this code in init if I'm not removing
-	//any entities from the system?
+	return entitySystem->GetIDs();
 
-	//probably the benefit of this design is to make sure only certain
-	//entities can receive regular updates while other entity types 
-	//marked with the disabled flag don't update?
-	for (string entityType : entityTypes)
-	{
-		auto it = entitySystem->GetEntities(entityType)->begin();
-		auto end = entitySystem->GetEntities(entityType)->end();
-		for (;it != end;++it)
-		{
-			entityIDs.push_back(it->id);
-		}
-	}
+	//vector<int> entityIDs;
+	////can simplify down to one loop (just use a vector<Entity>)
+	////can probably have this code in init if I'm not removing
+	////any entities from the system?
 
-	return entityIDs;
+	////probably the benefit of this design is to make sure only certain
+	////entities can receive regular updates while other entity types 
+	////marked with the disabled flag don't update?
+	//for (string entityType : entityTypes)
+	//{
+	//	auto it = entitySystem->GetEntities(entityType)->begin();
+	//	auto end = entitySystem->GetEntities(entityType)->end();
+	//	for (;it != end;++it)
+	//	{
+	//		entityIDs.push_back(it->id);
+	//	}
+	//}
+
+	//return entityIDs;
 }
 
 
