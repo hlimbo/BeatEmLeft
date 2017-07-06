@@ -58,7 +58,7 @@ bool Texture::FreeTexture()
 	return true;
 }
 /* Returns the source texture of SDL_Texture*/
-SDL_Texture * Texture::GetSource()
+SDL_Texture* Texture::GetSource()
 {
 	return texture;
 }
