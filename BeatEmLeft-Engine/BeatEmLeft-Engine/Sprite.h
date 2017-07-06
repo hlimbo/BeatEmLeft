@@ -19,6 +19,7 @@ public:
 	bool FreeSprite();
 	//bool DrawSprite(SDL_Renderer* renderer, SDL_Point location, int width, int height);
 	bool DrawSprite(SDL_Renderer* renderer);
+	bool DrawSprite(SDL_Renderer* renderer, SDL_Rect* cameraRect);
 	void MoveSprite(int dx, int dy);
 	void MoveSprite(SDL_Point dPosition);
 	void SetLocation(int x, int y);
