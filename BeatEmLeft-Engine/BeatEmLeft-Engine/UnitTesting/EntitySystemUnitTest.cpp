@@ -383,6 +383,22 @@ TEST(CreateAndRemove, UniqueIDsPerType2)
 
 }
 
+TEST(EntityIDs, GetEntityIDs)
+{
+	EntitySystem system;
+
+	for (int i = 0;i < 10000;++i)
+	{
+		system.CreateEntity("entity");
+	}
+
+	EXPECT_EQ(system.EntityCount("entity"), 10000);
+
+	vector<int> entity_ids = system.GetIDs();
+	for (int i = 0;i < 10000;++i)
+		EXPECT_EQ(i, entity_ids[i]);
+}
+
 int main(int argc, char* argv[])
 {
 	testing::InitGoogleTest(&argc, argv);
