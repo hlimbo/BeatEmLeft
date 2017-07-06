@@ -298,25 +298,23 @@ TEST(CreateAndRemove, UniqueIDsPerType2)
 {
 	EntitySystem system;
 
-	Entity e[10];
-	misc_functions::InitType(e, 10, "bagel");
+	Entity unicorn[5];
+	Entity bagel[10];
+	Entity jeep[10];
+	misc_functions::InitType(unicorn, 5, "unicorn");
+	misc_functions::InitType(bagel, 10, "bagel");
+	misc_functions::InitType(jeep, 10, "jeep");
 
-	Entity e2[10];
-	misc_functions::InitType(e2, 10, "jeep");
+	for (int i = 0;i < 5;++i)//ids 0 - 4
+		system.CreateEntity(unicorn[i]);
+	for (int i = 0;i < 10;++i)//ids 5 - 14
+		system.CreateEntity(bagel[i]);
+	for (int i = 0;i < 10;++i)//ids 14 - 24
+		system.CreateEntity(jeep[i]);
 
-	Entity e3[5];
-	misc_functions::InitType(e3, 5, "unicorn");
-
-	for (int i = 0;i < 10;++i)
-		system.CreateEntity(e[i]);
-	for (int i = 0;i < 10;++i)
-		system.CreateEntity(e2[i]);
-	for (int i = 0;i < 5;++i)
-		system.CreateEntity(e3[i]);
-
+	EXPECT_EQ(system.EntityCount("unicorn"), 5);
 	EXPECT_EQ(system.EntityCount("bagel"), 10);
 	EXPECT_EQ(system.EntityCount("jeep"), 10);
-	EXPECT_EQ(system.EntityCount("unicorn"), 5);
 	EXPECT_EQ(system.TypesCount(), 3);
 
 	system.RemoveEntityType("unicorn");
@@ -328,18 +326,18 @@ TEST(CreateAndRemove, UniqueIDsPerType2)
 	misc_functions::PrintNames(&(*system.GetEntities("bagel"))[0], 10);
 	cout << " ******************************* " << endl << endl;
 
-	//remove every even numbered id in jeep
-	for (int i = 0;i < 10; ++i)
-	{
-		if(i % 2 == 0)
-			system.RemoveEntity("jeep", i + 10);
-	}
-
 	//remove every odd numbered id in bagel
 	for (int i = 0;i < 10; ++i)
 	{
 		if (i % 2 != 0)
-			system.RemoveEntity("bagel", i);
+			system.RemoveEntity("bagel", bagel[i].id);
+	}
+
+	//remove every even numbered id in jeep
+	for (int i = 0;i < 10; ++i)
+	{
+		if(i % 2 == 0)
+			system.RemoveEntity("jeep", jeep[i].id);
 	}
 
 	EXPECT_EQ(system.EntityCount("jeep"), 5);

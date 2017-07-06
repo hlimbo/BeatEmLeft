@@ -53,10 +53,8 @@ public:
 	}
 
 
-	//TODO: instead of passing in an entity reference object...
-	//just pass in the entity type name I want to create as a string.
-	//e.g. CreateEntity(string entityTypeName);
-	//e.g. system.CreateEntity("Player");
+
+	//Usage: system.CreateEntity("Player");
 	//returns the newID the entity was just set to.
 	int CreateEntity(string entityTypeName)
 	{
@@ -120,41 +118,50 @@ public:
 	//returns -1 on failure
 	int RemoveEntity(string type, int id)
 	{
+		int removedID = -1;
 		if (!ContainsEntityType(type))
-			return -1;
+			return removedID;
 		else
 		{
-			auto it = entitiesByType[type].begin();
-			for (;it != entitiesByType[type].end();++it)
+			//remove entity from entitiesByType map
+			for (auto it = entitiesByType[type].begin();
+				it != entitiesByType[type].end();++it)
 			{
 				if (it->id == id)
+				{
+					removedID = it->id;
+					swap(*it, entitiesByType[type].back());
+					entitiesByType[type].pop_back();
+
+					//delete the entity type from the system
+					if (entitiesByType[type].empty())
+						entitiesByType.erase(type);
+
 					break;
+				}
 			}
 
-			if (it != entitiesByType[type].end())
+			//remove entity from entities vector
+			if (removedID != -1)
 			{
-				int removedID = it->id;
-				swap(*it, entitiesByType[type].back());
-				entitiesByType[type].pop_back();
-
-				//TODO: Remove entities here as well
-
-				//delete the entity type from the system 
-				//could be bad for performance if constantly creating and deleting
-				//the same entity types
-				if (entitiesByType[type].empty())
-					entitiesByType.erase(type);
+				for (auto it = entities.begin();it != entities.end();++it)
+				{
+					if (it->id == id)
+					{
+						swap(*it, entities.back());
+						entities.pop_back();
+						break;
+					}
+				}
 
 				//whenever an entity is removed, removedIDs should be recycled when
 				//creating new Entities of the same type
 				unusedIDs.push(removedID);
-
-				return removedID;
 			}
-	
+
 		}
 
-		return -1;
+		return removedID;
 	}
 
 	int EntityCount(string type)
@@ -188,6 +195,16 @@ public:
 		auto it = entitiesByType.find(type);
 		if (it != entitiesByType.end())
 		{
+			//remove all entities of specified type from the entities vector
+			for (auto it2 = entities.begin();it2 != entities.end();++it2)
+			{
+				if (it2->type == type)
+				{
+					swap(*it2, entities.back());
+					entities.pop_back();
+				}
+			}
+
 			entitiesByType.erase(type);
 			return true;
 		}

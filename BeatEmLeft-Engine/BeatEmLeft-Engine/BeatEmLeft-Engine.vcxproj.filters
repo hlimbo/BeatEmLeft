@@ -42,7 +42,10 @@
     <ClCompile Include="Components\KeyboardInputComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Learning\KeyboardInputTest.cpp">
+    <ClCompile Include="Components\CameraComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UnitTesting\EntitySystemUnitTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Components\KeyboardInputComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\CameraComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
