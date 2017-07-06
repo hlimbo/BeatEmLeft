@@ -57,7 +57,7 @@
     <ClCompile Include="Systems\RenderSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UnitTesting\ECSUnitTesting.cpp">
+    <ClCompile Include="Learning\RenderSystemTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -45,6 +45,7 @@ public:
 	Component* UnregisterComponentFromEntity(std::string componentType, int id);
 
 	bool CreateComponentManager(ComponentManager* componentSystem);
+	ComponentManager* GetComponentManager(std::string componentType);
 	void DeleteComponentManager(std::string ComponentType);
 
 	int CreateEntity(std::string entityType);
