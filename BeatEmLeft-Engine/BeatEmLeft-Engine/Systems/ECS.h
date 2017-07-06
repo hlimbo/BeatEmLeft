@@ -8,6 +8,15 @@
 	of components. EntitySystem is part of this system because components 
 	need to associate themselves with an entity's id. This system is an alternative
 	to the object-oriented/inheritance approach of creating a game engine.
+
+	Advantages:
+		1. Code will be more maintainable 
+		(the larger this project grows, the more apparent this benefit will be a plus)
+
+	Disadvantages(Maybe):
+		1. Hard to prototype game mechanics since you have to go through multiple systems
+		to see something change...(it takes a lot of effort to rapidly prototype using this
+		structure of code).
 */
 #ifndef ECS_H
 #define ECS_H

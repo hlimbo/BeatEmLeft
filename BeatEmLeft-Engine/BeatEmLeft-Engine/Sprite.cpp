@@ -62,6 +62,8 @@ bool Sprite::DrawSprite(SDL_Renderer* renderer, SDL_Rect* cameraRect)
 		printf("Error: %s\n", SDL_GetError());
 		return false;
 	}
+
+	return true;
 }
 
 void Sprite::MoveSprite(int dx, int dy)
