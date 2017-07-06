@@ -45,6 +45,24 @@ TEST(SimpleECS, GameController)
 
 }
 
+TEST(SimpleECS, CheckComponentTypes)
+{
+	Component* keyboard = new KeyboardInputComponent("keyboard");
+	Component* gamecontroller = new GameControllerComponent("gamecontroller");
+
+	EXPECT_EQ("keyboard", keyboard->GetType());
+	EXPECT_EQ("gamecontroller", gamecontroller->GetType());
+
+	KeyboardInputComponent* kc = static_cast<KeyboardInputComponent*>(keyboard);
+	GameControllerComponent* gc = static_cast<GameControllerComponent*>(gamecontroller);
+
+	EXPECT_EQ(kc, keyboard);
+	EXPECT_EQ(gc, gamecontroller);
+
+	delete keyboard;
+	delete gamecontroller;
+}
+
 //interactive unit test... can comment out to run non-interactive tests.
 //TEST(InteractiveTest, GameControllerInitAndUpdate)
 //{

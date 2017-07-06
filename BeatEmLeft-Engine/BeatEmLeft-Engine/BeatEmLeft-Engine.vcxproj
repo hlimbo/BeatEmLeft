@@ -22,6 +22,7 @@
     <ClCompile Include="Components\CameraComponent.cpp" />
     <ClCompile Include="Components\GameControllerComponent.cpp" />
     <ClCompile Include="Components\KeyboardInputComponent.cpp" />
+    <ClCompile Include="Learning\CameraTesting.cpp" />
     <ClCompile Include="Systems\ECS.cpp" />
     <ClCompile Include="Systems\ComponentManager.cpp" />
     <ClCompile Include="Core.cpp" />
@@ -29,7 +30,8 @@
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="Systems\EntitySystem.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="UnitTesting\ECSUnitTesting.cpp" />
+    <ClCompile Include="Components\TransformComponent.cpp" />
+    <ClCompile Include="Utility\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\CameraComponent.h" />
@@ -44,6 +46,8 @@
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="Systems\EntitySystem.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="Components\TransformComponent.h" />
+    <ClInclude Include="Utility\TextureLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0E5191B0-AC53-440A-99E9-0384C8D113B9}</ProjectGuid>
