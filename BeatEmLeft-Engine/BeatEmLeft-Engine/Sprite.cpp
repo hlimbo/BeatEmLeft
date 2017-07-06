@@ -114,6 +114,10 @@ void Sprite::SetSize(SDL_Point sizeInPixels)
 	bounds.w = sizeInPixels.x;
 	bounds.h = sizeInPixels.y;
 }
+
+//might have a sprite component that changes scale based on percentage (0-1)
+// srcDimensions (the width and height of the image after it has been loaded via TextureLoader::Load()
+// size (the width and height of the image which can be modified by a scale).
 void Sprite::SetSize(int w, int h)
 {
 	bounds.w = w;

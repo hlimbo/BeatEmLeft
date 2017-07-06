@@ -37,24 +37,29 @@ int main(int argc, char* argv[])
 
 	bgBounds.x = 0;
 	bgBounds.y = 0;
-	bgBounds.w = bgBounds.w - bgBounds.h * 0.0;
-	bgBounds.h = bgBounds.h - bgBounds.h * 0.0;
 
-	playerBounds.x = SCREEN_WIDTH / 2;
-	playerBounds.y = SCREEN_HEIGHT / 2;
+	playerBounds.x = 0;
+	playerBounds.y = 0;
 	//this is how image scale can change...scale down by percentage
 	//keep a copy of the original dimensions of the texture after it is
 	//loaded and queried
-	playerBounds.w = playerBounds.w - playerBounds.w * 0.85;
-	playerBounds.h = playerBounds.h - playerBounds.h * 0.85;
+	int srcW = playerBounds.w;
+	int srcH = playerBounds.h;
+	float scale = 0.15f;
+	//reason to scale by percentage is so that the image quality doesn't
+	//go bad!
+
+	//allow flexibility between changing the scale of the image
+	//or changing the size by supplying the pixel width and height.
+	playerBounds.w = srcW * scale;
+	playerBounds.h = srcH * scale;
 
 	//the third parameter(null) is used for camera scrolling and such...
 	SDL_RenderCopy(render, background, NULL, &bgBounds);
-	SDL_RenderCopy(render, player, NULL, &playerBounds);
+	SDL_RenderCopyEx(render, player, NULL, &playerBounds,90.0f,NULL,SDL_RendererFlip::SDL_FLIP_NONE);
 
 	printf("bgBounds: (%d, %d), (%d,%d)\n", bgBounds.x, bgBounds.y, bgBounds.w, bgBounds.h);
 	printf("playerBounds: (%d, %d), (%d,%d)\n", playerBounds.x, playerBounds.y, playerBounds.w, playerBounds.h);
-
 
 	SDL_Rect cameraRect;
 	//width and height act as zoom controls
@@ -101,8 +106,11 @@ int main(int argc, char* argv[])
 		}
 
 		//using TextureLoader utility textures
-		SDL_RenderCopy(render, background,&cameraRect, &bgBounds);
-		SDL_RenderCopy(render, player, NULL, &playerBounds);
+		//playerBounds.x += 1;
+		cameraRect.x += 1;
+		SDL_RenderCopy(render, background, &cameraRect, &bgBounds);
+		//SDL_RenderCopy(render, background,&cameraRect, &bgBounds);
+		SDL_RenderCopyEx(render, player, NULL, &playerBounds, 0.0f, NULL, SDL_RendererFlip::SDL_FLIP_NONE);
 
 		SDL_RenderPresent(render);
 		SDL_RenderClear(render);

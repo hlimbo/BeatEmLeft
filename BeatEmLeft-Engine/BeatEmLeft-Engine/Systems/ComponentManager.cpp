@@ -33,7 +33,6 @@ bool ComponentManager::AddComponent(int id, Component* component)
 	components.insert(make_pair(id, component));
 	return true;
 }
-
 Component* ComponentManager::GetComponent(int id)
 {
 	if (components[id] == nullptr)
@@ -45,7 +44,6 @@ Component* ComponentManager::GetComponent(int id)
 	return components.at(id);
 }
 
-//possibly rename to UnregisterComponent
 Component* ComponentManager::RemoveComponent(int id)
 {
 	Component* component = components[id];

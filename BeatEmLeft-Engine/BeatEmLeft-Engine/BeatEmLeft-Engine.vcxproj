@@ -22,7 +22,8 @@
     <ClCompile Include="Components\CameraComponent.cpp" />
     <ClCompile Include="Components\GameControllerComponent.cpp" />
     <ClCompile Include="Components\KeyboardInputComponent.cpp" />
-    <ClCompile Include="Learning\CameraTesting.cpp" />
+    <ClCompile Include="Components\SpriteComponent.cpp" />
+    <ClCompile Include="Systems\RenderSystem.cpp" />
     <ClCompile Include="Systems\ECS.cpp" />
     <ClCompile Include="Systems\ComponentManager.cpp" />
     <ClCompile Include="Core.cpp" />
@@ -31,12 +32,15 @@
     <ClCompile Include="Systems\EntitySystem.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Components\TransformComponent.cpp" />
+    <ClCompile Include="UnitTesting\ECSUnitTesting.cpp" />
     <ClCompile Include="Utility\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\CameraComponent.h" />
     <ClInclude Include="Components\GameControllerComponent.h" />
     <ClInclude Include="Components\KeyboardInputComponent.h" />
+    <ClInclude Include="Components\SpriteComponent.h" />
+    <ClInclude Include="Systems\RenderSystem.h" />
     <ClInclude Include="Systems\Component.h" />
     <ClInclude Include="Systems\ECS.h" />
     <ClInclude Include="Systems\ComponentManager.h" />
