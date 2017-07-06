@@ -55,6 +55,15 @@ bool Sprite::DrawSprite(SDL_Renderer* renderer)
 	return true;
 }
 
+bool Sprite::DrawSprite(SDL_Renderer* renderer, SDL_Rect* cameraRect)
+{
+	if (SDL_RenderCopy(renderer, texture->GetSource(), cameraRect, &bounds) == -1)
+	{
+		printf("Error: %s\n", SDL_GetError());
+		return false;
+	}
+}
+
 void Sprite::MoveSprite(int dx, int dy)
 {
 	bounds.x += dx;

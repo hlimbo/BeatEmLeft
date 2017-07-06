@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Components\CameraComponent.cpp" />
     <ClCompile Include="Components\GameControllerComponent.cpp" />
     <ClCompile Include="Components\KeyboardInputComponent.cpp" />
-    <ClCompile Include="Learning\KeyboardInputTest.cpp" />
     <ClCompile Include="Systems\ECS.cpp" />
     <ClCompile Include="Systems\ComponentSystem.cpp" />
     <ClCompile Include="Core.cpp" />
@@ -29,8 +29,10 @@
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="Systems\EntitySystem.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="UnitTesting\EntitySystemUnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Components\CameraComponent.h" />
     <ClInclude Include="Components\GameControllerComponent.h" />
     <ClInclude Include="Components\KeyboardInputComponent.h" />
     <ClInclude Include="Systems\Component.h" />
