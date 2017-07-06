@@ -1,5 +1,5 @@
-#ifndef COMPONENT_SYSTEM_H
-#define COMPONENT_SYSTEM_H
+#ifndef COMPONENT_MANAGER_H
+#define COMPONENT_MANAGER_H
 
 #include <string>
 #include <unordered_map>
@@ -7,16 +7,17 @@ using namespace std;
 
 class Component;
 
-//There will be multiple component_systems in ECS where key = component type value = component system
-//Component System will
+//There will be multiple component_managers in ECS where key = component type value = component manager
+//Component Manager will
 //1. manage components of a single type
 //2. register components by assigning a specific component an ID obtained from an entity
-class ComponentSystem
+//3. remove components based on entity id
+class ComponentManager
 {
 public:
-	ComponentSystem() {}
-	ComponentSystem(string type) { this->type = type; }
-	~ComponentSystem();
+	ComponentManager() {}
+	ComponentManager(string type) { this->type = type; }
+	~ComponentManager();
 
 	bool AddComponent(int id, Component* component);
 	Component* GetComponent(int id);

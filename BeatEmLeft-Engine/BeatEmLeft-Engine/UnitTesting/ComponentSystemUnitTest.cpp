@@ -3,11 +3,7 @@
 #include "../Systems/EntitySystem.h"
 #include "../Systems/Component.h"
 
-TEST(dummy, dummy)
-{
-	EXPECT_TRUE(true);
-}
-
+//These are bad unit tests -- TODO: need to rewrite them
 TEST(miniTest, miniTest)
 {
 	unordered_map<int, string*> stuffs;
@@ -32,10 +28,7 @@ TEST(miniTest, miniTest)
 
 TEST(SimpleTests, AddComponent)
 {
-	//TODO: Should give Each ComponentSystem its own type that it can only hold..
-	//other types of components cannot be passed into this system.. if it does not match
-	//the type the ComponentSystem holds
-	//e.g. ComponentSystem<Render> renderSystem; or ComponentSystem renderSystem("render");
+
 	ComponentSystem renderSystem;//this is implicitly a renderComponentSystem.
 	EntitySystem eSystem;
 

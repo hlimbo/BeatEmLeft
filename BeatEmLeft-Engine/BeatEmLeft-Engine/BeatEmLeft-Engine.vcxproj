@@ -23,13 +23,13 @@
     <ClCompile Include="Components\GameControllerComponent.cpp" />
     <ClCompile Include="Components\KeyboardInputComponent.cpp" />
     <ClCompile Include="Systems\ECS.cpp" />
-    <ClCompile Include="Systems\ComponentSystem.cpp" />
+    <ClCompile Include="Systems\ComponentManager.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="Systems\EntitySystem.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="UnitTesting\EntitySystemUnitTest.cpp" />
+    <ClCompile Include="UnitTesting\ECSUnitTesting.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\CameraComponent.h" />
@@ -37,7 +37,7 @@
     <ClInclude Include="Components\KeyboardInputComponent.h" />
     <ClInclude Include="Systems\Component.h" />
     <ClInclude Include="Systems\ECS.h" />
-    <ClInclude Include="Systems\ComponentSystem.h" />
+    <ClInclude Include="Systems\ComponentManager.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Sprite.h" />
