@@ -1,6 +1,6 @@
 #include "ECS.h"
 #include "EntitySystem.h"
-#include "ComponentSystem.h"
+#include "ComponentManager.h"
 #include "Component.h"
 
 using namespace std;
@@ -14,44 +14,48 @@ ECS::~ECS()
 {
 	delete entitySystem;
 
-	for (auto it = componentSystems.begin();it != componentSystems.end(); /* Empty */)
+	for (auto it = componentManagers.begin();it != componentManagers.end(); /* Empty */)
 	{
 		//might not need since testing is only happening when allocating components to the stack..
-		ComponentSystem* componentSystem = it->second;
-		it = componentSystems.erase(it);
-		delete componentSystem;
+		ComponentManager* componentManager = it->second;
+		it = componentManagers.erase(it);
+		delete componentManager;
 	}
 }
 
 void ECS::Init()
 {
-	vector<int> entityIDs = GetEntityIDs();
+	//should be safe to call as long as the entity system add/remove entities before this function call.
+	vector<int> entityIDs = entitySystem->GetIDs();
 
-	for (auto it = componentSystems.begin();it != componentSystems.end();++it)
+	for (auto it = componentManagers.begin();it != componentManagers.end();++it)
 	{
-		ComponentSystem* system = it->second;
-		for (int id : entityIDs)
+		ComponentManager* manager = it->second;
+		for (auto id = entityIDs.begin();id != entityIDs.end();++id)
 		{
-			system->GetComponent(id)->Init();
+			Component* component = manager->GetComponent(*id);
+			if (component != nullptr)
+				component->Init();
 		}
 	}
 }
 
 void ECS::Update(float deltaTime)
 {
-	vector<int> entityIDs = GetEntityIDs();
+	//should be safe to call as long as entities get removed/added before this update call gets invoked.
+	vector<int> entityIDs = entitySystem->GetIDs();
 
 	//component updates
-	for (auto it = componentSystems.begin();it != componentSystems.end();++it)
+	for (auto it = componentManagers.begin();it != componentManagers.end();++it)
 	{
-		ComponentSystem* system = it->second;
-		for (int id : entityIDs)
+		ComponentManager* manager = it->second;
+		for (auto id = entityIDs.begin();id != entityIDs.end();++id)
 		{
-			system->GetComponent(id)->Update(deltaTime);
+			Component* component = manager->GetComponent(*id);
+			if (component != nullptr)
+				component->Update(deltaTime);
 		}
 
-		//will be this instead
-		//system->Update(deltaTime);
 	}
 }
 
@@ -84,20 +88,20 @@ bool ECS::AddComponentType(std::string newType)
 bool ECS::RegisterComponentToEntity(int id, Component* component)
 {	
 	string componentType = component->GetType();
-	return componentSystems[componentType]->AddComponent(id, component);
+	return componentManagers[componentType]->AddComponent(id, component);
 }
 
 Component* ECS::UnregisterComponentFromEntity(std::string componentType, int id)
 {
-	return componentSystems.at(componentType)->RemoveComponent(id);
+	return componentManagers.at(componentType)->RemoveComponent(id);
 }
 
-bool ECS::CreateComponentSystem(ComponentSystem* componentSystem)
+bool ECS::CreateComponentManager(ComponentManager* componentSystem)
 {
 	string type = componentSystem->GetType();
-	if (componentSystems[type] == nullptr)
+	if (componentManagers[type] == nullptr)
 	{
-		componentSystems[type] = componentSystem;
+		componentManagers[type] = componentSystem;
 		componentTypes.push_back(type);
 		return true;
 	}
@@ -105,15 +109,15 @@ bool ECS::CreateComponentSystem(ComponentSystem* componentSystem)
 	return false;
 }
 
-//type = componentSystem container type
-//e.g. type can be a componentSystem that only contains renderComponents
-//does not delete a componentSystem that is not already in the map
-void ECS::DeleteComponentSystem(string type)
+//type = componentManager container type
+//e.g. type can be a componentManager that only contains renderComponents
+//does not delete a componentManager that is not already in the map
+void ECS::DeleteComponentManager(string type)
 {
-	ComponentSystem* system = componentSystems[type];
-	componentSystems.erase(type);
+	ComponentManager* manager = componentManagers[type];
+	componentManagers.erase(type);
 
-	//remove componentType from the system
+	//remove componentType from the manager
 	auto it = find(componentTypes.begin(), componentTypes.end(), type);
 	if (it != componentTypes.end())
 	{
@@ -123,8 +127,8 @@ void ECS::DeleteComponentSystem(string type)
 
 	if (system != nullptr)
 	{
-		delete system;
-		system = nullptr;
+		delete manager;
+		manager = nullptr;
 	}
 }
 
@@ -146,9 +150,9 @@ int ECS::RemoveEntity(std::string entityType, int id)
 			entityTypes.pop_back();
 		}
 
-		for (string componentType : componentTypes)
+		for (auto it = componentTypes.begin();it != componentTypes.end();++it)
 		{
-			Component* component = UnregisterComponentFromEntity(componentType, idt);
+			Component* component = UnregisterComponentFromEntity(*it, idt);
 			delete component;
 		}
 	}
@@ -170,6 +174,8 @@ vector<string> ECS::GetComponentTypes()
 	return componentTypes;
 }
 
+
+//may not be in use anymore...
 vector<int> ECS::GetEntityIDs()
 {
 	vector<int> entityIDs;
