@@ -28,6 +28,9 @@ void SpriteComponent::Draw(SDL_Renderer * render)
 	bounds.w = width;
 	bounds.x = x;
 	bounds.y = y;
+
+	//no frames improvement between the 2 functions
+	//SDL_RenderCopy(render, texture, NULL, &bounds);
 	SDL_RenderCopyEx(render, texture, NULL, &bounds, 0.0, NULL, flip);
 }
 bool SpriteComponent::LoadTexture(SDL_Renderer* render, std::string filePath)

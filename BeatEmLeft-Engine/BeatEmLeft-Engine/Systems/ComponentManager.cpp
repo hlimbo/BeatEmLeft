@@ -25,11 +25,6 @@ bool ComponentManager::AddComponent(int id, Component* component)
 {
 	if (type != "" && component->GetType() != type)
 		return false;
-
-	//components.insert(pair<int, Component*>(id, component));
-	//components[id] = component;
-
-	//Note:: type-less ComponentSystems can add any type of components they want in their system.
 	components.insert(make_pair(id, component));
 	return true;
 }

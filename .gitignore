@@ -1,5 +1,8 @@
-*.vcxproj.filters
-*.vcxproj
+BeatEmLeft-Engine/BeatEmLeft-Engine/BeatEmLeft-Engine.vcxproj.filters
+BeatEmLeft-Engine/BeatEmLeft-Engine/BeatEmLeft-Engine.vcxproj
+
+#Learning folder shouldn't be included.
+BeatEmLeft-Engine/BeatEmLeft-Engine/Learning/*
 
 ###################################################################
 ## Ignore Visual Studio temporary files, build results, and
@@ -15,19 +18,19 @@
 *.userprefs
 
 # Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
+BeatEmLeft-Engine/[Dd]ebug/
+BeatEmLeft-Engine/BeatEmLeft-Engine/[Dd]ebug/
+BeatEmLeft-Engine/BeatEmLeft-Engine/[Dd]ebugPublic/
+BeatEmLeft-Engine/BeatEmLeft-Engine[Rr]elease/
+BeatEmLeft-Engine/BeatEmLeft-Engine/[Rr]eleases/
+BeatEmLeft-Engine/BeatEmLeft-Engine/x64/
+BeatEmLeft-Engine/BeatEmLeft-Engine/x86/
+BeatEmLeft-Engine/BeatEmLeft-Engine/[Bb]in/
+BeatEmLeft-Engine/BeatEmLeft-Engine/[Oo]bj/
+BeatEmLeft-Engine/BeatEmLeft-Engine/[Ll]og/
 
 # Visual Studio 2015 cache/options directory
-.vs/
+BeatEmLeft-Engine/.vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
