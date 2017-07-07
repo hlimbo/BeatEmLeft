@@ -68,7 +68,7 @@ bool Core::appInitialization()
 		return false;
 	}
 
-	mainRenderer = SDL_CreateRenderer(mainWindow, -1, SDL_RENDERER_ACCELERATED);
+	mainRenderer = SDL_CreateRenderer(mainWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (mainRenderer == NULL)
 	{
 		printf("Main renderer creation failed : %s\n", SDL_GetError());
