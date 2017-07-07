@@ -7,7 +7,19 @@
 //nullptr otherwise
 SDL_Texture* TextureLoader::Load(SDL_Renderer* render, const char* filepath)
 {
-	SDL_Surface* surface = IMG_Load(filepath);
+	//Preferred implementation
+	SDL_Texture* texture = IMG_LoadTexture(render, filepath);
+	if (texture == NULL)
+	{
+		fprintf(stderr, "%s could not be loaded: %s\n", filepath, IMG_GetError());
+	}
+
+	return texture;
+
+	//OLD IMPLEMENTATION
+	//instead of creating a surface (loading onto ram then loading onto vram)
+	//create the texture directly using IMG_LoadTexture()
+	/*SDL_Surface* surface = IMG_Load(filepath);
 
 	if (surface == NULL)
 	{
@@ -22,8 +34,7 @@ SDL_Texture* TextureLoader::Load(SDL_Renderer* render, const char* filepath)
 	{
 		printf("Error: %s\n", SDL_GetError());
 	}
-
-	return texture;
+	return texture;*/
 }
 
 //returns true if texture was freed, false otherwise

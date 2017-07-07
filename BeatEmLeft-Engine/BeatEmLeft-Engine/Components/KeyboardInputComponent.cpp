@@ -37,6 +37,10 @@ bool KeyboardInputComponent::KeyReleased(std::string keyName)
 	return keys.at(keyName) == KeyStates::RELEASED;
 }
 
+//may need to rewrite this component since multiple functions that poll for events
+//may have the information this keyboard component needs e.g. if I did not hit x to exit the application and have hit a keybinding instead,
+//it may not record the keybinding in a separate event poll...
+
 //the subtle difference between gamepad controller events
 //and key events is that key events get checked every update
 //e.g. if key is down for more than 1 frame, it will continue to 
