@@ -1,5 +1,6 @@
 BeatEmLeft-Engine/BeatEmLeft-Engine/BeatEmLeft-Engine.vcxproj.filters
 BeatEmLeft-Engine/BeatEmLeft-Engine/BeatEmLeft-Engine.vcxproj
+BeatEmLeft-Engine/BeatEmLeft-Engine.sln
 
 #Learning folder shouldn't be included.
 BeatEmLeft-Engine/BeatEmLeft-Engine/Learning/*
