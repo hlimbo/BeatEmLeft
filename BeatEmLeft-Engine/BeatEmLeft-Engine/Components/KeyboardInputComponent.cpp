@@ -61,7 +61,7 @@ void KeyboardInputComponent::Update(float deltaTime)
 				else
 					keys["up"] = KeyStates::HELD;
 			}
-			else if (keycode == SDLK_DOWN)
+			if (keycode == SDLK_DOWN)
 			{
 				if (keys["down"] == KeyStates::RELEASED)
 					keys["down"] = KeyStates::PRESSED;
@@ -77,7 +77,7 @@ void KeyboardInputComponent::Update(float deltaTime)
 				else
 					keys["left"] = KeyStates::HELD;
 			}
-			else if (keycode == SDLK_RIGHT)
+			if (keycode == SDLK_RIGHT)
 			{
 				if (keys["right"] == KeyStates::RELEASED)
 					keys["right"] = KeyStates::PRESSED;
