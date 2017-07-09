@@ -212,6 +212,11 @@ vector<int> ECS::GetEntityIDs()
 	//return entityIDs;
 }
 
+std::vector<int> ECS::GetEntityIDs(std::string entityType)
+{
+	return entitySystem->GetIDs(entityType);
+}
+
 
 
 

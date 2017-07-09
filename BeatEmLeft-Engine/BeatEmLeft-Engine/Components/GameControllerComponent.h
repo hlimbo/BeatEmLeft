@@ -9,7 +9,8 @@ enum class ButtonStates
 {
 	RELEASED,
 	PRESSED,
-	HELD
+	HELD,
+	NA
 };
 
 class GameControllerComponent :
