@@ -26,6 +26,7 @@ using namespace std;
 
 RenderSystem::RenderSystem()
 {
+	ecs = nullptr;
 	transformManager = spriteManager = nullptr;
 }
 
@@ -59,10 +60,64 @@ RenderSystem::~RenderSystem()
 //1. component update() function and possibly init() function, making components purely based on data
 //2. ecs::update() will not need update anymore since components do not update themselves
 
+void RenderSystem::Init(int cameraWidth,int cameraHeight)
+{
+	camera.x = 0;
+	camera.y = 0;
+	camera.w = cameraWidth;
+	camera.h = cameraHeight;
+	//this should be the playerID
+	int playerID = ecs->GetEntityIDs("Player").at(0);
+	SetEntityToFollow(playerID);
+}
+
+void RenderSystem::SetLocation(int x, int y)
+{
+	camera.x = x;
+	camera.y = y;
+}
+
+//temporary level dimensions
+#define LEVEL_WIDTH 1024
+#define LEVEL_HEIGHT 920
+bool RenderSystem::SetEntityToFollow(int id)
+{
+	//target entity's components
+	TransformComponent* transformComponent = transformManager->GetComponent<TransformComponent>(id);
+	SpriteComponent* spriteComponent = spriteManager->GetComponent<SpriteComponent>(id);
+	if (transformComponent != nullptr && spriteComponent != nullptr)
+	{
+		SDL_Point targetPos = getFloatToIntegerCoordinates(transformComponent->position);
+		
+		//set a camera offset relative to the entity ~ camera centered on target entity
+		camera.x = (targetPos.x + spriteComponent->width / 2) - (camera.w / 2);
+		camera.y = (targetPos.y + spriteComponent->height / 2) - (camera.h / 2);
+
+		//camera bounds check relative to world coordinates
+		if (camera.x < 0)
+			camera.x = 0;
+		if (camera.y < 0)
+			camera.y = 0;
+		if (camera.x + camera.w > LEVEL_WIDTH)
+			camera.x = LEVEL_WIDTH - camera.w;
+		if (camera.y + camera.h > LEVEL_HEIGHT)
+			camera.y = LEVEL_HEIGHT - camera.h;
+	}
+
+	return transformComponent != nullptr && spriteComponent != nullptr;
+}
+
 //I could pass SDL_Renderer* here instead and would not need to include
 //a SDL_Renderer* pointer as a data member...
 void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
 {
+
+	//camera tracking
+	int backgroundID = ecs->GetEntityIDs("Background").at(0);
+
+	int playerID = ecs->GetEntityIDs("Player").at(0);
+	SetEntityToFollow(playerID);
+
 	vector<int> ids = ecs->GetEntityIDs();
 	for (auto it = ids.begin();it != ids.end();++it)
 	{
@@ -77,7 +132,23 @@ void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
 
 			sprite->x = (diffx > 0.5f) ? (int)ceilf(transform->position.x) : (int)floorf(transform->position.x);
 			sprite->y = (diffy > 0.5f) ? (int)ceilf(transform->position.y) : (int)floorf(transform->position.y);
-			sprite->Draw(render);
+			//sprite->Draw(render);
+
+			//temp code
+			if (backgroundID == *it)
+			{
+				SDL_RenderCopy(render, sprite->texture, &camera, NULL);
+			}
+			if (playerID == *it)
+			{
+				//convert player world coordinates to screen coordinates relative to camera
+				SDL_Rect screenBounds;
+				screenBounds.x = sprite->x - camera.x;
+				screenBounds.y = sprite->y - camera.y;
+				screenBounds.w = sprite->width;
+				screenBounds.h = sprite->height;
+				SDL_RenderCopy(render, sprite->texture, NULL, &screenBounds);
+			}
 		}
 	}
 }
@@ -86,6 +157,18 @@ void RenderSystem::Draw(SDL_Renderer* render)
 {
 	SDL_RenderPresent(render);
 	SDL_RenderClear(render);
+}
+
+SDL_Point RenderSystem::getFloatToIntegerCoordinates(Vect2 position)
+{
+	SDL_Point p;
+	float diffx = position.x - floorf(position.x);
+	float diffy = position.y - floorf(position.y);
+
+	p.x = (diffx > 0.5f) ? (int)ceilf(position.x) : (int)floorf(position.x);
+	p.y = (diffy > 0.5f) ? (int)ceilf(position.y) : (int)floorf(position.y);
+
+	return p;
 }
 
 //in systems class:

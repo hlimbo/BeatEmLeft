@@ -24,7 +24,7 @@ void SpriteComponent::Update(float deltaTime)
 
 //this is an expensive function to call!
 //should only call this function if the image is on the screen!
-void SpriteComponent::Draw(SDL_Renderer * render)
+void SpriteComponent::Draw(SDL_Renderer* render)
 {
 	SDL_Rect bounds;
 	bounds.h = height;

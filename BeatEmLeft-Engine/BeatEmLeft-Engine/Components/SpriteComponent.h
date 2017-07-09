@@ -31,8 +31,9 @@ public:
 	//flipping the image
 	SDL_RendererFlip flip;
 
-private:
+	//temp
 	SDL_Texture* texture;
+private:
 	//source width and height of image after loaded into the component
 	int src_w, src_h;
 
