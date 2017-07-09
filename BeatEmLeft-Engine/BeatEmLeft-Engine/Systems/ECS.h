@@ -58,6 +58,7 @@ public:
 
 	//subject to deprecation (not to be in use anymore).
 	std::vector<int> GetEntityIDs();
+	std::vector<int> GetEntityIDs(std::string entityType);
 
 private:
 	EntitySystem* entitySystem;

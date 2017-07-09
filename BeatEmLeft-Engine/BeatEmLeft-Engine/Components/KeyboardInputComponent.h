@@ -7,7 +7,8 @@ enum class KeyStates
 {
 	PRESSED,
 	HELD,
-	RELEASED
+	RELEASED,
+	NA
 };
 
 class KeyboardInputComponent :

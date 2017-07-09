@@ -221,6 +221,18 @@ public:
 		return ids;
 	}
 
+	vector<int> GetIDs(string entityType)
+	{
+		vector<int> ids;
+		vector<Entity> e = entitiesByType.at(entityType);
+		for (vector<Entity>::iterator it = e.begin();it != e.end();++it)
+		{
+			ids.push_back(it->id);
+		}
+
+		return ids;
+	}
+
 private:
 	unordered_map<string, vector<Entity>> entitiesByType;
 	//key = entity type

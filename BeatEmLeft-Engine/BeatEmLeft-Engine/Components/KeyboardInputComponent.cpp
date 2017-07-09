@@ -9,14 +9,14 @@ void KeyboardInputComponent::Init()
 	//init keys I want to use for the game....
 	//should probably read from some file what keys I want to bind to..
 	//but this should be good enough for now..
-	keys["left"] = KeyStates::RELEASED;
-	keys["right"] = KeyStates::RELEASED;
-	keys["up"] = KeyStates::RELEASED;
-	keys["down"] = KeyStates::RELEASED;
-	keys["a"] = KeyStates::RELEASED;
-	keys["s"] = KeyStates::RELEASED;
-	keys["d"] = KeyStates::RELEASED;
-	keys["space"] = KeyStates::RELEASED;
+	keys["left"] = KeyStates::NA;
+	keys["right"] = KeyStates::NA;
+	keys["up"] = KeyStates::NA;
+	keys["down"] = KeyStates::NA;
+	keys["a"] = KeyStates::NA;
+	keys["s"] = KeyStates::NA;
+	keys["d"] = KeyStates::NA;
+	keys["space"] = KeyStates::NA;
 
 	startPressedTime = 0;
 	counter = 0;
@@ -158,6 +158,17 @@ void KeyboardInputComponent::Update(float deltaTime)
 			{
 				keys["space"] = KeyStates::RELEASED;
 			}
+		}
+		else //if key was released for more than one frame set it back to NA
+		{
+			if (keys["up"] == KeyStates::RELEASED)
+				keys["up"] = KeyStates::NA;
+			if (keys["down"] == KeyStates::RELEASED)
+				keys["down"] = KeyStates::NA;
+			if (keys["left"] == KeyStates::RELEASED)
+				keys["left"] = KeyStates::NA;
+			if (keys["right"] == KeyStates::RELEASED)
+				keys["right"] = KeyStates::NA;
 		}
 	}
 }
