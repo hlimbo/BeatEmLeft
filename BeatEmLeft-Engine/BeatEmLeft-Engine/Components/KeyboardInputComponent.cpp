@@ -37,9 +37,6 @@ bool KeyboardInputComponent::KeyReleased(std::string keyName)
 	return keys.at(keyName) == KeyStates::RELEASED;
 }
 
-//may need to rewrite this component since multiple functions that poll for events
-//may have the information this keyboard component needs e.g. if I did not hit x to exit the application and have hit a keybinding instead,
-//it may not record the keybinding in a separate event poll...
 
 //the subtle difference between gamepad controller events
 //and key events is that key events get checked every update
@@ -47,6 +44,17 @@ bool KeyboardInputComponent::KeyReleased(std::string keyName)
 //process that input as a key down again...
 void KeyboardInputComponent::Update(float deltaTime)
 {
+
+	//check if key was released in the previous frame, set it to na.
+	if (keys["up"] == KeyStates::RELEASED)
+		keys["up"] = KeyStates::NA;
+	if (keys["down"] == KeyStates::RELEASED)
+		keys["down"] = KeyStates::NA;
+	if (keys["left"] == KeyStates::RELEASED)
+		keys["left"] = KeyStates::NA;
+	if (keys["right"] == KeyStates::RELEASED)
+		keys["right"] = KeyStates::NA;
+
 	SDL_Event event;
 	while(SDL_PollEvent(&event))
 	{
@@ -159,16 +167,6 @@ void KeyboardInputComponent::Update(float deltaTime)
 				keys["space"] = KeyStates::RELEASED;
 			}
 		}
-		else //if key was released for more than one frame set it back to NA
-		{
-			if (keys["up"] == KeyStates::RELEASED)
-				keys["up"] = KeyStates::NA;
-			if (keys["down"] == KeyStates::RELEASED)
-				keys["down"] = KeyStates::NA;
-			if (keys["left"] == KeyStates::RELEASED)
-				keys["left"] = KeyStates::NA;
-			if (keys["right"] == KeyStates::RELEASED)
-				keys["right"] = KeyStates::NA;
-		}
+
 	}
 }
