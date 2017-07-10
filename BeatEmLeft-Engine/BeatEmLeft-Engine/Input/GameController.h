@@ -1,7 +1,7 @@
-#ifndef GAMECONTROLLERCOMPONENT_H
-#define GAMECONTROLLERCOMPONENT_H
-#include "../Systems/Component.h"
+#ifndef GAME_CONTROLLER_H
+#define GAME_CONTROLLER_H
 #include "SDL2/SDL_gamecontroller.h"
+#include "SDL2/SDL_events.h"
 #include <unordered_map>
 #include <Vect2.h>
 
@@ -9,19 +9,17 @@ enum class ButtonStates
 {
 	RELEASED,
 	PRESSED,
-	HELD,
-	NA
+	HELD
 };
 
-class GameControllerComponent :
-	public Component
+class GameController
 {
 public:
-	GameControllerComponent(std::string type) : Component(type) {}
-	virtual ~GameControllerComponent() {}
+	GameController(){}
+	~GameController() {}
 
-	virtual void Init();
-	virtual void Update(float deltaTime);
+	void Init();
+	void HandleInput(const SDL_Event& event);
 
 	//the state of each button press gets updated regularly via Update call
 	//make sure to check for the status of the button on every update 
