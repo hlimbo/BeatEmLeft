@@ -23,8 +23,16 @@ ComponentManager::~ComponentManager()
 //false otherwise
 bool ComponentManager::AddComponent(int id, Component* component)
 {
+	//here don't allow an entity to add the component of the same type
+	//more than once
+	//this is possibly an O(n) check...
+	if(components.find(id) != components.end())
+		return false;
+
+	//here don't allow to add a component of a different type
 	if (type != "" && component->GetType() != type)
 		return false;
+	
 	components.insert(make_pair(id, component));
 	return true;
 }
