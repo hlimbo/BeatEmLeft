@@ -85,6 +85,9 @@ bool ECS::AddComponentType(std::string newType)
 }
 
 //initialize all components from heap
+//returns true if component can be registed to entity
+//returns false if component of same type was already registered to entity id
+//or if component doesn't doesn't match the component type supported
 bool ECS::RegisterComponentToEntity(int id, Component* component)
 {	
 	string componentType = component->GetType();
