@@ -8,14 +8,14 @@ void KeyboardController::Init()
 	//init keys I want to use for the game....
 	//should probably read from some file what keys I want to bind to..
 	//but this should be good enough for now..
-	keys["left"] = KeyStates::NA;
-	keys["right"] = KeyStates::NA;
-	keys["up"] = KeyStates::NA;
-	keys["down"] = KeyStates::NA;
-	keys["a"] = KeyStates::NA;
-	keys["s"] = KeyStates::NA;
-	keys["d"] = KeyStates::NA;
-	keys["space"] = KeyStates::NA;
+	keys["left"] = KeyStates::RELEASED;
+	keys["right"] = KeyStates::RELEASED;
+	keys["up"] = KeyStates::RELEASED;
+	keys["down"] = KeyStates::RELEASED;
+	keys["a"] = KeyStates::RELEASED;
+	keys["s"] = KeyStates::RELEASED;
+	keys["d"] = KeyStates::RELEASED;
+	keys["space"] = KeyStates::RELEASED;
 
 	startPressedTime = 0;
 	counter = 0;
@@ -43,122 +43,112 @@ bool KeyboardController::KeyReleased(std::string keyName)
 //process that input as a key down again...
 void KeyboardController::HandleInput(const SDL_Event& event)
 {
-	if (keys["up"] == KeyStates::RELEASED)
-		keys["up"] = KeyStates::NA;
-	if (keys["down"] == KeyStates::RELEASED)
-		keys["down"] = KeyStates::NA;
-	if (keys["left"] == KeyStates::RELEASED)
-		keys["left"] = KeyStates::NA;
-	if (keys["right"] == KeyStates::RELEASED)
-		keys["right"] = KeyStates::NA;
-
-	if (event.type == SDL_KEYDOWN)//this statement will be true as long as a key is held down...
+	if (event.type == SDL_KEYDOWN)
 	{
 		SDL_Keycode keycode = event.key.keysym.sym;
-		//y-axis movement
-		if (keycode == SDLK_UP)
+		if (event.key.repeat == 0) // key pressed
 		{
-			if (keys["up"] == KeyStates::RELEASED)
+			puts("key pressed!");
+			startPressedTime = event.key.timestamp;
+			switch (keycode)
+			{
+				//movement keys
+			case SDLK_UP:
 				keys["up"] = KeyStates::PRESSED;
-			else
-				keys["up"] = KeyStates::HELD;
-		}
-		if (keycode == SDLK_DOWN)
-		{
-			if (keys["down"] == KeyStates::RELEASED)
+				break;
+			case SDLK_DOWN:
 				keys["down"] = KeyStates::PRESSED;
-			else
-				keys["down"] = KeyStates::HELD;
-		}
-
-		//x-axis movement
-		if (keycode == SDLK_LEFT)
-		{
-			if (keys["left"] == KeyStates::RELEASED)
+				break;
+			case SDLK_LEFT:
 				keys["left"] = KeyStates::PRESSED;
-			else
-				keys["left"] = KeyStates::HELD;
-		}
-		if (keycode == SDLK_RIGHT)
-		{
-			if (keys["right"] == KeyStates::RELEASED)
+				break;
+			case SDLK_RIGHT:
 				keys["right"] = KeyStates::PRESSED;
-			else
-				keys["right"] = KeyStates::HELD;
-		}
-
-		//action keys and space
-		if (keycode == SDLK_a)
-		{
-			if (keys["a"] == KeyStates::RELEASED)
+				break;
+				//action keys
+			case SDLK_a:
 				keys["a"] = KeyStates::PRESSED;
-			else
-				keys["a"] = KeyStates::HELD;
-		}
-		if (keycode == SDLK_s)
-		{
-			if (keys["s"] == KeyStates::RELEASED)
+				break;
+			case SDLK_s:
 				keys["s"] = KeyStates::PRESSED;
-			else
-				keys["s"] = KeyStates::HELD;
-		}
-		if (keycode == SDLK_d)
-		{
-			if (keys["d"] == KeyStates::RELEASED)
+				break;
+			case SDLK_d:
 				keys["d"] = KeyStates::PRESSED;
-			else
-				keys["d"] = KeyStates::HELD;
-		}
-		if (keycode == SDLK_SPACE)
-		{
-			if (keys["space"] == KeyStates::RELEASED)
+				break;
+			case SDLK_SPACE:
 				keys["space"] = KeyStates::PRESSED;
-			else
-				keys["space"] = KeyStates::HELD;
+				break;
+			}
+		}
+		else //key held
+		{
+			puts("key held!");
+			int inputLag = event.key.timestamp - startPressedTime;
+			//printf("key pressed to held lag: %d\n", inputLag);//there is about a half a second input lag when transitioning from pressed to held...
+			switch (keycode)
+			{
+				//movement keys
+			case SDLK_UP:
+				keys["up"] = KeyStates::HELD;
+				break;
+			case SDLK_DOWN:
+				printf("down held\n");
+				keys["down"] = KeyStates::HELD;
+				break;
+			case SDLK_LEFT:
+				keys["left"] = KeyStates::HELD;
+				break;
+			case SDLK_RIGHT:
+				keys["right"] = KeyStates::HELD;
+				break;
+				//action keys
+			case SDLK_a:
+				keys["a"] = KeyStates::PRESSED;
+				break;
+			case SDLK_s:
+				keys["s"] = KeyStates::PRESSED;
+				break;
+			case SDLK_d:
+				keys["d"] = KeyStates::PRESSED;
+				break;
+			case SDLK_SPACE:
+				keys["space"] = KeyStates::PRESSED;
+				break;
+			}
 		}
 
 	}
-
-	if (event.type == SDL_KEYUP)
+	else if (event.type == SDL_KEYUP)
 	{
+		puts("key released");
 		SDL_Keycode keycode = event.key.keysym.sym;
 
-		//y-axis movement
-		if (keycode == SDLK_UP)
+		switch (keycode)
 		{
+		case SDLK_UP:
 			keys["up"] = KeyStates::RELEASED;
-		}
-		if (keycode == SDLK_DOWN)
-		{
+			break;
+		case SDLK_DOWN:
 			keys["down"] = KeyStates::RELEASED;
-		}
-
-		//x-axis movement
-		if (keycode == SDLK_LEFT)
-		{
+			break;
+		case SDLK_LEFT:
 			keys["left"] = KeyStates::RELEASED;
-		}
-		if (keycode == SDLK_RIGHT)
-		{
+			break;
+		case SDLK_RIGHT:
 			keys["right"] = KeyStates::RELEASED;
-		}
-
-		//action keys and space
-		if (keycode == SDLK_a)
-		{
+			break;
+		case SDLK_a:
 			keys["a"] = KeyStates::RELEASED;
-		}
-		if (keycode == SDLK_s)
-		{
+			break;
+		case SDLK_s:
 			keys["s"] = KeyStates::RELEASED;
-		}
-		if (keycode == SDLK_d)
-		{
+			break;
+		case SDLK_d:
 			keys["d"] = KeyStates::RELEASED;
-		}
-		if (keycode == SDLK_SPACE)
-		{
+			break;
+		case SDLK_SPACE:
 			keys["space"] = KeyStates::RELEASED;
+			break;
 		}
 	}
 }
