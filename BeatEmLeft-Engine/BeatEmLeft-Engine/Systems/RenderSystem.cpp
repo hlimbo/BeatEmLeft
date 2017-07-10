@@ -80,6 +80,8 @@ void RenderSystem::SetLocation(int x, int y)
 //temporary level dimensions
 #define LEVEL_WIDTH 1024
 #define LEVEL_HEIGHT 920
+//#define LEVEL_WIDTH 2048
+//#define LEVEL_HEIGHT 1840
 bool RenderSystem::SetEntityToFollow(int id)
 {
 	//target entity's components
@@ -127,27 +129,81 @@ void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
 		if (transform != nullptr && sprite != nullptr)
 		{
 			//convert floating point coordinates to screen integer coordinates
-			float diffx = transform->position.x - floorf(transform->position.x);
+			//using the round function (rounds values up if >= 0.5 otherwise round down)
+			sprite->x = (int)roundf(transform->position.x);
+			sprite->y = (int)roundf(transform->position.y);
+			
+			//benefit of this approach is that I have more control over how I want to round my floating coordinates to
+			//negative of this approach: I have to write a little bit more code to do this...
+		/*	float diffx = transform->position.x - floorf(transform->position.x);
 			float diffy = transform->position.y - floorf(transform->position.y);
 
 			sprite->x = (diffx > 0.5f) ? (int)ceilf(transform->position.x) : (int)floorf(transform->position.x);
-			sprite->y = (diffy > 0.5f) ? (int)ceilf(transform->position.y) : (int)floorf(transform->position.y);
+			sprite->y = (diffy > 0.5f) ? (int)ceilf(transform->position.y) : (int)floorf(transform->position.y);*/
 			//sprite->Draw(render);
 
-			//temp code
+			//temp code ~ needs to be refactored...
 			if (backgroundID == *it)
 			{
+				//always render the background since all of its parts will always be seen in the game.
 				SDL_RenderCopy(render, sprite->texture, &camera, NULL);
 			}
-			if (playerID == *it)
+			else if (playerID == *it)
 			{
+				//this effect makes it as if the camera is following the player.
+				//but in reality this is making sure the player stays withing bounds of the camera.
 				//convert player world coordinates to screen coordinates relative to camera
 				SDL_Rect screenBounds;
 				screenBounds.x = sprite->x - camera.x;
 				screenBounds.y = sprite->y - camera.y;
 				screenBounds.w = sprite->width;
 				screenBounds.h = sprite->height;
-				SDL_RenderCopy(render, sprite->texture, NULL, &screenBounds);
+				SDL_RenderCopy(render, sprite->texture, NULL/* source texture is used if I want to animate the sprite*/, &screenBounds);
+			}
+			else //for all other sprites... render them  (right now render order happens from lowest entity id to highest entity id)
+			{
+				//render the sprite if it is seen by the camera (check if sprite is within screen bounds)
+				SDL_Rect screenCoords;
+				screenCoords.x = sprite->x - camera.x;
+				screenCoords.y = sprite->y - camera.y;
+				//width and height of the sprite
+				screenCoords.w = sprite->width;
+				screenCoords.h = sprite->height;
+
+				//reminder: all rectangle based textures locations are measured on the top left corner.
+				/* o is the top left corner of the rectangle, the 3 other corners aren't calculated.
+					o---------------x
+					|				|
+					|				|
+					|				|
+					x---------------x
+				*/
+
+				//this is an optimization for rendering since rendering many textures each frame is expensive
+				if (screenCoords.x >= 0 && screenCoords.x < camera.w
+					&& screenCoords.y >= 0 && screenCoords.y < camera.h)
+				{
+					//render the sprite if it is within camera bounds
+					SDL_RenderCopy(render, sprite->texture, NULL, &screenCoords);
+				}
+				else
+				{
+
+					//todo: render images that are partially offscreen.
+					//only render tiles where there right corners can be caught within camera bounds.
+					SDL_Point rightCorner;//bottom right corner
+					rightCorner.x = screenCoords.x + screenCoords.w;
+					rightCorner.y = screenCoords.y + screenCoords.h;
+					if (rightCorner.x >= 0 && rightCorner.x < camera.w)
+					{
+						SDL_RenderCopy(render, sprite->texture, NULL, &screenCoords);
+					}
+					else if (rightCorner.y >= 0 && rightCorner.y < camera.h)
+					{
+						SDL_RenderCopy(render, sprite->texture, NULL, &screenCoords);
+					}
+				}
+
 			}
 		}
 	}
