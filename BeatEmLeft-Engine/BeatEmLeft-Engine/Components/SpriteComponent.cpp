@@ -36,6 +36,9 @@ void SpriteComponent::Draw(SDL_Renderer* render)
 	//SDL_RenderCopy(render, texture, NULL, &bounds);
 	SDL_RenderCopyEx(render, texture, NULL, &bounds, 0.0, NULL, flip);
 }
+
+//should sprite component be responsible for loading in its texture and freeing it?
+//or should the render system be responsible for that?
 bool SpriteComponent::LoadTexture(SDL_Renderer* render, std::string filePath)
 {
 	texture = TextureLoader::Load(render, filePath.c_str());
