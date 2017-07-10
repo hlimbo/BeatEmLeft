@@ -15,8 +15,7 @@ enum class KeyStates
 {
 	PRESSED, //this state means the key was pressed in one frame (current frame).
 	HELD, //this state means the key was pressed more than one frame
-	RELEASED, //this state means the key was released in one frame (current frame).
-	NA //this state means the key was released more than one frame.
+	RELEASED, //this state means the key was released in one frame or more frames(current frame).
 };
 
 class KeyboardController
