@@ -1,0 +1,46 @@
+#include "TextureStore.h"
+#include <SDL2/SDL_render.h>
+
+TextureStore::TextureStore(SDL_Renderer* render)
+{
+	this->render = render;
+}
+
+
+TextureStore::~TextureStore()
+{
+	for (auto it = textures.begin();it != textures.end();/*empty*/)
+	{
+		SDL_Texture* texture = it->second;
+		it = textures.erase(it);
+		TextureLoader::Free(texture);
+	}
+}
+
+//returns nullptr if fileName already exists in textureStore or returns nullptr if
+//texture to load is nullptr, otherwise return true on success
+SDL_Texture* TextureStore::Load(const std::string fileName,const std::string filePath)
+{
+	//this is possibly an O(n) check to ensure that the same fileName cannot be added more than once
+	if (textures.find(fileName) != textures.end())
+		return nullptr;
+
+	SDL_Texture* texture = TextureLoader::Load(render, filePath.c_str());
+	if (texture == nullptr)
+		return nullptr;
+
+	textures.insert(make_pair(fileName, texture));
+	return texture;
+}
+
+bool TextureStore::Free(const std::string fileName)
+{
+	SDL_Texture* texture = textures[fileName];
+	textures.erase(fileName);
+	return TextureLoader::Free(texture);
+}
+
+SDL_Texture* TextureStore::Get(const std::string fileName)
+{
+	return textures.at(fileName);
+}
