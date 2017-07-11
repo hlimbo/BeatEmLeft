@@ -6,7 +6,6 @@ TextureStore::TextureStore(SDL_Renderer* render)
 	this->render = render;
 }
 
-
 TextureStore::~TextureStore()
 {
 	int destroyCount = 0;
