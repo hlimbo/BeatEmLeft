@@ -2,9 +2,11 @@
 #define RENDER_SYSTEM_H
 #include <SDL2/SDL_rect.h>
 #include <Vect2.h>
+#include "ComponentManager.h"
 
-class ECS;
-class ComponentManager;
+struct Transform;
+struct Sprite;
+struct ECS;
 struct SDL_Renderer;
 
 //a system should take in all the necessary components it needs to process
@@ -29,8 +31,8 @@ private:
 	//do not need to free these pointers since they get freed in ecs
 	ECS* ecs;
 	//obtained from ecs
-	ComponentManager* transformManager;
-	ComponentManager* spriteManager;
+	ComponentManager<Transform>* transformManager;
+	ComponentManager<Sprite>* spriteManager;
 	SDL_Rect camera;
 
 	//converts floating point coordinates to integer point coordinates
