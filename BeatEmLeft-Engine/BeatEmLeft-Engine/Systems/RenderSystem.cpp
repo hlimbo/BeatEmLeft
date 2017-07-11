@@ -128,14 +128,10 @@ void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
 
 		if (transform != nullptr && sprite != nullptr)
 		{
-			//convert floating point coordinates to screen integer coordinates
-			//using the round function (rounds values up if >= 0.5 otherwise round down)
-			sprite->x = (int)roundf(transform->position.x);
-			sprite->y = (int)roundf(transform->position.y);
-			
-			//benefit of this approach is that I have more control over how I want to round my floating coordinates to
-			//negative of this approach: I have to write a little bit more code to do this...
-			//SDL_Point newPoints = getFloatToIntegerCoordinates(transform->position);
+
+			SDL_Point spritePoint = getFloatToIntegerCoordinates(transform->position);
+			sprite->x = spritePoint.x;
+			sprite->y = spritePoint.y;
 
 			//temp code ~ needs to be refactored...
 			if (backgroundID == *it)
@@ -212,13 +208,24 @@ void RenderSystem::Draw(SDL_Renderer* render)
 
 SDL_Point RenderSystem::getFloatToIntegerCoordinates(Vect2 position)
 {
-	SDL_Point p;
-	float diffx = position.x - floorf(position.x);
-	float diffy = position.y - floorf(position.y);
+	//SDL_Point p;
+	//float diffx = position.x - floorf(position.x);
+	//float diffy = position.y - floorf(position.y);
 
-	p.x = (diffx > 0.5f) ? (int)ceilf(position.x) : (int)floorf(position.x);
-	p.y = (diffy > 0.5f) ? (int)ceilf(position.y) : (int)floorf(position.y);
+	//p.x = (diffx > 0.5f) ? (int)ceilf(position.x) : (int)floorf(position.x);
+	//p.y = (diffy > 0.5f) ? (int)ceilf(position.y) : (int)floorf(position.y);
 
-	return p;
+	//return p;
+
+	return SDL_Point{ (int)roundf(position.x), (int)roundf(position.y) };
 }
+
+////convert floating point coordinates to screen integer coordinates
+////using the round function (rounds values up if >= 0.5 otherwise round down)
+//sprite->x = (int)roundf(transform->position.x);
+//sprite->y = (int)roundf(transform->position.y);
+//
+////benefit of this approach is that I have more control over how I want to round my floating coordinates to
+////negative of this approach: I have to write a little bit more code to do this...
+////SDL_Point newPoints = getFloatToIntegerCoordinates(transform->position);
 

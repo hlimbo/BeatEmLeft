@@ -19,7 +19,7 @@ Core::~Core()
 	appCleanUp();
 }
 
-int Core::getTargetFPS()
+Uint64 Core::getTargetFPS()
 {
 	return targetFPS;
 }
