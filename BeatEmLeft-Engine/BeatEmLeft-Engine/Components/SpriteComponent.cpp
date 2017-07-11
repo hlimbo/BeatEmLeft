@@ -1,5 +1,4 @@
 #include "SpriteComponent.h"
-#include "../Utility/TextureLoader.h"
 #include <SDL2/SDL_rect.h>
 
 SpriteComponent::SpriteComponent(std::string type) :

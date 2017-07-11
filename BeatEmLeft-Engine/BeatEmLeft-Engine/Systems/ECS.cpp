@@ -23,6 +23,7 @@ ECS::~ECS()
 	}
 }
 
+//this is possibly a bad model!
 void ECS::Init()
 {
 	//should be safe to call as long as the entity system add/remove entities before this function call.
@@ -36,6 +37,14 @@ void ECS::Init()
 			Component* component = manager->GetComponent(*id);
 			if (component != nullptr)
 				component->Init();
+
+			//pseudo code
+			/* if(component != nullptr)
+					component->Init();
+					SpriteComponent* spriteComp = manager->GetComponent<SpriteComponent>(*id);
+					if(spriteComp != nullptr)
+						spriteComp->SetTextureAttributes("image fileName to initialize")
+			*/
 		}
 	}
 }
@@ -188,31 +197,9 @@ vector<string> ECS::GetComponentTypes()
 	return componentTypes;
 }
 
-
-//may not be in use anymore...
 vector<int> ECS::GetEntityIDs()
 {
 	return entitySystem->GetIDs();
-
-	//vector<int> entityIDs;
-	////can simplify down to one loop (just use a vector<Entity>)
-	////can probably have this code in init if I'm not removing
-	////any entities from the system?
-
-	////probably the benefit of this design is to make sure only certain
-	////entities can receive regular updates while other entity types 
-	////marked with the disabled flag don't update?
-	//for (string entityType : entityTypes)
-	//{
-	//	auto it = entitySystem->GetEntities(entityType)->begin();
-	//	auto end = entitySystem->GetEntities(entityType)->end();
-	//	for (;it != end;++it)
-	//	{
-	//		entityIDs.push_back(it->id);
-	//	}
-	//}
-
-	//return entityIDs;
 }
 
 std::vector<int> ECS::GetEntityIDs(std::string entityType)
