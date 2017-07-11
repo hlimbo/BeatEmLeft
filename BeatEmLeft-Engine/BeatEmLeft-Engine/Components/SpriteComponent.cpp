@@ -10,7 +10,6 @@ SpriteComponent::SpriteComponent(std::string type) :
 }
 SpriteComponent::~SpriteComponent()
 {
-	TextureLoader::Free(texture);
 }
 
 void SpriteComponent::Init()
@@ -37,14 +36,16 @@ void SpriteComponent::Draw(SDL_Renderer* render)
 	SDL_RenderCopyEx(render, texture, NULL, &bounds, 0.0, NULL, flip);
 }
 
-//should sprite component be responsible for loading in its texture and freeing it?
-//or should the render system be responsible for that?
-bool SpriteComponent::LoadTexture(SDL_Renderer* render, std::string filePath)
+//returns false if srcTexture passed in is NULL,true otherwise
+//SetTextureAttributes retrieves the texture's width and height in pixels after the
+//srcTexture is successfully loaded by TextureLoader::Load() or TextureManager::Load()
+//Note: This function must be called first before manipulating this sprite component's properties!
+bool SpriteComponent::SetTextureAttributes(SDL_Texture* srcTexture)
 {
-	texture = TextureLoader::Load(render, filePath.c_str());
-	if (texture == NULL)
+	if (srcTexture == NULL)
 		return false;
 
+	texture = srcTexture;
 	if (SDL_QueryTexture(texture, NULL, NULL, &src_w, &src_h) == -1)
 	{
 		printf("Error: %s\n", SDL_GetError());
