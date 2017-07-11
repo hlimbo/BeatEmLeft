@@ -92,10 +92,8 @@ void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
 		if (transform != nullptr && sprite != nullptr)
 		{
 
-			SDL_Point spritePoint = getFloatToIntegerCoordinates(transform->position);
-			sprite->x = spritePoint.x;
-			sprite->y = spritePoint.y;
-
+			sprite->position = getFloatToIntegerCoordinates(transform->position);
+			
 			//temp code ~ needs to be refactored...
 			if (backgroundID == *it)
 			{
@@ -108,8 +106,8 @@ void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
 				//but in reality this is making sure the player stays withing bounds of the camera.
 				//convert player world coordinates to screen coordinates relative to camera
 				SDL_Rect screenBounds;
-				screenBounds.x = sprite->x - camera.x;
-				screenBounds.y = sprite->y - camera.y;
+				screenBounds.x = sprite->position.x - camera.x;
+				screenBounds.y = sprite->position.y - camera.y;
 				screenBounds.w = sprite->width;
 				screenBounds.h = sprite->height;
 				SDL_RenderCopy(render, sprite->texture, NULL/* source texture is used if I want to animate the sprite*/, &screenBounds);
@@ -118,8 +116,8 @@ void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
 			{
 				//render the sprite if it is seen by the camera (check if sprite is within screen bounds)
 				SDL_Rect screenCoords;
-				screenCoords.x = sprite->x - camera.x;
-				screenCoords.y = sprite->y - camera.y;
+				screenCoords.x = sprite->position.x - camera.x;
+				screenCoords.y = sprite->position.y - camera.y;
 				//width and height of the sprite
 				screenCoords.w = sprite->width;
 				screenCoords.h = sprite->height;
