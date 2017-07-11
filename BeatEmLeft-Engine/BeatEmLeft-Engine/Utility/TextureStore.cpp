@@ -9,12 +9,16 @@ TextureStore::TextureStore(SDL_Renderer* render)
 
 TextureStore::~TextureStore()
 {
+	int destroyCount = 0;
 	for (auto it = textures.begin();it != textures.end();/*empty*/)
 	{
 		SDL_Texture* texture = it->second;
 		it = textures.erase(it);
-		TextureLoader::Free(texture);
+		destroyCount = TextureLoader::Free(texture) ? destroyCount + 1 : destroyCount;
 	}
+
+	//debug
+	printf("Destroyed Textures: %d\n", destroyCount);
 }
 
 //returns nullptr if fileName already exists in textureStore or returns nullptr if

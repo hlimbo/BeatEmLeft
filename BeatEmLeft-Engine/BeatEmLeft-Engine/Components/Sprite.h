@@ -2,9 +2,7 @@
 #define SPRITE_COMPONENT_H
 
 #include <SDL2/SDL_render.h>
-
-struct SDL_Texture;
-struct SDL_Renderer;
+#include <SDL2/SDL_rect.h>
 
 struct Sprite
 {
@@ -19,7 +17,7 @@ struct Sprite
 	//modify this width and height to see changes in size of image on screen
 	int width, height;
 	//pixel coordinates of image
-	int x, y;
+	SDL_Point position;
 	//flipping the image
 	SDL_RendererFlip flip;
 	const char* type;

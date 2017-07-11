@@ -1,5 +1,4 @@
 #include "Sprite.h"
-#include <SDL2/SDL_rect.h>
 #include <stdio.h>
 #include <typeinfo.h>
 
@@ -13,9 +12,12 @@ Sprite::~Sprite()
 {
 }
 
-Sprite::Sprite(SDL_Texture * srcTexture)
+Sprite::Sprite(SDL_Texture* srcTexture)
 {
+	texture = NULL;
 	SetTextureAttributes(srcTexture);
+	flip = SDL_RendererFlip::SDL_FLIP_NONE;
+	type = typeid(Sprite).name();
 }
 
 //returns false if srcTexture passed in is NULL,true otherwise
@@ -39,6 +41,8 @@ bool Sprite::SetTextureAttributes(SDL_Texture* srcTexture)
 	{
 		width = src_w;
 		height = src_h;
+		position.x = 0;
+		position.y = 0;
 	}
 
 	return true;
