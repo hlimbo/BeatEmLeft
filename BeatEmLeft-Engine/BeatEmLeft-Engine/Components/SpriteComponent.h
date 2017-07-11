@@ -22,7 +22,8 @@ public:
 	void Draw(SDL_Renderer* render);
 
 	//helper function
-	bool LoadTexture(SDL_Renderer* render, std::string filePath);
+	SDL_Texture* texture;
+	bool SetTextureAttributes(SDL_Texture* srcTexture);
 
 	//modify this width and height to see changes in size of image on screen
 	int width, height;
@@ -30,9 +31,6 @@ public:
 	int x, y;
 	//flipping the image
 	SDL_RendererFlip flip;
-
-	//temp
-	SDL_Texture* texture;
 private:
 	//source width and height of image after loaded into the component
 	int src_w, src_h;
