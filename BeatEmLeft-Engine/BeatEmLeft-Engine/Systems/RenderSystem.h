@@ -7,6 +7,10 @@ class ECS;
 class ComponentManager;
 struct SDL_Renderer;
 
+//a system should take in all the necessary components it needs to process
+//an entity is an id mapped to a set of unique components that identify what the entity's functionality is
+//each entity can only have 1 of each component type max e.g. an entity cannot be registered to 5 sprite components
+
 class RenderSystem
 {
 public:

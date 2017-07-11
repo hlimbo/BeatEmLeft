@@ -29,6 +29,26 @@ class EntitySystem;
 class ComponentManager;
 class Component;
 
+//to reduce complexity in this class... I can remove the componentManager
+//dependency for this class and declare lots of unordered_maps per component type I implement!
+//e.g.
+/*
+	unordered_map<id, Sprite*> sprites;
+	unordered_map<id, Transform*> transforms;
+	unordered_map<id, SpriteSheet*> spriteSheets;
+	unordered_map<id, GameController*> gameControllers;
+	
+	pair<id, KeyboardController*> keyboard;
+	//special case keyboard since only one person can interface with it as a controller
+	int RegisterEntityToKeyboard(int entityID,KeyboardController* keyboard);
+	KeyboardController* UnregisterEntityToKeyboard(int entityID);
+	bool DeleteKeyboard(int entityID);
+	
+	etc.
+
+	This will effectively eliminate the need of component inheritance as different sets of components
+	have different sets of requirements based on the data that define the component!
+*/
 class ECS
 {
 public:
@@ -56,7 +76,6 @@ public:
 	std::vector<std::string> GetEntityTypes();
 	std::vector<std::string> GetComponentTypes();
 
-	//subject to deprecation (not to be in use anymore).
 	std::vector<int> GetEntityIDs();
 	std::vector<int> GetEntityIDs(std::string entityType);
 
