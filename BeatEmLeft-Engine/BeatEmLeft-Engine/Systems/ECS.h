@@ -10,83 +10,77 @@
 	to the object-oriented/inheritance approach of creating a game engine.
 
 	Advantages:
-		1. Code will be more maintainable 
+		1. Code will be more maintainable.
 		(the larger this project grows, the more apparent this benefit will be a plus)
+		2. Easy to keep track of the entity and the components it has since I only need
+		to look at the entity's id.
 
 	Disadvantages(Maybe):
-		1. Hard to prototype game mechanics since you have to go through multiple systems
-		to see something change...(it takes a lot of effort to rapidly prototype using this
-		structure of code).
+		1. probably hard to rapidly design a game mechanic as it involves world modeling.
+		Note: creating a mental model of the game world naturally causes me to think in an object oriented approach
+		as opposed to a data oriented approach.
 */
 #ifndef ECS_H
 #define ECS_H
 
-#include <unordered_map>
-#include <vector>
-#include <string>
+#include "EntitySystem.h"
+#include "../Components/Sprite.h"
+#include "../Components/Transform.h"
+#include "ComponentManager.h"
 
-class EntitySystem;
-class ComponentManager;
-class Component;
-
-//to reduce complexity in this class... I can remove the componentManager
-//dependency for this class and declare lots of unordered_maps per component type I implement!
-//e.g.
-/*
-	unordered_map<id, Sprite*> sprites;
-	unordered_map<id, Transform*> transforms;
-	unordered_map<id, SpriteSheet*> spriteSheets;
-	unordered_map<id, GameController*> gameControllers;
-	
-	pair<id, KeyboardController*> keyboard;
-	//special case keyboard since only one person can interface with it as a controller
-	int RegisterEntityToKeyboard(int entityID,KeyboardController* keyboard);
-	KeyboardController* UnregisterEntityToKeyboard(int entityID);
-	bool DeleteKeyboard(int entityID);
-	
-	etc.
-
-	This will effectively eliminate the need of component inheritance as different sets of components
-	have different sets of requirements based on the data that define the component!
-*/
-class ECS
+//this is a much nicer way of looking at the managers and system 
+//at a very high level!
+struct ECS
 {
-public:
-	ECS();
-	~ECS();
+	EntitySystem entitySystem;
 
-	void Init();
-	void Update(float deltaTime);
-	
-	bool AddEntityType(std::string newType);
-	bool AddComponentType(std::string newType);
-
-	bool RegisterComponentToEntity(int id, Component* component);
-	Component* UnregisterComponentFromEntity(std::string componentType, int id);
-
-	bool CreateComponentManager(ComponentManager* componentSystem);
-	ComponentManager* GetComponentManager(std::string componentType);
-	void DeleteComponentManager(std::string ComponentType);
-
-	int CreateEntity(std::string entityType);
-	int RemoveEntity(std::string entityType, int id);
-
-	int EntityCount(std::string entityType);
-
-	std::vector<std::string> GetEntityTypes();
-	std::vector<std::string> GetComponentTypes();
-
-	std::vector<int> GetEntityIDs();
-	std::vector<int> GetEntityIDs(std::string entityType);
-
-private:
-	EntitySystem* entitySystem;
-	//key = component type,value = Component Manager that holds an internal map of key = id, value = component pairs
-	std::unordered_map<std::string, ComponentManager*> componentManagers;
-	
-	std::vector<std::string> entityTypes;
-	std::vector<std::string> componentTypes;	
+	ComponentManager<Sprite> sprites;
+	ComponentManager<Transform> transforms;
 };
 
 #endif
+
+/*
+	what this class would look like without component managers
+	struct ECS
+	{
+		EntitySystem entitySystem;
+
+		ComponentManager<Sprite> sprites;
+		ComponentManager<SpriteSheet> spriteSheets;
+		ComponentManager<Transform> transforms;
+		ComponentManager<Kinematic> kinematics;
+		ComponentManager<GameController> gameControllers;
+		
+		std::pair<int,KeyboardController*> keyboard;
+		KeyboardController* CreateKeyboard();
+		RegisterEntityToKeyboard(int id);
+		UnRegisterEntityFromKeyboard(int id);
+		FreeKeyboard(int id);
+		FreeKeyboard(Keyboard* keyboard);
+
+	}
+
+	//written probably last..
+	InputEventSystem inputEventSystem(
+		ComponentManager<GameController>* controllers,
+		std::pair<int,KeyboardController*>* keyboard);
+
+	MovementSystem movementSystem(
+		ComponentManager<GameController>* controllers,
+		std::pair<int,KeyboardController*>* keyboard,
+		ComponentManager<Transform>* transforms,
+		ComponentManager<Kinematic>* kinematics);
+
+	CollisionSystem collisionSystem(
+		ComponentManager<Transform>* transforms,
+		ComponentManager<Kinematic>* kinematics,
+		ComponentManager<BoxCollider>* boxColliders);
+	
+	RenderSystem renderSystem(
+		ComponentManager<Transform>* transforms,
+		ComponentManager<Sprite>* sprites);
+
+
+*/
 

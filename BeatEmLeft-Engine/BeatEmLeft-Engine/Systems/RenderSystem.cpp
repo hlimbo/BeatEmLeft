@@ -1,64 +1,26 @@
 #include "RenderSystem.h"
 #include "ECS.h"
-#include "ComponentManager.h"
-#include "../Components/SpriteComponent.h"
-#include "../Components/TransformComponent.h"
+#include "../Components/Sprite.h"
+#include "../Components/Transform.h"
 #include <SDL2/SDL_render.h>
-#include <vector>
-
-using namespace std;
-
-//**1. do I pass in ECS* to every system? ~ keep ecs and system separate!
-//2. do I pass in only the componentManagers and entitySystem to
-//every system I create as a class?
-
-//3. do I include some sort of generic System class where every
-//system can inherit from  in order to store all types of systems
-//into ecs?
-
-//in ecs class:
-//CreateSystem(new System("RenderSystem"));
-//DeleteSystem("RenderSystem");
-//RegisterComponentManagerToSystem("TransformManager","RenderSystem");
-//RegisterComponentManagerToSystem("SpriteManager", "RenderSystem");
-
-//unordered_map<std::string,System*> systems;
 
 RenderSystem::RenderSystem()
 {
 	ecs = nullptr;
-	transformManager = spriteManager = nullptr;
+	transformManager = nullptr;
+	spriteManager = nullptr;
 }
 
 RenderSystem::RenderSystem(ECS* ecs)
 {
 	this->ecs = ecs;
-	transformManager = ecs->GetComponentManager("Transform");
-	spriteManager = ecs->GetComponentManager("Sprite");
+	transformManager = &(ecs->transforms);
+	spriteManager = &(ecs->sprites);
 }
 
 RenderSystem::~RenderSystem()
 {
 }
-
-//call order ~ not sure yet on the order
-/*
-	PlayerControl::Update(deltaTime);
-	MovementSystem::Update(deltaTime);
-	CollisionSystem::Update(deltaTime);
-	RenderSystem::Update(deltaTime);
-	ECS::Update(deltaTime);~ updates components that don't need other components to update itself.
-	RenderSystem::Draw(render);
-*/
-
-//problem: ecs::update(); updates the controller and keyboard states within the component
-//and will also rendercopy images in each sprite component?
-//question: should the respective systems handle states changing or should 
-//the components themselves handle those changes internally?
-
-//if systems handle all the updating.. this would get rid of..
-//1. component update() function and possibly init() function, making components purely based on data
-//2. ecs::update() will not need update anymore since components do not update themselves
 
 void RenderSystem::Init(int cameraWidth,int cameraHeight)
 {
@@ -66,8 +28,8 @@ void RenderSystem::Init(int cameraWidth,int cameraHeight)
 	camera.y = 0;
 	camera.w = cameraWidth;
 	camera.h = cameraHeight;
-	//this should be the playerID
-	int playerID = ecs->GetEntityIDs("Player").at(0);
+
+	int playerID = ecs->entitySystem.GetIDs("Player").at(0);
 	SetEntityToFollow(playerID);
 }
 
@@ -85,8 +47,8 @@ void RenderSystem::SetLocation(int x, int y)
 bool RenderSystem::SetEntityToFollow(int id)
 {
 	//target entity's components
-	TransformComponent* transformComponent = transformManager->GetComponent<TransformComponent>(id);
-	SpriteComponent* spriteComponent = spriteManager->GetComponent<SpriteComponent>(id);
+	Transform* transformComponent = transformManager->GetComponent(id);
+	Sprite* spriteComponent = spriteManager->GetComponent(id);
 	if (transformComponent != nullptr && spriteComponent != nullptr)
 	{
 		SDL_Point targetPos = getFloatToIntegerCoordinates(transformComponent->position);
@@ -107,6 +69,7 @@ bool RenderSystem::SetEntityToFollow(int id)
 	}
 
 	return transformComponent != nullptr && spriteComponent != nullptr;
+
 }
 
 //I could pass SDL_Renderer* here instead and would not need to include
@@ -115,16 +78,16 @@ void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
 {
 
 	//camera tracking
-	int backgroundID = ecs->GetEntityIDs("Background").at(0);
+	int backgroundID = ecs->entitySystem.GetIDs("Background").at(0);
 
-	int playerID = ecs->GetEntityIDs("Player").at(0);
+	int playerID = ecs->entitySystem.GetIDs("Player").at(0);
 	SetEntityToFollow(playerID);
 
-	vector<int> ids = ecs->GetEntityIDs();
+	vector<int> ids = ecs->entitySystem.GetIDs();
 	for (auto it = ids.begin();it != ids.end();++it)
 	{
-		auto transform = transformManager->GetComponent<TransformComponent>(*it);
-		auto sprite = spriteManager->GetComponent<SpriteComponent>(*it);
+		Transform* transform = transformManager->GetComponent(*it);
+		Sprite* sprite = spriteManager->GetComponent(*it);
 
 		if (transform != nullptr && sprite != nullptr)
 		{
@@ -208,24 +171,7 @@ void RenderSystem::Draw(SDL_Renderer* render)
 
 SDL_Point RenderSystem::getFloatToIntegerCoordinates(Vect2 position)
 {
-	//SDL_Point p;
-	//float diffx = position.x - floorf(position.x);
-	//float diffy = position.y - floorf(position.y);
-
-	//p.x = (diffx > 0.5f) ? (int)ceilf(position.x) : (int)floorf(position.x);
-	//p.y = (diffy > 0.5f) ? (int)ceilf(position.y) : (int)floorf(position.y);
-
-	//return p;
-
 	return SDL_Point{ (int)roundf(position.x), (int)roundf(position.y) };
 }
 
-////convert floating point coordinates to screen integer coordinates
-////using the round function (rounds values up if >= 0.5 otherwise round down)
-//sprite->x = (int)roundf(transform->position.x);
-//sprite->y = (int)roundf(transform->position.y);
-//
-////benefit of this approach is that I have more control over how I want to round my floating coordinates to
-////negative of this approach: I have to write a little bit more code to do this...
-////SDL_Point newPoints = getFloatToIntegerCoordinates(transform->position);
 
