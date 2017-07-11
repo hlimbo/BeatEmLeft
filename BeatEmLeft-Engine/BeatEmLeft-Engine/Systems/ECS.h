@@ -24,9 +24,11 @@
 #define ECS_H
 
 #include "EntitySystem.h"
+#include "ComponentManager.h"
 #include "../Components/Sprite.h"
 #include "../Components/Transform.h"
-#include "ComponentManager.h"
+#include "../Components/Kinematic.h"
+#include "../Input/KeyboardController.h"
 
 //this is a much nicer way of looking at the managers and system 
 //at a very high level!
@@ -36,6 +38,52 @@ struct ECS
 
 	ComponentManager<Sprite> sprites;
 	ComponentManager<Transform> transforms;
+	ComponentManager<Kinematic> kinematics;
+
+//Keyboard Interface-------------------------------------------------------------
+	void InitKeyboard()
+	{
+		keyboard.first = -1;
+		keyboard.second = new KeyboardController();
+		keyboard.second->Init();
+	}	
+	KeyboardController* RegisterKeyboard(int entityID)
+	{
+		if (keyboard.first == -1)
+		{
+			keyboard.first = entityID;
+			return keyboard.second;
+		}
+		
+		return nullptr;//if keyboard is already registered to an entity
+	}
+
+	KeyboardController* GetKeyboard(int entityID)
+	{
+		if (entityID == keyboard.first)
+			return keyboard.second;
+		return nullptr;
+	}
+
+	void UnregisterKeyboard(int entityID)
+	{
+		if (keyboard.first != -1)
+		{
+			keyboard.first = -1;
+		}
+	}
+
+	void FreeKeyboard()
+	{
+		if (keyboard.second != nullptr)
+		{
+			delete keyboard.second;
+			keyboard.second = nullptr;
+		}
+	}
+
+private:
+	std::pair<int, KeyboardController*> keyboard;
 };
 
 #endif
