@@ -4,6 +4,8 @@
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 480
 
+#include <SDL2/SDL_stdinc.h>
+
 struct SDL_Window;
 struct SDL_Renderer;
 
@@ -13,7 +15,7 @@ public:
 	Core();
 	~Core();
 public:
-	int getTargetFPS();
+	Uint64 getTargetFPS();
 	float getTargetDeltaTime();
 	SDL_Renderer* getRenderer();
 	SDL_Window* getWindow();
@@ -26,7 +28,7 @@ private:
 private:
 	SDL_Window* mainWindow;
 	SDL_Renderer* mainRenderer;
-	int targetFPS;
+	Uint64 targetFPS;
 	float targetDeltaTime;//measured in ms
 };
 
