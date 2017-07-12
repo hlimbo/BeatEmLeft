@@ -74,7 +74,7 @@ bool RenderSystem::SetEntityToFollow(int id)
 
 //I could pass SDL_Renderer* here instead and would not need to include
 //a SDL_Renderer* pointer as a data member...
-void RenderSystem::Update(float deltaTime, SDL_Renderer* render)
+void RenderSystem::Update(SDL_Renderer* render)
 {
 
 	//camera tracking
@@ -167,6 +167,7 @@ void RenderSystem::Draw(SDL_Renderer* render)
 	SDL_RenderClear(render);
 }
 
+//probably pull out as a utility function
 SDL_Point RenderSystem::getFloatToIntegerCoordinates(Vect2 position)
 {
 	return SDL_Point{ (int)roundf(position.x), (int)roundf(position.y) };

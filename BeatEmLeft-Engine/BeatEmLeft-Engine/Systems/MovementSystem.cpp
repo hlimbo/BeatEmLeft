@@ -76,7 +76,7 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 			//or pressed this is because I want precise button presses for the game
 			//will make it into a fighting esque like game.
 
-			float ds = 0.01f;//how much should velocity change per update
+			float ds = 10.5f;//how much should velocity change per update
 			if (keyboard->KeyPressed("left"))
 			{
 				kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);

@@ -24,7 +24,7 @@ public:
 	//set world coordinates of the camera
 	void SetLocation(int x, int y);
 	bool SetEntityToFollow(int id);
-	void Update(float deltaTime, SDL_Renderer* render);
+	void Update(SDL_Renderer* render);
 	void Draw(SDL_Renderer* render);
 
 private:
@@ -33,7 +33,7 @@ private:
 	//obtained from ecs
 	ComponentManager<Transform>* transformManager;
 	ComponentManager<Sprite>* spriteManager;
-	SDL_Rect camera;
+	SDL_Rect camera;//may need to pull out to use in other systems..
 
 	//converts floating point coordinates to integer point coordinates
 	SDL_Point getFloatToIntegerCoordinates(Vect2 position);
