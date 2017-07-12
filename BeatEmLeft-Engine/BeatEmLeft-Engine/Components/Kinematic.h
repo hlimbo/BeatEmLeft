@@ -12,15 +12,15 @@ struct Kinematic
 	Kinematic() { type = typeid(Kinematic).name(); }
 	~Kinematic() {}
 
-	Vect2 velocity; // pixels / second with direction applied
-	Vect2 acceleration; // pixels / second / second
+	Vect2 velocity; // pixels / millisecond with direction applied
+	Vect2 acceleration; // pixels / millisecond / millisecond
 	Vect2 direction; //serves as a 2d unit vector (see unit circle to visualize direction)	
 	
 	//minSpeed >= 0 and maxSpeed >= 0
-	float minSpeed; // pixels / second
-	float maxSpeed; // pixels / second
-	float currentSpeed; // pixels / second
-	float gravity;// pixels / second / second
+	float minSpeed; // pixels / millisecond
+	float maxSpeed; // pixels / millisecond
+	float currentSpeed; // pixels / millisecond
+	float gravity;// pixels / millisecond / millisecond
 
 	//float mass?
 
