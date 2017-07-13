@@ -22,6 +22,12 @@
 
 using namespace std;
 
+//use this function to check if a coordinate is between minCoordinate and maxCoordinate
+bool isOnLineSegment(float coordinate, float minCoordinate, float maxCoordinate)
+{
+	return coordinate > minCoordinate && coordinate < maxCoordinate;
+}
+
 int main(int argc, char* argv[])
 {
 	//Inits all SDL subsystems, creates window and renderer
@@ -216,6 +222,7 @@ int main(int argc, char* argv[])
 		Vect2 oldP = newP - playerKinematic->velocity;
 		Vect2 tilePos(tileTransform->position);
 
+		//top and left sides
 		Vect2 deltaP = newP - oldP;
 
 		float timeX = 0.0f;
@@ -237,57 +244,167 @@ int main(int argc, char* argv[])
 
 		*/
 
-		//this ensures it only does the check  if playerPoint is between a bounded line
-		if (oldP.y >= tilePos.y && oldP.y <= tilePos.y + tileBox->height)
+		//check left side of tile
+		if (isOnLineSegment(oldP.y, tilePos.y, tilePos.y + tileBox->height)
+			|| isOnLineSegment(oldP.y + playerBox->height,tilePos.y,tilePos.y + tileBox->height))
 		{
-			//calculates the time it will take in milliseconds 
-			//when player will touch left wall of box
 			if (deltaP.x != 0.0f)
 			{
-				timeX = (tilePos.x - oldP.x) / deltaP.x;
-				printf("TimeX: %f\n", timeX);
-
-				//if player is not moving backwards and the amount of time it will
-				//take when the player touches the wall is within the timeStep (e.g. within this update frame)"
-				//notify the player that a collision can happen.
-				if (timeX >0 && timeX < observedDeltaTime)
+				if (playerKinematic->direction.x > 0.0f)
 				{
-				//	puts("collision can happen within this frame");
-
-					//print out the point where the collision will happen on the wall
-					Vect2 collisionPoint;
-					collisionPoint = oldP + (deltaP * timeX);
-					printf("Collision at wall: (%f, %f)\n",collisionPoint.x ,collisionPoint.y);
-					printf("NewP: (%f, %f)\n", newP.x, newP.y);
-
-					if (newP.x + playerBox->width > collisionPoint.x)
+					//left side tile
+					timeX = (tilePos.x - (oldP.x + playerBox->width)) / deltaP.x;
+					printf("TimeX: %f ms\n", timeX);
+					if (timeX >= 0 && timeX <= observedDeltaTime)
 					{
-						float penX = newP.x - collisionPoint.x;
-						printf("collision will happen this frame: penX %f\n",penX);
-						
-						//correct the collision here//jitters weirdly here when moving from right to left
-						newP.x -= penX + playerBox->width;
-						playerTransform->position.x = newP.x;
+						//Note: deltaP.x * timeX is how much the player would need to move to touch the tile.
+						float contactX = (oldP.x + playerBox->width) + (deltaP.x * timeX);
+						//right side of player colliding with left side of tile
+						if (newP.x + playerBox->width > contactX)
+						{
+							float penX = newP.x - contactX;
+							newP.x -= penX + playerBox->width;
+							playerTransform->position.x = newP.x;
+						}
 					}
-					else
+				}
+
+				if (playerKinematic->direction.x < 0.0f)
+				{
+					//right side tile
+					float timeX2 = (oldP.x - (tilePos.x + tileBox->width)) / fabsf(deltaP.x);
+					printf("TimeX2: %f\n", timeX2);
+					if (timeX2 >= 0 && timeX2 <= observedDeltaTime)
 					{
-						puts("collision will not happen this frame");
+						float contactX2 = oldP.x + (deltaP.x * timeX2);
+						float rightTileSide = tileTransform->position.x + tileBox->width;
+						printf("contactX2: %f\n", contactX2);
+						printf("rightTileSide: %f\n", rightTileSide);
+						if (newP.x < contactX2)
+						{
+							float penX = contactX2 - newP.x;
+							newP.x += penX;
+							playerTransform->position.x = newP.x;
+						}
+					}
+				}
+				
+			}
+		}
+
+		if (isOnLineSegment(oldP.x, tilePos.x, tilePos.x + tileBox->width)
+			|| isOnLineSegment(oldP.x + playerBox->width, tilePos.x, tilePos.x + tileBox->width))
+		{
+			if (deltaP.y != 0.0f)
+			{
+				//check top side of tile
+				if (playerKinematic->direction.y > 0.0f)
+				{
+					timeY = (tilePos.y - (oldP.y + playerBox->height)) / deltaP.y;
+					printf("TimeY: %f ms\n", timeY);
+					if (timeY >= 0 && timeY <= observedDeltaTime)
+					{
+						//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
+						float contactY = (oldP.y + playerBox->height) + (deltaP.y * timeY);
+						//bottom side of player is touching the top side of tile
+						if (newP.y + playerBox->height > contactY)
+						{
+							float penY = newP.y - contactY;
+							newP.y -= penY + playerBox->height;
+							playerTransform->position.y = newP.y;
+						}
+					}
+				}
+
+				//check bottom side of tile
+				if (playerKinematic->direction.y < 0.0f)
+				{
+					float timeY2 = (oldP.y - (tilePos.y + tileBox->height)) / fabsf(deltaP.y);
+					printf("TimeY2: %f\n", timeY2);
+					if (timeY2 >= 0 && timeY2 <= observedDeltaTime)
+					{
+						float contactY2 = oldP.y + (deltaP.y * timeY2);
+						float bottomTileSide = tilePos.y + tileBox->height;
+						printf("contactY2: %f\n", contactY2);
+						printf("bottomTileSide: %f\n", bottomTileSide);
+						
+						if (newP.y < contactY2)
+						{
+							float penY2 = contactY2 - newP.y;
+							newP.y += penY2;
+							playerTransform->position.y = newP.y;
+						}
 					}
 				}
 			}
 		}
 
-		//this ensures it only does the check if playerPoint is between a bounded line
-		if (oldP.x >= tilePos.x && oldP.x <= tilePos.x + tileBox->width)
-		{
-			//calculates the time it will take in milliseconds
-			//when player will touch the top wall of box
-			if (deltaP.y != 0.0f)
-			{
-				timeY = (tilePos.y - oldP.y) / deltaP.y;
-				printf("TimeY: %f\n", timeY);
-			}
-		}
+		////this ensures it only does the check if playerPoint is between a bounded line
+		//if (oldP.y >= tilePos.y && oldP.y <= tilePos.y + tileBox->height)
+		//{
+		//	//calculates the time it will take in milliseconds 
+		//	//when player will touch left wall of box
+		//	if (deltaP.x != 0.0f)
+		//	{
+		//		timeX = (tilePos.x - oldP.x) / deltaP.x;
+		//		printf("TimeX: %f\n", timeX);
+
+		//		//if player is not moving backwards and the amount of time it will
+		//		//take when the player touches the wall is within the timeStep (e.g. within this update frame)"
+		//		//notify the player that a collision can happen.
+		//		if (timeX >= 0 && timeX <= observedDeltaTime)
+		//		{
+		//		//	puts("collision can happen within this frame");
+
+		//			//print out the point where the collision will happen on the wall
+		//			Vect2 collisionPoint;
+		//			collisionPoint = oldP + (deltaP * timeX);
+		//			printf("Collision at wall left: (%f, %f)\n",collisionPoint.x ,collisionPoint.y);
+		//			printf("NewP: (%f, %f)\n", newP.x, newP.y);
+
+		//			if (newP.x + playerBox->width > collisionPoint.x)
+		//			{
+		//				float penX = newP.x - collisionPoint.x;
+		//				printf("collision will happen this frame: penX %f\n",penX);
+		//				
+		//				//correct the collision here//jitters weirdly here when moving from right to left
+		//				newP.x -= penX + playerBox->width;
+		//				playerTransform->position.x = newP.x;
+		//			}
+		//			else
+		//			{
+		//				puts("collision will not happen this frame");
+		//			}
+		//		}
+		//	}
+		//}
+
+		////this ensures it only does the check if playerPoint is between a bounded line
+		//if (oldP.x >= tilePos.x && oldP.x <= tilePos.x + tileBox->width)
+		//{
+		//	//calculates the time it will take in milliseconds
+		//	//when player will touch the top wall of box
+		//	if (deltaP.y != 0.0f)
+		//	{
+		//		timeY = (tilePos.y - oldP.y) / deltaP.y;
+		//		printf("TimeY: %f\n", timeY);
+
+		//		if (timeY >= 0 && timeY <= observedDeltaTime)
+		//		{
+		//			Vect2 collisionPoint;
+		//			collisionPoint = oldP + (deltaP * timeY);
+		//			printf("Collision at wall top: (%f, %f)\n", collisionPoint.x, collisionPoint.y);
+		//			printf("NewP: (%f, %f)\n", newP.x, newP.y);
+		//			if (newP.y + playerBox->height > collisionPoint.y)
+		//			{
+		//				float penY = newP.y - collisionPoint.y;
+		//				//correct collision
+		//				newP.y -= penY + playerBox->height;
+		//				playerTransform->position.y = newP.y;
+		//			}
+		//		}
+		//	}
+		//}
 
 		//drawing
 		renderSys.Update(render);
