@@ -66,6 +66,7 @@ public:
 
 	//returns the component to properly delete to prevent resource leak
 	//throws an exception if id is invalid
+	//when a component is removed... programmer is responsible for deleting it
 	component* RemoveComponent(int id)
 	{
 		component* component = components[id];
