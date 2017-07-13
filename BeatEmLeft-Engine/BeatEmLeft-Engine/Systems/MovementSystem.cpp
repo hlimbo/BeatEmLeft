@@ -183,6 +183,12 @@ void MovementSystem::UpdatePositions(float deltaTime)
 		{
 			//temp code ~ if acceleration is zero..this means that velocity will be constant
 			kinematic->velocity = kinematic->direction * kinematic->currentSpeed* deltaTime;
+
+			//TODO(HARVEY): need to check if new position will result in a collision first
+			//if it does, set the proper component of velocity to zero to stop movement.
+			//e.g. check for the corner case where the player is already next to a solid block..
+			//if the player tries to move in the direction where the solid block is, set its velocity = 0
+
 			transform->position = transform->position + kinematic->velocity;
 		}
 	}
