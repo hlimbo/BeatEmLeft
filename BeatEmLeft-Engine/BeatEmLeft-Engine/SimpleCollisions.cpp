@@ -168,12 +168,12 @@ int main(int argc, char* argv[])
 		}*/
 
 		//solve if a line is inside of a box
-		Vect2 p(playerTransform->position);
-		float pWidth = playerBox->width;
-		float pHeight = playerBox->height;
-		Vect2 t(tileTransform->position);
-		float tWidth = tileBox->width;
-		float tHeight = tileBox->height;
+		//Vect2 p(playerTransform->position);
+		//float pWidth = playerBox->width;
+		//float pHeight = playerBox->height;
+		//Vect2 t(tileTransform->position);
+		//float tWidth = tileBox->width;
+		//float tHeight = tileBox->height;
 
 		//check if 2 boxes are intersecting
 	/*	if (fabsf(p.x - t.x) * 2 < pWidth + tWidth && fabsf(p.y - t.y) * 2 < pHeight + tHeight)
@@ -208,6 +208,71 @@ int main(int argc, char* argv[])
 		//		puts("lower left");
 		//	}
 		//}
+
+		//using the time equations to determine when a point touches a wall
+		//https://hero.handmade.network/episode/code/day047#1296
+
+		Vect2 newP(playerTransform->position);
+		Vect2 oldP = newP - playerKinematic->velocity;
+		Vect2 tilePos(tileTransform->position);
+
+		Vect2 deltaP = newP - oldP;
+
+		float timeX = 0.0f;
+		float timeY = 0.0f;
+
+		//check the time when player upper left point touches left wall of tile
+		//this frame. (time ranges from 0 to 16.66 ms when at 60 fps)
+		//derived from the fact that:
+		/*
+			Goal is to solve for t :
+			p(t) = p0 + t * d; //where t = time, d = newPlayerPos - oldPlayerPos
+			//and p0 = oldPlayerPos and p(t) = newPlayerPos
+			wallPos = p0 + t *d;
+
+			wallPos.x = p0.x + t * d.x;
+			wallPos.y = p0.y + t * d.y;
+
+			//assuming that the walls have either undefined slope or 0 slope
+
+		*/
+
+		//this ensures it only does the check  if playerPoint is between a bounded line
+		if (oldP.y >= tilePos.y && oldP.y <= tilePos.y + tileBox->height)
+		{
+			//calculates the time it will take in milliseconds 
+			//when player will touch left wall of box
+			if (deltaP.x != 0.0f)
+			{
+				timeX = (tilePos.x - oldP.x) / deltaP.x;
+				printf("TimeX: %f\n", timeX);
+
+				//if player is not moving backwards and the amount of time it will
+				//take when the player touches the wall is within the timeStep (e.g. within this update frame)"
+				//notify the player that a collision can happen.
+				if (timeX >0 && timeX < observedDeltaTime)
+				{
+				//	puts("collision can happen within this frame");
+
+					//print out the point where the collision will happen on the wall
+					Vect2 collisionPoint;
+					collisionPoint = oldP + (deltaP * timeX);
+					printf("Collision at wall: (%f, %f)\n",collisionPoint.x ,collisionPoint.y);
+				}
+			}
+		}
+
+		//this ensures it only does the check if playerPoint is between a bounded line
+		if (oldP.x >= tilePos.x && oldP.x <= tilePos.x + tileBox->width)
+		{
+			//calculates the time it will take in milliseconds
+			//when player will touch the top wall of box
+			if (deltaP.y != 0.0f)
+			{
+				timeY = (tilePos.y - oldP.y) / deltaP.y;
+				printf("TimeY: %f\n", timeY);
+			}
+		}
 
 		//drawing
 		renderSys.Update(render);
