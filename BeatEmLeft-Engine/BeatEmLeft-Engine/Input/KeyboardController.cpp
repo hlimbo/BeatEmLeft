@@ -36,6 +36,11 @@ bool KeyboardController::KeyReleased(std::string keyName)
 	return keys.at(keyName) == KeyStates::RELEASED;
 }
 
+InputEventType KeyboardController::GetInputType()
+{
+	return inputType;
+}
+
 
 //the subtle difference between gamepad controller events
 //and key events is that key events get checked every update
@@ -43,12 +48,15 @@ bool KeyboardController::KeyReleased(std::string keyName)
 //process that input as a key down again...
 void KeyboardController::HandleInput(const SDL_Event& event)
 {
+	inputType = InputEventType::UNDEFINED;
+
 	if (event.type == SDL_KEYDOWN)
 	{
 		SDL_Keycode keycode = event.key.keysym.sym;
 		if (event.key.repeat == 0) // key pressed
 		{
-			puts("key pressed!");
+			inputType = InputEventType::KEYDOWN;
+			//puts("key pressed!");
 			startPressedTime = event.key.timestamp;
 			switch (keycode)
 			{
@@ -82,7 +90,8 @@ void KeyboardController::HandleInput(const SDL_Event& event)
 		}
 		else //key held
 		{
-			puts("key held!");
+			inputType = InputEventType::KEYREPEAT;
+			//puts("key held!");
 			int inputLag = event.key.timestamp - startPressedTime;
 			//printf("key pressed to held lag: %d\n", inputLag);//there is about a half a second input lag when transitioning from pressed to held...
 			switch (keycode)
@@ -92,7 +101,6 @@ void KeyboardController::HandleInput(const SDL_Event& event)
 				keys["up"] = KeyStates::HELD;
 				break;
 			case SDLK_DOWN:
-				printf("down held\n");
 				keys["down"] = KeyStates::HELD;
 				break;
 			case SDLK_LEFT:
@@ -120,7 +128,8 @@ void KeyboardController::HandleInput(const SDL_Event& event)
 	}
 	else if (event.type == SDL_KEYUP)
 	{
-		puts("key released");
+		inputType = InputEventType::KEYUP;
+		//puts("key released");
 		SDL_Keycode keycode = event.key.keysym.sym;
 
 		switch (keycode)

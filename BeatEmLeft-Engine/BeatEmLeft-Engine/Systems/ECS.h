@@ -28,6 +28,7 @@
 #include "../Components/Sprite.h"
 #include "../Components/Transform.h"
 #include "../Components/Kinematic.h"
+#include "../Components/BoxCollider.h"
 #include "../Input/KeyboardController.h"
 
 //this is a much nicer way of looking at the managers and system 
@@ -39,6 +40,7 @@ struct ECS
 	ComponentManager<Sprite> sprites;
 	ComponentManager<Transform> transforms;
 	ComponentManager<Kinematic> kinematics;
+	ComponentManager<BoxCollider> boxColliders;
 
 //Keyboard Interface-------------------------------------------------------------
 	void InitKeyboard()
@@ -77,6 +79,7 @@ struct ECS
 	{
 		if (keyboard.second != nullptr)
 		{
+			keyboard.first = -1;
 			delete keyboard.second;
 			keyboard.second = nullptr;
 		}
