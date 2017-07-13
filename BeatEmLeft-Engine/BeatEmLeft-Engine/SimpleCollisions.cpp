@@ -258,6 +258,21 @@ int main(int argc, char* argv[])
 					Vect2 collisionPoint;
 					collisionPoint = oldP + (deltaP * timeX);
 					printf("Collision at wall: (%f, %f)\n",collisionPoint.x ,collisionPoint.y);
+					printf("NewP: (%f, %f)\n", newP.x, newP.y);
+
+					if (newP.x + playerBox->width > collisionPoint.x)
+					{
+						float penX = newP.x - collisionPoint.x;
+						printf("collision will happen this frame: penX %f\n",penX);
+						
+						//correct the collision here//jitters weirdly here when moving from right to left
+						newP.x -= penX + playerBox->width;
+						playerTransform->position.x = newP.x;
+					}
+					else
+					{
+						puts("collision will not happen this frame");
+					}
 				}
 			}
 		}
