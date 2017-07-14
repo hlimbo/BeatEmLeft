@@ -140,8 +140,6 @@ void RenderSystem::Update(SDL_Renderer* render)
 				}
 				else
 				{
-
-					//todo: render images that are partially offscreen.
 					//only render tiles where there right corners can be caught within camera bounds.
 					SDL_Point rightCorner;//bottom right corner
 					rightCorner.x = screenCoords.x + screenCoords.w;
