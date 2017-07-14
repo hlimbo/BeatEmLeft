@@ -61,10 +61,10 @@ int main(int argc, char* argv[])
 	//tile entity creation
 	int tileID = ecs.entitySystem.CreateEntity("Tile");
 	auto tileTransform = new Transform();
-	tileTransform->position = Vect2(250.0f, 314.8f);
+	tileTransform->position = Vect2(545.5f,322.4f);
 	auto tileSprite = new Sprite(store.Get("block.png"));
-	tileSprite->width = 50;
-	tileSprite->height = 50;
+	tileSprite->width = 100;
+	tileSprite->height = 100;
 	auto tileBox = new BoxCollider();
 	tileBox->position = tileTransform->position;
 	tileBox->width = (float)tileSprite->width;
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 	//player entity creation
 	int playerID = ecs.entitySystem.CreateEntity("Player");
 	auto playerTransform = new Transform();
-	playerTransform->position = Vect2(0.0f, 0.0f);
+	playerTransform->position = Vect2(20.0f, 35.3f);
 	auto playerSprite = new Sprite(store.Get("blue.png"));
 	playerSprite->width = 40;
 	playerSprite->height = 40;
@@ -85,6 +85,7 @@ int main(int argc, char* argv[])
 	playerKinematic->maxSpeed = 552.3f;
 	playerKinematic->currentSpeed = playerKinematic->minSpeed;
 	playerKinematic->direction = Vect2(0.0f, 0.0f);//direction depends on what key is pressed
+	playerKinematic->accelFactor = 1.7f;
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
 	playerBox->width = (float)playerSprite->width;
@@ -102,6 +103,11 @@ int main(int argc, char* argv[])
 	renderSys.Init(SCREEN_WIDTH, SCREEN_HEIGHT);
 	MovementSystem movementSys(&ecs);
 	movementSys.Init();
+
+
+	//debug for collisions
+	int yCollisions = 0;
+	int yCollisions2 = 0;
 
 	//---------------- Game Loop ------------------//
 
@@ -131,90 +137,7 @@ int main(int argc, char* argv[])
 		movementSys.UpdateKinematics(deltaTime);
 		movementSys.UpdatePositions(deltaTime);
 
-
-		//should we do pixel perfect collisions or collisions based on what appears in the game world?
-
-		//1. pixel perfect collisions
-		/*
-		a. convert game world coordinates to pixel coordinates
-		b. check those pixel coordinates for collision
-		c. apply collision logic to pixel coordinates
-		d. convert pixel coordinates back to game world coordinates
-		*/
-		//2. game world collisions ** (prefer to do this way)
-		/*
-		a. check floating point coordinates for collisions
-		b. apply collision logic to those game world coordinates
-		c. convert to pixel coordinates only when drawing to screen
-		*/
-
-		//reason why we use floating point coordinates as opposed to pixel coordinates (integers)
-		//is to gain more numbers to use!
-		//1. using floats as units of movement per update gives the illusion of an object moving
-		//at 0.1 pixels per second when in reality pixels can only move exactly 1 pixel per frame!
-		//(e.g. cannot move 1 pixel half a pixel away since pixels are modeled as discrete data)
-		//2. using floats appears as if a sprite is moving more smoothly than if we were to use
-		//ints to calculate motion.
-		//3. if you wanted to model curve like motion..it would be really hard to do so using only ints
-
 		//collision
-		
-		//solve if point is outside the box
-	/*	Vect2 playerPos(playerTransform->position);
-		Vect2 tilePos(tileTransform->position);
-
-		bool IsPointOutsideBox = playerPos.x < tilePos.x || playerPos.x > tilePos.x + tileBox->width
-			|| playerPos.y < tilePos.y || playerPos.y > tilePos.y + tileBox->height;
-
-		bool IsPointInsideBox = !IsPointOutsideBox;
-
-		if (IsPointInsideBox)
-		{
-			puts("inside box");
-		}*/
-
-		//solve if a line is inside of a box
-		//Vect2 p(playerTransform->position);
-		//float pWidth = playerBox->width;
-		//float pHeight = playerBox->height;
-		//Vect2 t(tileTransform->position);
-		//float tWidth = tileBox->width;
-		//float tHeight = tileBox->height;
-
-		//check if 2 boxes are intersecting
-	/*	if (fabsf(p.x - t.x) * 2 < pWidth + tWidth && fabsf(p.y - t.y) * 2 < pHeight + tHeight)
-		{
-			puts("boxes intersect");
-		}*/
-
-		////check if player right line is inside box
-		//if (p.x + pWidth > t.x && p.x + pWidth < t.x + tWidth)
-		//{
-		//	if (p.y > t.y && p.y < t.y + tHeight)
-		//	{
-		//		puts("upper right");
-		//	}
-
-		//	if (p.y + pHeight > t.y && p.y + pHeight < t.y + tHeight)
-		//	{
-		//		puts("lower right");
-		//	}
-		//}
-
-		////check if player left line is inside box
-		//if (p.x > t.x && p.x < t.x + tWidth)
-		//{
-		//	if (p.y > t.y && p.y < t.y + tHeight)
-		//	{
-		//		puts("upper left");
-		//	}
-
-		//	if (p.y + pHeight > t.y && p.y + pHeight < t.y + tHeight)
-		//	{
-		//		puts("lower left");
-		//	}
-		//}
-
 		//using the time equations to determine when a point touches a wall
 		//https://hero.handmade.network/episode/code/day047#1296
 
@@ -244,7 +167,6 @@ int main(int argc, char* argv[])
 
 		*/
 
-		//check left side of tile
 		if (isOnLineSegment(oldP.y, tilePos.y, tilePos.y + tileBox->height)
 			|| isOnLineSegment(oldP.y + playerBox->height,tilePos.y,tilePos.y + tileBox->height))
 		{
@@ -254,8 +176,10 @@ int main(int argc, char* argv[])
 				{
 					//left side tile
 					timeX = (tilePos.x - (oldP.x + playerBox->width)) / deltaP.x;
-					printf("TimeX: %f ms\n", timeX);
-					if (timeX >= 0 && timeX <= observedDeltaTime)
+					//printf("TimeX: %f ms\n", timeX);
+
+					//Note last check is for numerical error
+					if ((timeX >= 0 && timeX <= observedDeltaTime) || fabsf(timeX) < 0.001f)
 					{
 						//Note: deltaP.x * timeX is how much the player would need to move to touch the tile.
 						float contactX = (oldP.x + playerBox->width) + (deltaP.x * timeX);
@@ -267,25 +191,37 @@ int main(int argc, char* argv[])
 							playerTransform->position.x = newP.x;
 						}
 					}
-				}
 
-				if (playerKinematic->direction.x < 0.0f)
+					if (fabsf(timeX) < 0.001f)
+					{
+						if(timeX != 0.0f)
+							printf("timeX: %f\n", timeX);
+					}
+				}
+				else if (playerKinematic->direction.x < 0.0f)
 				{
 					//right side tile
 					float timeX2 = (oldP.x - (tilePos.x + tileBox->width)) / fabsf(deltaP.x);
-					printf("TimeX2: %f\n", timeX2);
-					if (timeX2 >= 0 && timeX2 <= observedDeltaTime)
+					//printf("TimeX2: %f\n", timeX2);
+					if ((timeX2 >= 0 && timeX2 <= observedDeltaTime) || fabsf(timeX2) < 0.001f)
 					{
 						float contactX2 = oldP.x + (deltaP.x * timeX2);
 						float rightTileSide = tileTransform->position.x + tileBox->width;
-						printf("contactX2: %f\n", contactX2);
-						printf("rightTileSide: %f\n", rightTileSide);
+						//printf("contactX2: %f\n", contactX2);
+						//printf("rightTileSide: %f\n", rightTileSide);
 						if (newP.x < contactX2)
 						{
 							float penX = contactX2 - newP.x;
 							newP.x += penX;
 							playerTransform->position.x = newP.x;
 						}
+					}
+
+					//debug to catch round off error
+					if (fabsf(timeX2) < 0.001f)
+					{
+						if(timeX2 != 0.0f)
+							printf("timeX2: %f\n", timeX2);
 					}
 				}
 				
@@ -301,110 +237,94 @@ int main(int argc, char* argv[])
 				if (playerKinematic->direction.y > 0.0f)
 				{
 					timeY = (tilePos.y - (oldP.y + playerBox->height)) / deltaP.y;
-					printf("TimeY: %f ms\n", timeY);
-					if (timeY >= 0 && timeY <= observedDeltaTime)
+					//printf("TimeY: %f, deltaTime: %f\n", timeY,observedDeltaTime);
+					
+					//there is some numerical error with the time not being = to 0.0f
+					if ((timeY >= 0 && timeY <= observedDeltaTime) || fabsf(timeY) < 0.001f)
 					{
 						//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
 						float contactY = (oldP.y + playerBox->height) + (deltaP.y * timeY);
-						//bottom side of player is touching the top side of tile
+						float topSideTile = tilePos.y;
+
+						//printf("contactY: %f\n", contactY);
+						//printf("topSideTile: %f\n", topSideTile);
+
 						if (newP.y + playerBox->height > contactY)
 						{
-							float penY = newP.y - contactY;
-							newP.y -= penY + playerBox->height;
+							//puts("not enough");
+							float penY = (newP.y + playerBox->height) - contactY;
+
+							//printf("penY1: %f\n", penY);
+							//printf("velocity: (%f, %f)\n", playerKinematic->velocity.x, playerKinematic->velocity.y);
+							newP.y -= penY;
+
+							if (newP.y + playerBox->height > contactY)
+							{
+								printf("player bot: %f | tile top: %f\n", newP.y + playerBox->height, contactY);
+							}
+
 							playerTransform->position.y = newP.y;
+
 						}
+
 					}
+
+					//DEBUG
+					if (fabsf(timeY) < 0.001f)
+					{
+						if (timeY != 0.0f)
+						{
+							printf("Number of consectutive y collisions: %d\n", yCollisions);
+							yCollisions = 0;
+							printf("timeY: %f\n", timeY);
+						}
+						else
+							yCollisions++;
+					}
+
 				}
 
 				//check bottom side of tile
-				if (playerKinematic->direction.y < 0.0f)
+				else if (playerKinematic->direction.y < 0.0f)
 				{
 					float timeY2 = (oldP.y - (tilePos.y + tileBox->height)) / fabsf(deltaP.y);
-					printf("TimeY2: %f\n", timeY2);
-					if (timeY2 >= 0 && timeY2 <= observedDeltaTime)
+					//printf("TimeY2: %f\n", timeY2);
+					//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+					if ((timeY2 >= 0 && timeY2 <= observedDeltaTime) || fabsf(timeY2) < 0.001f)
 					{
 						float contactY2 = oldP.y + (deltaP.y * timeY2);
 						float bottomTileSide = tilePos.y + tileBox->height;
-						printf("contactY2: %f\n", contactY2);
-						printf("bottomTileSide: %f\n", bottomTileSide);
-						
+						//printf("contactY2: %f\n", contactY2);
+						//printf("bottomTileSide: %f\n", bottomTileSide);
+					
 						if (newP.y < contactY2)
 						{
 							float penY2 = contactY2 - newP.y;
+							//printf("penY2: %f\n", penY2);
+							//printf("velocity: (%f, %f)\n", playerKinematic->velocity.x, playerKinematic->velocity.y);
+
 							newP.y += penY2;
 							playerTransform->position.y = newP.y;
+						}
+					}
+
+					//Debug
+					if (fabsf(timeY2) < 0.001f)
+					{
+						if (timeY2 != 0.0f)
+						{
+							printf("Number of consecutive y2 collisions: %d\n", yCollisions2);
+							yCollisions2 = 0;
+							printf("timeY2: %f\n", timeY2);
+						}
+						else
+						{
+							yCollisions2++;
 						}
 					}
 				}
 			}
 		}
-
-		////this ensures it only does the check if playerPoint is between a bounded line
-		//if (oldP.y >= tilePos.y && oldP.y <= tilePos.y + tileBox->height)
-		//{
-		//	//calculates the time it will take in milliseconds 
-		//	//when player will touch left wall of box
-		//	if (deltaP.x != 0.0f)
-		//	{
-		//		timeX = (tilePos.x - oldP.x) / deltaP.x;
-		//		printf("TimeX: %f\n", timeX);
-
-		//		//if player is not moving backwards and the amount of time it will
-		//		//take when the player touches the wall is within the timeStep (e.g. within this update frame)"
-		//		//notify the player that a collision can happen.
-		//		if (timeX >= 0 && timeX <= observedDeltaTime)
-		//		{
-		//		//	puts("collision can happen within this frame");
-
-		//			//print out the point where the collision will happen on the wall
-		//			Vect2 collisionPoint;
-		//			collisionPoint = oldP + (deltaP * timeX);
-		//			printf("Collision at wall left: (%f, %f)\n",collisionPoint.x ,collisionPoint.y);
-		//			printf("NewP: (%f, %f)\n", newP.x, newP.y);
-
-		//			if (newP.x + playerBox->width > collisionPoint.x)
-		//			{
-		//				float penX = newP.x - collisionPoint.x;
-		//				printf("collision will happen this frame: penX %f\n",penX);
-		//				
-		//				//correct the collision here//jitters weirdly here when moving from right to left
-		//				newP.x -= penX + playerBox->width;
-		//				playerTransform->position.x = newP.x;
-		//			}
-		//			else
-		//			{
-		//				puts("collision will not happen this frame");
-		//			}
-		//		}
-		//	}
-		//}
-
-		////this ensures it only does the check if playerPoint is between a bounded line
-		//if (oldP.x >= tilePos.x && oldP.x <= tilePos.x + tileBox->width)
-		//{
-		//	//calculates the time it will take in milliseconds
-		//	//when player will touch the top wall of box
-		//	if (deltaP.y != 0.0f)
-		//	{
-		//		timeY = (tilePos.y - oldP.y) / deltaP.y;
-		//		printf("TimeY: %f\n", timeY);
-
-		//		if (timeY >= 0 && timeY <= observedDeltaTime)
-		//		{
-		//			Vect2 collisionPoint;
-		//			collisionPoint = oldP + (deltaP * timeY);
-		//			printf("Collision at wall top: (%f, %f)\n", collisionPoint.x, collisionPoint.y);
-		//			printf("NewP: (%f, %f)\n", newP.x, newP.y);
-		//			if (newP.y + playerBox->height > collisionPoint.y)
-		//			{
-		//				float penY = newP.y - collisionPoint.y;
-		//				//correct collision
-		//				newP.y -= penY + playerBox->height;
-		//				playerTransform->position.y = newP.y;
-		//			}
-		//		}
-		//	}
-		//}
 
 		//drawing
 		renderSys.Update(render);
