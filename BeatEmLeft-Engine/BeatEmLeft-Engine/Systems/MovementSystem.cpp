@@ -12,7 +12,16 @@ using namespace std;
 //custom functionality of how stuff should accelerate
 float accelerate_in(float currentSpeed, float maxSpeed, float deltaTime, float deltaSpeed)
 {
+	//note: currentSpeed * deltaSpeed * deltaTime is the acceleration
+	//acceleration.x = currentSpeed * deltaSpeed * deltaTime * direction.x;
+	//acceleration.y = currentSpeed * deltaSpeed * deltaTime * direction.y;
 	return currentSpeed > maxSpeed ? maxSpeed : currentSpeed + (currentSpeed * deltaSpeed * deltaTime);
+}
+
+//temp function
+Vect2 GetAcceleration(const Kinematic* kinematic,float deltaTime)
+{
+	return Vect2(kinematic->direction.x, kinematic->direction.y) * (kinematic->currentSpeed * kinematic->accelFactor * deltaTime);
 }
 
 MovementSystem::MovementSystem(ECS* ecs)
@@ -85,7 +94,8 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 				//or pressed this is because I want precise button presses for the game
 				//will make it into a fighting esque like game.
 
-				float ds = 1.7f;//how much should velocity change per update
+				//float ds = 1.7f;//how much should velocity change per update
+				float ds = kinematic->accelFactor;
 				if (keyboard->KeyPressed("left"))
 				{
 					kinematic->direction.x = -1.0f;
@@ -163,6 +173,11 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 			}
 
 		}
+		
+		if (transform != nullptr && kinematic != nullptr)
+		{
+			kinematic->velocity = kinematic->direction * kinematic->currentSpeed* deltaTime;
+		}
 	}
 
 }
@@ -181,14 +196,6 @@ void MovementSystem::UpdatePositions(float deltaTime)
 		//first..
 		if (transform != nullptr && kinematic != nullptr)
 		{
-			//temp code ~ if acceleration is zero..this means that velocity will be constant
-			kinematic->velocity = kinematic->direction * kinematic->currentSpeed* deltaTime;
-
-			//TODO(HARVEY): need to check if new position will result in a collision first
-			//if it does, set the proper component of velocity to zero to stop movement.
-			//e.g. check for the corner case where the player is already next to a solid block..
-			//if the player tries to move in the direction where the solid block is, set its velocity = 0
-
 			transform->position = transform->position + kinematic->velocity;
 		}
 	}

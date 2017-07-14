@@ -9,7 +9,11 @@
 
 struct Kinematic
 {
-	Kinematic() { type = typeid(Kinematic).name(); }
+	Kinematic() 
+	{
+		type = typeid(Kinematic).name(); 
+		accelFactor = 0.5f;
+	}
 	~Kinematic() {}
 
 	Vect2 velocity; // pixels / millisecond with direction applied
@@ -21,6 +25,10 @@ struct Kinematic
 	float maxSpeed; // pixels / millisecond
 	float currentSpeed; // pixels / millisecond
 	float gravity;// pixels / millisecond / millisecond
+
+	//Acceleration factor = change this value to modify the rate at which the speed changes.
+	//by default, all Kinematic objects have an acceleration factor of 0.5f
+	float accelFactor; // pixels / millisecond / millisecond
 
 	//float mass?
 
