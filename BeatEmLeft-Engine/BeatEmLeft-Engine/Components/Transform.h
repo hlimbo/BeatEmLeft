@@ -8,6 +8,11 @@
 struct Transform
 {
 	Transform() { type = typeid(Transform).name(); }
+	Transform(Vect2 position)
+	{
+		this->position = position;
+		type = typeid(Transform).name();
+	}
 	~Transform() {}
 
 	Vect2 position;
