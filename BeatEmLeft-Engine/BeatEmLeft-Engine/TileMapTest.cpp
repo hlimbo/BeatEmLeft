@@ -23,6 +23,12 @@
 
 using namespace std;
 
+//use this function to check if a coordinate is between minCoordinate and maxCoordinate
+bool isOnLineSegment(float coordinate, float minCoordinate, float maxCoordinate)
+{
+	return coordinate > minCoordinate && coordinate < maxCoordinate;
+}
+
 int main(int argc, char* argv[])
 {
 	Core core;
@@ -89,16 +95,23 @@ int main(int argc, char* argv[])
 			if (map.contents[r][c] == 1)
 			{
 				int tileID = ecs.entitySystem.CreateEntity("Tile");
-				auto transform =
-					new Transform(Vect2((float)c * (float)(tileWidth + pad),
-					(float)r * (float)(tileHeight + pad)));
+				//construct list of tileCoordinates
+				Vect2 tilePosition((float)c * (float)(tileWidth + pad),
+					(float)r * (float)(tileHeight + pad));
+				auto transform = new Transform(tilePosition);
 
 				auto sprite = new Sprite(store.Get("block.png"));
 				sprite->width = tileWidth;
 				sprite->height = tileHeight;
+
+				auto boxCollider = new BoxCollider();
+				boxCollider->position = tilePosition;
+				boxCollider->width = (float)tileWidth;
+				boxCollider->height = (float)tileHeight;
 			
 				ecs.transforms.AddComponent(tileID, transform);
 				ecs.sprites.AddComponent(tileID, sprite);
+				ecs.boxColliders.AddComponent(tileID, boxCollider);
 			}
 		}
 	}
@@ -134,6 +147,10 @@ int main(int argc, char* argv[])
 	MovementSystem movementSys(&ecs);
 	movementSys.Init();
 
+
+	//here I know that the tileIDs won't change since they don't get destroyed
+	vector<int> tileIDs = ecs.entitySystem.GetIDs("Tile");
+
 	//---------------- Game Loop ------------------//
 
 	//observedDeltaTime is measured in milliseconds
@@ -159,6 +176,113 @@ int main(int argc, char* argv[])
 		}
 
 		movementSys.UpdateKinematics(deltaTime);
+		
+		//Correct the velocity of the player before calling updatePositions
+		//to ensure new position is a valid spot
+		Vect2 newP(playerTransform->position + playerKinematic->velocity);
+		Vect2 oldP(playerTransform->position);
+		Vect2 deltaP(newP - oldP);
+
+		//collision here!
+		for (vector<int>::iterator it = tileIDs.begin();
+			it != tileIDs.end();
+			++it)
+		{
+			Transform* tile = ecs.transforms.GetComponent(*it);
+			BoxCollider* box = ecs.boxColliders.GetComponent(*it);
+
+			if (isOnLineSegment(oldP.y, tile->position.y, tile->position.y + box->height)
+				|| isOnLineSegment(oldP.y + playerBox->height, tile->position.y, tile->position.y + box->height))
+			{
+				//player moving to the right
+				if (deltaP.x > 0.0f)
+				{
+					//left side tile
+					float timeX = (tile->position.x - (oldP.x + playerBox->width)) / deltaP.x;
+
+					if ((timeX >= 0 && timeX <= observedDeltaTime) || fabsf(timeX) < 0.001f)
+					{
+						float adjustedVelX = deltaP.x * timeX;
+						float contactX = (oldP.x + playerBox->width) + adjustedVelX;
+						if (newP.x + playerBox->width > contactX)
+						{
+							playerKinematic->velocity.x = adjustedVelX;
+						}
+					}
+				}
+				else if (deltaP.x < 0.0f) //player moving to the left
+				{
+					//right side tile
+					float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
+					//printf("TimeX2: %f\n", timeX2);
+					if ((timeX2 >= 0 && timeX2 <= observedDeltaTime) || fabsf(timeX2) < 0.001f)
+					{
+						float contactX2 = oldP.x + (deltaP.x * timeX2);
+						float rightTileSide = tile->position.x + box->width;
+						if (newP.x < contactX2)
+						{
+							playerKinematic->velocity.x = (deltaP.x * timeX2);
+						}
+					}
+				}
+			}
+
+			if (isOnLineSegment(oldP.x, tile->position.x, tile->position.x + box->width)
+				|| isOnLineSegment(oldP.x + playerBox->width, tile->position.x, tile->position.x + box->width))
+			{
+				if (deltaP.y != 0.0f)
+				{
+					//check top side of tile
+					if (playerKinematic->direction.y > 0.0f)
+					{
+						float timeY = (tile->position.y - (oldP.y + playerBox->height)) / deltaP.y;
+						//printf("TimeY: %f, deltaTime: %f\n", timeY,observedDeltaTime);
+
+						//there is some numerical error with the time not being = to 0.0f
+						if ((timeY >= 0 && timeY <= observedDeltaTime) || fabsf(timeY) < 0.001f)
+						{
+							//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
+							float contactY = (oldP.y + playerBox->height) + (deltaP.y * timeY);
+							float topSideTile = tile->position.y;
+
+							//printf("contactY: %f\n", contactY);
+							//printf("topSideTile: %f\n", topSideTile);
+
+							if (newP.y + playerBox->height > contactY)
+							{
+								//change the velocity instead of correcting the position
+								playerKinematic->velocity.y = deltaP.y * timeY;
+							}
+
+						}
+
+					}
+
+					//check bottom side of tile
+					else if (playerKinematic->direction.y < 0.0f)
+					{
+						float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
+						//printf("TimeY2: %f\n", timeY2);
+						//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+						if ((timeY2 >= 0 && timeY2 <= observedDeltaTime) || fabsf(timeY2) < 0.001f)
+						{
+							float contactY2 = oldP.y + (deltaP.y * timeY2);
+							float bottomTileSide = tile->position.y + box->height;
+							//printf("contactY2: %f\n", contactY2);
+							//printf("bottomTileSide: %f\n", bottomTileSide);
+
+							if (newP.y < contactY2)
+							{
+								playerKinematic->velocity.y = deltaP.y * timeY2;
+							}
+						}
+					}
+				}
+			}
+
+		}
+
+
 		movementSys.UpdatePositions(deltaTime);
 
 		renderSys.Update(render);

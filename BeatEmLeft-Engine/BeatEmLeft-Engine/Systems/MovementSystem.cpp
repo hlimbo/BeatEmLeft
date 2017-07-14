@@ -4,9 +4,14 @@
 #include "../Components/Transform.h"
 #include "../Components/Kinematic.h"
 #include "../Input/KeyboardController.h"
-#include <vector>
 
 using namespace std;
+
+//use this function to check if a coordinate is between minCoordinate and maxCoordinate
+bool isOnLineSegment_in(float coordinate, float minCoordinate, float maxCoordinate)
+{
+	return coordinate > minCoordinate && coordinate < maxCoordinate;
+}
 
 //Note: speed != velocity (velocity = speed * direction)
 //custom functionality of how stuff should accelerate
@@ -180,6 +185,30 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 		}
 	}
 
+}
+
+void MovementSystem::CheckForCollisions(float deltaTime, vector<Vect2>* tileCoordinates)
+{
+	//vector<int> entityIDs = ecs->entitySystem.GetIDs();
+	//for (vector<int>::iterator it = entityIDs.begin();it != entityIDs.end();++it)
+	//{
+	//	Transform* transform = transforms->GetComponent(*it);
+	//	Kinematic* kinematic = kinematics->GetComponent(*it);
+
+	//	if (transform != nullptr && kinematic != nullptr)
+	//	{
+	//		Vect2 newPos(transform->position + kinematic->velocity);
+	//		Vect2 oldPos(transform->position);
+	//		Vect2 deltaPos = newPos - oldPos;
+	//		
+	//		for (vector<Vect2>::iterator it = tileCoordinates->begin();it != tileCoordinates->end();++it)
+	//		{
+	//			//collision code
+	//			Vect2 tilePos(*it);
+	//			//if(isOnLineSegment_in(oldPos.y, tilePos.y, tilePos.y))
+	//		}
+	//	}
+	//}
 }
 
 void MovementSystem::UpdatePositions(float deltaTime)

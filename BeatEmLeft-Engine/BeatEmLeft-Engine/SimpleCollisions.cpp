@@ -135,6 +135,7 @@ int main(int argc, char* argv[])
 
 		//movement
 		movementSys.UpdateKinematics(deltaTime);
+	//	movementSys.CheckForCollisions(deltaTime);
 		movementSys.UpdatePositions(deltaTime);
 
 		//collision
