@@ -2,6 +2,8 @@
 #define MOVEMENT_SYSTEM_H
 
 #include "ComponentManager.h"
+#include <vector>
+#include <Vect2.h>
 
 struct ECS;
 struct Kinematic;
@@ -17,6 +19,10 @@ public:
 
 	void Init();
 	void UpdateKinematics(float deltaTime);
+	
+	//temp function
+	void CheckForCollisions(float deltaTime, std::vector<Vect2>* tileCoordinates);
+
 	void UpdatePositions(float deltaTime);
 
 private:
