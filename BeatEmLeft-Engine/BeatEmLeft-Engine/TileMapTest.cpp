@@ -200,7 +200,11 @@ int main(int argc, char* argv[])
 					//left side tile
 					float timeX = (tile->position.x - (oldP.x + playerBox->width)) / deltaP.x;
 
-					if ((timeX >= 0 && timeX <= observedDeltaTime) || fabsf(timeX) < 0.001f)
+					//fix numerical round off error
+					if (fabsf(timeX) < 0.001f)
+						timeX = 0.0f;
+
+					if (timeX >= 0 && timeX <= observedDeltaTime)
 					{
 						float adjustedVelX = deltaP.x * timeX;
 						float contactX = (oldP.x + playerBox->width) + adjustedVelX;
@@ -215,7 +219,11 @@ int main(int argc, char* argv[])
 					//right side tile
 					float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
 					//printf("TimeX2: %f\n", timeX2);
-					if ((timeX2 >= 0 && timeX2 <= observedDeltaTime) || fabsf(timeX2) < 0.001f)
+
+					if (fabsf(timeX2) < 0.001f)
+						timeX2 = 0.0f;
+
+					if (timeX2 >= 0 && timeX2 <= observedDeltaTime)
 					{
 						float contactX2 = oldP.x + (deltaP.x * timeX2);
 						float rightTileSide = tile->position.x + box->width;
@@ -239,7 +247,10 @@ int main(int argc, char* argv[])
 						//printf("TimeY: %f, deltaTime: %f\n", timeY,observedDeltaTime);
 
 						//there is some numerical error with the time not being = to 0.0f
-						if ((timeY >= 0 && timeY <= observedDeltaTime) || fabsf(timeY) < 0.001f)
+						if (fabsf(timeY) < 0.001f)
+							timeY = 0.0f;
+
+						if (timeY >= 0 && timeY <= observedDeltaTime)
 						{
 							//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
 							float contactY = (oldP.y + playerBox->height) + (deltaP.y * timeY);
@@ -264,7 +275,10 @@ int main(int argc, char* argv[])
 						float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
 						//printf("TimeY2: %f\n", timeY2);
 						//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-						if ((timeY2 >= 0 && timeY2 <= observedDeltaTime) || fabsf(timeY2) < 0.001f)
+						if(fabsf(timeY2) < 0.001f)
+							timeY2 = 0.0f;
+						
+						if (timeY2 >= 0 && timeY2 <= observedDeltaTime)
 						{
 							float contactY2 = oldP.y + (deltaP.y * timeY2);
 							float bottomTileSide = tile->position.y + box->height;
