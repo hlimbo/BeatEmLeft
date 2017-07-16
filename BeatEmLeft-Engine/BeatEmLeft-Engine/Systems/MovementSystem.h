@@ -22,6 +22,7 @@ public:
 	
 	//temp function
 	void CheckForCollisions(float deltaTimeInMS);
+	void CorrectCollisionOverlaps(float deltaTimeInMS);
 
 	//deltaTime = in seconds
 	void UpdatePositions(float deltaTime);

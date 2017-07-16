@@ -189,6 +189,7 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 
 }
 
+//tries to predict the right amount of velocity required to not overlap with a tile
 void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 {
 	//temp code
@@ -309,6 +310,93 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 						}
 					}
 				}
+		}
+	}
+}
+
+//will try to find any collisions that resulted in an overlap
+//if there exists any collision overlaps, correct the entity's position
+//Usage: Call this function after UpdatePositions has been called
+void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
+{
+	//temp code
+	int playerID = ecs->entitySystem.GetIDs("Player").at(0);
+	Transform* pt = transforms->GetComponent(playerID);
+	BoxCollider* pb = ecs->boxColliders.GetComponent(playerID);
+	Kinematic* pk = kinematics->GetComponent(playerID);
+
+	if (pt == nullptr || pb == nullptr || pk == nullptr)
+		return;
+
+	/*
+		The difference between this function and CheckForCollisions
+		is that the player entity does not need to be moving to
+		correct the overlap collision
+	*/
+
+	Vect2 newP(pt->position);
+
+	SDL_Point pixelCoords = SDL_Point{ (int)roundf(newP.x), (int)roundf(newP.y) };
+
+	vector<int> tileIDs = ecs->entitySystem.GetIDs("Tile");
+	for (vector<int>::iterator it = tileIDs.begin();it != tileIDs.end();++it)
+	{
+		Transform* tile = transforms->GetComponent(*it);
+		BoxCollider* box = ecs->boxColliders.GetComponent(*it);
+		if (tile == nullptr || box == nullptr)
+			continue;
+
+		if (isOnLineSegment_in(newP.y, tile->position.y, tile->position.y + box->height))
+		{
+			//top left corner of player 
+			if (isOnLineSegment_in(newP.x, tile->position.x, tile->position.x + box->width))
+			{
+				//puts("inside box top left");
+				float diffY = tile->position.y + box->height - newP.y;
+				float diffX = tile->position.x + box->width - newP.x;
+				newP.y += diffY;
+				newP.x += diffX;
+
+				pt->position = newP;
+			}
+
+			//top right corner of player
+			else if (isOnLineSegment_in(newP.x + pb->width, tile->position.x, tile->position.x + box->width))
+			{
+				//puts("inside box top right");
+				float diffY = tile->position.y + box->height - newP.y;
+				float diffX = newP.x + pb->width - tile->position.x;
+				newP.y += diffY;
+				newP.x += diffX;
+
+				pt->position = newP;
+			}
+		}
+		else if (isOnLineSegment_in(newP.y + pb->height, tile->position.y, tile->position.y + box->height))
+		{
+			//bottom left of player
+			if (isOnLineSegment_in(newP.x, tile->position.x, tile->position.x + box->width))
+			{
+				//puts("inside box bottom left");
+				float diffY = newP.y + pb->height - tile->position.y;
+				float diffX = tile->position.x + box->width - newP.x;
+				newP.y -= diffY;
+				newP.x += diffX;
+
+				pt->position = newP;
+			}
+			//bottom right of player
+			else if (isOnLineSegment_in(newP.x + pb->width, tile->position.x, tile->position.x + box->width))
+			{
+			//	puts("inside box bottom right");
+				float diffY = newP.y + pb->height - tile->position.y;
+				float diffX = newP.x + pb->width - tile->position.x;
+				newP.y += diffY;
+				newP.x -= diffX;
+
+				pt->position = newP;
+			}
+			
 		}
 	}
 }
