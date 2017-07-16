@@ -177,124 +177,126 @@ int main(int argc, char* argv[])
 
 		movementSys.UpdateKinematics(deltaTime);
 		
+		movementSys.CheckForCollisions(observedDeltaTime);
+
 		//Correct the velocity of the player before calling updatePositions
 		//to ensure new position is a valid spot
-		Vect2 newP(playerTransform->position + playerKinematic->velocity);
-		Vect2 oldP(playerTransform->position);
-		Vect2 deltaP(newP - oldP);
+		//Vect2 newP(playerTransform->position + playerKinematic->velocity);
+		//Vect2 oldP(playerTransform->position);
+		//Vect2 deltaP(newP - oldP);
 
 		//collision here!
-		for (vector<int>::iterator it = tileIDs.begin();
-			it != tileIDs.end();
-			++it)
-		{
-			Transform* tile = ecs.transforms.GetComponent(*it);
-			BoxCollider* box = ecs.boxColliders.GetComponent(*it);
+		//for (vector<int>::iterator it = tileIDs.begin();
+		//	it != tileIDs.end();
+		//	++it)
+		//{
+		//	Transform* tile = ecs.transforms.GetComponent(*it);
+		//	BoxCollider* box = ecs.boxColliders.GetComponent(*it);
 
-			if (isOnLineSegment(oldP.y, tile->position.y, tile->position.y + box->height)
-				|| isOnLineSegment(oldP.y + playerBox->height, tile->position.y, tile->position.y + box->height))
-			{
-				//player moving to the right
-				if (deltaP.x > 0.0f)
-				{
-					//left side tile
-					float timeX = (tile->position.x - (oldP.x + playerBox->width)) / deltaP.x;
+		//	if (isOnLineSegment(oldP.y, tile->position.y, tile->position.y + box->height)
+		//		|| isOnLineSegment(oldP.y + playerBox->height, tile->position.y, tile->position.y + box->height))
+		//	{
+		//		//player moving to the right
+		//		if (deltaP.x > 0.0f)
+		//		{
+		//			//left side tile
+		//			float timeX = (tile->position.x - (oldP.x + playerBox->width)) / deltaP.x;
 
-					//fix numerical round off error
-					if (fabsf(timeX) < 0.001f)
-						timeX = 0.0f;
+		//			//fix numerical round off error
+		//			if (fabsf(timeX) < 0.001f)
+		//				timeX = 0.0f;
 
-					if (timeX >= 0 && timeX <= observedDeltaTime)
-					{
-						float adjustedVelX = deltaP.x * timeX;
-						float contactX = (oldP.x + playerBox->width) + adjustedVelX;
-						if (newP.x + playerBox->width > contactX)
-						{
-							playerKinematic->velocity.x = adjustedVelX;
-						}
-					}
-				}
-				else if (deltaP.x < 0.0f) //player moving to the left
-				{
-					//right side tile
-					float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
-					//printf("TimeX2: %f\n", timeX2);
+		//			if (timeX >= 0 && timeX <= observedDeltaTime)
+		//			{
+		//				float adjustedVelX = deltaP.x * timeX;
+		//				float contactX = (oldP.x + playerBox->width) + adjustedVelX;
+		//				if (newP.x + playerBox->width > contactX)
+		//				{
+		//					playerKinematic->velocity.x = adjustedVelX;
+		//				}
+		//			}
+		//		}
+		//		else if (deltaP.x < 0.0f) //player moving to the left
+		//		{
+		//			//right side tile
+		//			float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
+		//			//printf("TimeX2: %f\n", timeX2);
 
-					if (fabsf(timeX2) < 0.001f)
-						timeX2 = 0.0f;
+		//			if (fabsf(timeX2) < 0.001f)
+		//				timeX2 = 0.0f;
 
-					if (timeX2 >= 0 && timeX2 <= observedDeltaTime)
-					{
-						float contactX2 = oldP.x + (deltaP.x * timeX2);
-						float rightTileSide = tile->position.x + box->width;
-						if (newP.x < contactX2)
-						{
-							playerKinematic->velocity.x = (deltaP.x * timeX2);
-						}
-					}
-				}
-			}
+		//			if (timeX2 >= 0 && timeX2 <= observedDeltaTime)
+		//			{
+		//				float contactX2 = oldP.x + (deltaP.x * timeX2);
+		//				float rightTileSide = tile->position.x + box->width;
+		//				if (newP.x < contactX2)
+		//				{
+		//					playerKinematic->velocity.x = (deltaP.x * timeX2);
+		//				}
+		//			}
+		//		}
+		//	}
 
-			if (isOnLineSegment(oldP.x, tile->position.x, tile->position.x + box->width)
-				|| isOnLineSegment(oldP.x + playerBox->width, tile->position.x, tile->position.x + box->width))
-			{
-				if (deltaP.y != 0.0f)
-				{
-					//check top side of tile
-					if (playerKinematic->direction.y > 0.0f)
-					{
-						float timeY = (tile->position.y - (oldP.y + playerBox->height)) / deltaP.y;
-						//printf("TimeY: %f, deltaTime: %f\n", timeY,observedDeltaTime);
+		//	if (isOnLineSegment(oldP.x, tile->position.x, tile->position.x + box->width)
+		//		|| isOnLineSegment(oldP.x + playerBox->width, tile->position.x, tile->position.x + box->width))
+		//	{
+		//		if (deltaP.y != 0.0f)
+		//		{
+		//			//check top side of tile
+		//			if (playerKinematic->direction.y > 0.0f)
+		//			{
+		//				float timeY = (tile->position.y - (oldP.y + playerBox->height)) / deltaP.y;
+		//				//printf("TimeY: %f, deltaTime: %f\n", timeY,observedDeltaTime);
 
-						//there is some numerical error with the time not being = to 0.0f
-						if (fabsf(timeY) < 0.001f)
-							timeY = 0.0f;
+		//				//there is some numerical error with the time not being = to 0.0f
+		//				if (fabsf(timeY) < 0.001f)
+		//					timeY = 0.0f;
 
-						if (timeY >= 0 && timeY <= observedDeltaTime)
-						{
-							//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
-							float contactY = (oldP.y + playerBox->height) + (deltaP.y * timeY);
-							float topSideTile = tile->position.y;
+		//				if (timeY >= 0 && timeY <= observedDeltaTime)
+		//				{
+		//					//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
+		//					float contactY = (oldP.y + playerBox->height) + (deltaP.y * timeY);
+		//					float topSideTile = tile->position.y;
 
-							//printf("contactY: %f\n", contactY);
-							//printf("topSideTile: %f\n", topSideTile);
+		//					//printf("contactY: %f\n", contactY);
+		//					//printf("topSideTile: %f\n", topSideTile);
 
-							if (newP.y + playerBox->height > contactY)
-							{
-								//change the velocity instead of correcting the position
-								playerKinematic->velocity.y = deltaP.y * timeY;
-							}
+		//					if (newP.y + playerBox->height > contactY)
+		//					{
+		//						//change the velocity instead of correcting the position
+		//						playerKinematic->velocity.y = deltaP.y * timeY;
+		//					}
 
-						}
+		//				}
 
-					}
+		//			}
 
-					//check bottom side of tile
-					else if (playerKinematic->direction.y < 0.0f)
-					{
-						float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
-						//printf("TimeY2: %f\n", timeY2);
-						//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-						if(fabsf(timeY2) < 0.001f)
-							timeY2 = 0.0f;
-						
-						if (timeY2 >= 0 && timeY2 <= observedDeltaTime)
-						{
-							float contactY2 = oldP.y + (deltaP.y * timeY2);
-							float bottomTileSide = tile->position.y + box->height;
-							//printf("contactY2: %f\n", contactY2);
-							//printf("bottomTileSide: %f\n", bottomTileSide);
+		//			//check bottom side of tile
+		//			else if (playerKinematic->direction.y < 0.0f)
+		//			{
+		//				float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
+		//				//printf("TimeY2: %f\n", timeY2);
+		//				//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+		//				if(fabsf(timeY2) < 0.001f)
+		//					timeY2 = 0.0f;
+		//				
+		//				if (timeY2 >= 0 && timeY2 <= observedDeltaTime)
+		//				{
+		//					float contactY2 = oldP.y + (deltaP.y * timeY2);
+		//					float bottomTileSide = tile->position.y + box->height;
+		//					//printf("contactY2: %f\n", contactY2);
+		//					//printf("bottomTileSide: %f\n", bottomTileSide);
 
-							if (newP.y < contactY2)
-							{
-								playerKinematic->velocity.y = deltaP.y * timeY2;
-							}
-						}
-					}
-				}
-			}
+		//					if (newP.y < contactY2)
+		//					{
+		//						playerKinematic->velocity.y = deltaP.y * timeY2;
+		//					}
+		//				}
+		//			}
+		//		}
+		//	}
 
-		}
+		//}
 
 
 		movementSys.UpdatePositions(deltaTime);

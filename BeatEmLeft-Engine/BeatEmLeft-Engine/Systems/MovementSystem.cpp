@@ -5,6 +5,8 @@
 #include "../Components/Kinematic.h"
 #include "../Input/KeyboardController.h"
 
+#include <vector>
+
 using namespace std;
 
 //use this function to check if a coordinate is between minCoordinate and maxCoordinate
@@ -187,28 +189,128 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 
 }
 
-void MovementSystem::CheckForCollisions(float deltaTime, vector<Vect2>* tileCoordinates)
+void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 {
-	//vector<int> entityIDs = ecs->entitySystem.GetIDs();
-	//for (vector<int>::iterator it = entityIDs.begin();it != entityIDs.end();++it)
-	//{
-	//	Transform* transform = transforms->GetComponent(*it);
-	//	Kinematic* kinematic = kinematics->GetComponent(*it);
+	//temp code
+	int playerID = ecs->entitySystem.GetIDs("Player").at(0);
+	Transform* pt = transforms->GetComponent(playerID);
+	BoxCollider* pb = ecs->boxColliders.GetComponent(playerID);
+	Kinematic* pk = kinematics->GetComponent(playerID);
 
-	//	if (transform != nullptr && kinematic != nullptr)
-	//	{
-	//		Vect2 newPos(transform->position + kinematic->velocity);
-	//		Vect2 oldPos(transform->position);
-	//		Vect2 deltaPos = newPos - oldPos;
-	//		
-	//		for (vector<Vect2>::iterator it = tileCoordinates->begin();it != tileCoordinates->end();++it)
-	//		{
-	//			//collision code
-	//			Vect2 tilePos(*it);
-	//			//if(isOnLineSegment_in(oldPos.y, tilePos.y, tilePos.y))
-	//		}
-	//	}
-	//}
+	if (pt != nullptr && pb != nullptr && pk != nullptr)
+	{
+		Vect2 newP(pt->position + pk->velocity);
+		Vect2 oldP(pt->position);
+		Vect2 deltaP(newP - oldP);
+
+		vector<int> tileIDs = ecs->entitySystem.GetIDs("Tile");
+		for (vector<int>::iterator it = tileIDs.begin();it != tileIDs.end();++it)
+		{
+			Transform* tile = transforms->GetComponent(*it);
+			BoxCollider* box = ecs->boxColliders.GetComponent(*it);
+
+			//skip this tile if it does not have these components
+			if (tile == nullptr || box == nullptr)
+				continue;
+
+			//check left or right side of tile
+			if (isOnLineSegment_in(oldP.y, tile->position.y, tile->position.y + box->height)
+				|| isOnLineSegment_in(oldP.y + pb->height, tile->position.y, tile->position.y + box->height))
+			{
+				//player moving to the right
+				if (deltaP.x > 0.0f)
+				{
+					//left side tile
+					float timeX = (tile->position.x - (oldP.x + pb->width)) / deltaP.x;
+
+					//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+					if (fabsf(timeX) < 0.001f)
+						timeX = 0.0f;
+
+					//predicting how much delta velocity is needed this frame
+					//in order to not overlap against a non-moving entity with a box collider attached
+					if (timeX >= 0 && timeX <= deltaTimeInMS)
+					{
+						float adjustedVelX = deltaP.x * timeX;
+						float contactX = (oldP.x + pb->width) + adjustedVelX;
+						if (newP.x + pb->width > contactX)
+						{
+							pk->velocity.x = adjustedVelX;
+						}
+					}
+				}
+				else if (deltaP.x < 0.0f) //player moving to the left
+				{
+					//right side tile
+					float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
+
+					//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+					if (fabsf(timeX2) < 0.001f)
+						timeX2 = 0.0f;
+
+					if (timeX2 >= 0 && timeX2 <= deltaTimeInMS)
+					{
+						float contactX2 = oldP.x + (deltaP.x * timeX2);
+
+						if (newP.x < contactX2)
+						{
+							float adjustedVelX = deltaP.x * timeX2;
+							pk->velocity.x = adjustedVelX;
+						}
+					}
+				}
+			}
+
+			//check top or bottom side of tile
+			if (isOnLineSegment_in(oldP.x, tile->position.x, tile->position.x + box->width)
+				|| isOnLineSegment_in(oldP.x + pb->width, tile->position.x, tile->position.x + box->width))
+			{
+					//check top side of tile
+					//if player is moving downwards
+					if (deltaP.y > 0.0f)
+					{
+						float timeY = (tile->position.y - (oldP.y + pb->height)) / deltaP.y;
+
+						//there is some numerical error with the time not being = to 0.0f
+						if (fabsf(timeY) < 0.001f)
+							timeY = 0.0f;
+
+						if (timeY >= 0 && timeY <= deltaTimeInMS)
+						{
+							//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
+							float contactY = (oldP.y + pb->height) + (deltaP.y * timeY);
+							if (newP.y + pb->height > contactY)
+							{
+								//change the velocity instead of correcting the position
+								float adjustedVelY = deltaP.y * timeY;
+								pk->velocity.y = adjustedVelY;
+							}
+
+						}
+
+					}
+					//check bottom side of tile
+					else if (deltaP.y < 0.0f)
+					{
+						float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
+
+						//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+						if (fabsf(timeY2) < 0.001f)
+							timeY2 = 0.0f;
+
+						if (timeY2 >= 0 && timeY2 <= deltaTimeInMS)
+						{
+							float contactY2 = oldP.y + (deltaP.y * timeY2);
+							if (newP.y < contactY2)
+							{
+								float adjustedVelY = deltaP.y * timeY2;
+								pk->velocity.y = adjustedVelY;
+							}
+						}
+					}
+				}
+		}
+	}
 }
 
 void MovementSystem::UpdatePositions(float deltaTime)
