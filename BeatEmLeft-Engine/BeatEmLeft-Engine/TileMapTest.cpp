@@ -300,6 +300,7 @@ int main(int argc, char* argv[])
 
 
 		movementSys.UpdatePositions(deltaTime);
+		movementSys.CorrectCollisionOverlaps(observedDeltaTime);
 
 		renderSys.Update(render);
 		renderSys.Draw(render);
