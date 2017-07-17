@@ -262,6 +262,8 @@ int main(int argc, char* argv[])
 			keyboard->HandleInput(event);
 		}
 
+		keyboard->UpdateKeyStates(observedDeltaTime);
+
 		movementSys.UpdateKinematics(deltaTime);
 		movementSys.CheckForCollisions(observedDeltaTime);
 
