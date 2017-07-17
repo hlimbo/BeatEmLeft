@@ -20,7 +20,10 @@ public:
 	//deltaTime = in seconds
 	void UpdateKinematics(float deltaTime);
 	
-	//temp function
+	//temp functions for circle collisions
+	void CheckForCircleCollisions(float deltaTimeInMS);
+
+	//temp functions for AABB collisions
 	void CheckForCollisions(float deltaTimeInMS);
 	void CorrectCollisionOverlaps(float deltaTimeInMS);
 

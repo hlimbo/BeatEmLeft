@@ -29,6 +29,7 @@
 #include "../Components/Transform.h"
 #include "../Components/Kinematic.h"
 #include "../Components/BoxCollider.h"
+#include "../Components/CircleCollider.h"
 #include "../Input/KeyboardController.h"
 
 //this is a much nicer way of looking at the managers and system 
@@ -41,6 +42,7 @@ struct ECS
 	ComponentManager<Transform> transforms;
 	ComponentManager<Kinematic> kinematics;
 	ComponentManager<BoxCollider> boxColliders;
+	ComponentManager<CircleCollider> circleColliders;
 
 //Keyboard Interface-------------------------------------------------------------
 	void InitKeyboard()

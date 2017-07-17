@@ -4,14 +4,19 @@
 #include <unordered_map>
 #include <typeinfo.h>
 
-//There will be multiple component_managers in ECS where key = component type value = component manager
 //Component Manager will
 //1. manage components of a single type
 //2. register components by assigning a specific component an ID obtained from an entity
 //3. remove components based on entity id
 
+
+//Component Manager holds a map of components where each component in the map is registered to a valid entity id.
+//This templated class serves as a container for components of a single type where the logic will be handled in
+//some systems class.
+//This templated class ensures no inheritance is required when creating new component classes.
+
 template<typename component>
-class ComponentManager //could make this into a template class...but would have to put all code in header..
+class ComponentManager
 {
 public:
 	explicit ComponentManager() { type = typeid(component).name(); }

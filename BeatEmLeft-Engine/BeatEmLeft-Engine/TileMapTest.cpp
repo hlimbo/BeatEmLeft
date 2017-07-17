@@ -23,6 +23,56 @@
 
 using namespace std;
 
+void CalcCirclePoints(SDL_Point* points, int startIndex, int cx, int cy, int x, int y)
+{
+	points[startIndex] = SDL_Point{ cx - x, cy - y };
+	points[startIndex + 1] = SDL_Point{ cx - y, cy - x };
+	points[startIndex + 2] = SDL_Point{ cx + y, cy - x };
+	points[startIndex + 3] = SDL_Point{ cx + x, cy - y };
+	points[startIndex + 4] = SDL_Point{ cx - x, cy + y };
+	points[startIndex + 5] = SDL_Point{ cx - y, cy + x };
+	points[startIndex + 6] = SDL_Point{ cx + y, cy + x };
+	points[startIndex + 7] = SDL_Point{ cx + x, cy + y };
+}
+
+int DrawCircle(SDL_Renderer* renderer, int cx, int cy, int radius)
+{
+	//draw the circle here using Bresenham’s Algorithm
+	int p = 0;
+	int q = radius;
+	int numPixelsToDraw = q * 8;
+	SDL_Point* points = (SDL_Point*)malloc(sizeof(SDL_Point) * numPixelsToDraw);
+	//d = decision parameter which acts as a function
+	//which helps decide to draw the next pixel to its horizontally adjacent neighbor or its diagonally adjacent neighbor
+	int d = 3 - 2 * radius;
+
+	while (p < q)
+	{
+		//slightly better optimization:: batch all points into one draw call ~ draw calls are expensive
+		CalcCirclePoints(points, p * 8, cx, cy, p, q);
+		++p;
+		if (d < 0)
+		{
+			d = d + (4 * p) + 6;
+		}
+		else
+		{
+			d = d + (4 * (p - q)) + 10;
+			--q;
+		}
+	}
+
+	int result = SDL_RenderDrawPoints(renderer, points, numPixelsToDraw);
+	free(points);
+	return result;
+}
+
+int DrawCircle(SDL_Renderer* renderer, SDL_Point center, int radius)
+{
+	return DrawCircle(renderer, center.x, center.y, radius);
+}
+
+
 //use this function to check if a coordinate is between minCoordinate and maxCoordinate
 bool isOnLineSegment(float coordinate, float minCoordinate, float maxCoordinate)
 {
@@ -88,6 +138,10 @@ int main(int argc, char* argv[])
 	string mapFilePath = mainPath + string("funky_map.txt");
 	MapFileLoader::Load(mapFilePath.c_str(), &map);
 
+	Transform* tileTransform = nullptr;
+	Sprite* tileSprite = nullptr;
+	CircleCollider* tileCircle = nullptr;
+
 	for (int r = 0;r < map.rowCount;++r)
 	{
 		for (int c = 0;c < map.colCount;++c)
@@ -108,10 +162,21 @@ int main(int argc, char* argv[])
 				boxCollider->position = tilePosition;
 				boxCollider->width = (float)tileWidth;
 				boxCollider->height = (float)tileHeight;
+
+				//temp
+				auto circleCollider = new CircleCollider();
+				circleCollider->position = tilePosition;
+				circleCollider->radius = (float)tileWidth;
 			
 				ecs.transforms.AddComponent(tileID, transform);
 				ecs.sprites.AddComponent(tileID, sprite);
 				ecs.boxColliders.AddComponent(tileID, boxCollider);
+				ecs.circleColliders.AddComponent(tileID, circleCollider);
+
+				//temp
+				tileTransform = transform;
+				tileSprite = sprite;
+				tileCircle = circleCollider;
 			}
 		}
 	}
@@ -120,24 +185,32 @@ int main(int argc, char* argv[])
 	int playerID = ecs.entitySystem.CreateEntity("Player");
 	auto playerTransform = new Transform();
 	playerTransform->position = Vect2(20.0f, 35.3f);
+	
 	auto playerSprite = new Sprite(store.Get("blue.png"));
 	playerSprite->width = 40;
 	playerSprite->height = 40;
+	
 	auto playerKinematic = new Kinematic();
 	playerKinematic->minSpeed = 100.0f;
 	playerKinematic->maxSpeed = 552.3f;
 	playerKinematic->currentSpeed = playerKinematic->minSpeed;
 	playerKinematic->direction = Vect2(0.0f, 0.0f);//direction depends on what key is pressed
 	playerKinematic->accelFactor = 1.7f;
+
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
 	playerBox->width = (float)playerSprite->width;
 	playerBox->height = (float)playerSprite->height;
 
+	auto playerCircle = new CircleCollider();
+	playerCircle->position = playerTransform->position;
+	playerCircle->radius = (float)playerSprite->width;
+
 	ecs.transforms.AddComponent(playerID, playerTransform);
 	ecs.sprites.AddComponent(playerID, playerSprite);
 	ecs.kinematics.AddComponent(playerID, playerKinematic);
 	ecs.boxColliders.AddComponent(playerID, playerBox);
+	ecs.circleColliders.AddComponent(playerID, playerCircle);
 	ecs.InitKeyboard();
 	KeyboardController* keyboard = ecs.RegisterKeyboard(playerID);
 
@@ -176,133 +249,19 @@ int main(int argc, char* argv[])
 		}
 
 		movementSys.UpdateKinematics(deltaTime);
-		
-		movementSys.CheckForCollisions(observedDeltaTime);
-
-		//Correct the velocity of the player before calling updatePositions
-		//to ensure new position is a valid spot
-		//Vect2 newP(playerTransform->position + playerKinematic->velocity);
-		//Vect2 oldP(playerTransform->position);
-		//Vect2 deltaP(newP - oldP);
-
-		//collision here!
-		//for (vector<int>::iterator it = tileIDs.begin();
-		//	it != tileIDs.end();
-		//	++it)
-		//{
-		//	Transform* tile = ecs.transforms.GetComponent(*it);
-		//	BoxCollider* box = ecs.boxColliders.GetComponent(*it);
-
-		//	if (isOnLineSegment(oldP.y, tile->position.y, tile->position.y + box->height)
-		//		|| isOnLineSegment(oldP.y + playerBox->height, tile->position.y, tile->position.y + box->height))
-		//	{
-		//		//player moving to the right
-		//		if (deltaP.x > 0.0f)
-		//		{
-		//			//left side tile
-		//			float timeX = (tile->position.x - (oldP.x + playerBox->width)) / deltaP.x;
-
-		//			//fix numerical round off error
-		//			if (fabsf(timeX) < 0.001f)
-		//				timeX = 0.0f;
-
-		//			if (timeX >= 0 && timeX <= observedDeltaTime)
-		//			{
-		//				float adjustedVelX = deltaP.x * timeX;
-		//				float contactX = (oldP.x + playerBox->width) + adjustedVelX;
-		//				if (newP.x + playerBox->width > contactX)
-		//				{
-		//					playerKinematic->velocity.x = adjustedVelX;
-		//				}
-		//			}
-		//		}
-		//		else if (deltaP.x < 0.0f) //player moving to the left
-		//		{
-		//			//right side tile
-		//			float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
-		//			//printf("TimeX2: %f\n", timeX2);
-
-		//			if (fabsf(timeX2) < 0.001f)
-		//				timeX2 = 0.0f;
-
-		//			if (timeX2 >= 0 && timeX2 <= observedDeltaTime)
-		//			{
-		//				float contactX2 = oldP.x + (deltaP.x * timeX2);
-		//				float rightTileSide = tile->position.x + box->width;
-		//				if (newP.x < contactX2)
-		//				{
-		//					playerKinematic->velocity.x = (deltaP.x * timeX2);
-		//				}
-		//			}
-		//		}
-		//	}
-
-		//	if (isOnLineSegment(oldP.x, tile->position.x, tile->position.x + box->width)
-		//		|| isOnLineSegment(oldP.x + playerBox->width, tile->position.x, tile->position.x + box->width))
-		//	{
-		//		if (deltaP.y != 0.0f)
-		//		{
-		//			//check top side of tile
-		//			if (playerKinematic->direction.y > 0.0f)
-		//			{
-		//				float timeY = (tile->position.y - (oldP.y + playerBox->height)) / deltaP.y;
-		//				//printf("TimeY: %f, deltaTime: %f\n", timeY,observedDeltaTime);
-
-		//				//there is some numerical error with the time not being = to 0.0f
-		//				if (fabsf(timeY) < 0.001f)
-		//					timeY = 0.0f;
-
-		//				if (timeY >= 0 && timeY <= observedDeltaTime)
-		//				{
-		//					//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
-		//					float contactY = (oldP.y + playerBox->height) + (deltaP.y * timeY);
-		//					float topSideTile = tile->position.y;
-
-		//					//printf("contactY: %f\n", contactY);
-		//					//printf("topSideTile: %f\n", topSideTile);
-
-		//					if (newP.y + playerBox->height > contactY)
-		//					{
-		//						//change the velocity instead of correcting the position
-		//						playerKinematic->velocity.y = deltaP.y * timeY;
-		//					}
-
-		//				}
-
-		//			}
-
-		//			//check bottom side of tile
-		//			else if (playerKinematic->direction.y < 0.0f)
-		//			{
-		//				float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
-		//				//printf("TimeY2: %f\n", timeY2);
-		//				//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-		//				if(fabsf(timeY2) < 0.001f)
-		//					timeY2 = 0.0f;
-		//				
-		//				if (timeY2 >= 0 && timeY2 <= observedDeltaTime)
-		//				{
-		//					float contactY2 = oldP.y + (deltaP.y * timeY2);
-		//					float bottomTileSide = tile->position.y + box->height;
-		//					//printf("contactY2: %f\n", contactY2);
-		//					//printf("bottomTileSide: %f\n", bottomTileSide);
-
-		//					if (newP.y < contactY2)
-		//					{
-		//						playerKinematic->velocity.y = deltaP.y * timeY2;
-		//					}
-		//				}
-		//			}
-		//		}
-		//	}
-
-		//}
-
+	//	movementSys.CheckForCollisions(observedDeltaTime);
 
 		movementSys.UpdatePositions(deltaTime);
-		movementSys.CorrectCollisionOverlaps(observedDeltaTime);
+	//	movementSys.CorrectCollisionOverlaps(observedDeltaTime);
+
+		movementSys.CheckForCircleCollisions(observedDeltaTime);
 
 		renderSys.Update(render);
+
+		SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
+		SDL_Point center = SDL_Point{ (int)roundf(tileTransform->position.x),(int)roundf(tileTransform->position.y) };
+		DrawCircle(render, center, (int)tileCircle->radius);
+
 		renderSys.Draw(render);
 
 		endCount = SDL_GetPerformanceCounter();
