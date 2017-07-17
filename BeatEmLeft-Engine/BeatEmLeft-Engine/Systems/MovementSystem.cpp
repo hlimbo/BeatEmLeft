@@ -189,6 +189,44 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 
 }
 
+//call after update positions
+void MovementSystem::CheckForCircleCollisions(float deltaTimeInMS)
+{
+	//temp code
+	int playerID = ecs->entitySystem.GetIDs("Player").at(0);
+	Transform* pt = transforms->GetComponent(playerID);
+	CircleCollider* pc = ecs->circleColliders.GetComponent(playerID);
+	Kinematic* pk = kinematics->GetComponent(playerID);
+
+	if (pt == nullptr || pc == nullptr || pk == nullptr)
+		return;
+
+	Vect2 newP(pt->position);
+
+	vector<int> tileIDs = ecs->entitySystem.GetIDs("Tile");
+	for (vector<int>::iterator it = tileIDs.begin();it != tileIDs.end();++it)
+	{
+		Transform* tile = transforms->GetComponent(*it);
+		CircleCollider* circle = ecs->circleColliders.GetComponent(*it);
+
+		if (tile == nullptr || circle == nullptr)
+			continue;
+
+		float dist = VectMath::Dist(newP, tile->position);
+		float sumRadii = pc->radius + circle->radius;
+		if (dist < sumRadii)
+		{
+			float pen = dist - sumRadii;
+			Vect2 normal = VectMath::Normalize(newP, tile->position);
+			Vect2 penVector = normal * pen;
+			//printf("pen vector: (%f,%f)\n", penVector.x, penVector.y);
+			newP = newP + penVector;
+			pt->position = newP;
+		}
+	}
+
+}
+
 //tries to predict the right amount of velocity required to not overlap with a tile
 void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 {
