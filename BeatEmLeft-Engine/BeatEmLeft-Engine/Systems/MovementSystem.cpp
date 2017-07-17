@@ -212,10 +212,13 @@ void MovementSystem::CheckForCircleCollisions(float deltaTimeInMS)
 		if (tile == nullptr || circle == nullptr)
 			continue;
 
-		float dist = VectMath::Dist(newP, tile->position);
+		float distSqr = VectMath::DistSqr(newP, tile->position);
 		float sumRadii = pc->radius + circle->radius;
-		if (dist < sumRadii)
+		float sumRadiiSqr = sumRadii * sumRadii;
+		if (distSqr < sumRadiiSqr)
 		{
+			float dist = VectMath::Dist(newP, tile->position);
+
 			float pen = dist - sumRadii;
 			Vect2 normal = VectMath::Normalize(newP, tile->position);
 			Vect2 penVector = normal * pen;
