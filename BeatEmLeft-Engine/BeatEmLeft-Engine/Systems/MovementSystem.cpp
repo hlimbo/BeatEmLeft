@@ -207,16 +207,55 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 			kinematic->currentSpeed = kinematic->minSpeed;
 		}
 
-		//Implement gravity ~ todo: if player on top of something disable gravity
+		//if both left and right keys are held and/or pressed don't move
+		if ((keyboard->KeyPressed("left") && keyboard->KeyPressed("right")) ||
+			(keyboard->KeyHeld("left") && keyboard->KeyHeld("right")) ||
+			(keyboard->KeyPressed("left") && keyboard->KeyHeld("right")) ||
+			(keyboard->KeyHeld("left") && keyboard->KeyPressed("right")))
+		{
+			kinematic->direction.x = 0.0f;
+			kinematic->currentSpeed = kinematic->minSpeed;
+		}
+
+		//jumping
+		if (keyboard->KeyPressed("space"))
+		{
+			puts("press");
+			kinematic->currentJumpTime = 0.0f;		
+		}
+
+		if ((keyboard->KeyPressed("space") || keyboard->KeyHeld("space")) && kinematic->currentJumpTime <= kinematic->maxJumpTime)
+		{
+		//	puts("held");
+			//printf("kinematic jump time: %f\n", kinematic->currentJumpTime);
+			kinematic->currentJumpTime += deltaTime;
+			kinematic->direction.y = -1.0f;
+			kinematic->jumpSpeed += kinematic->jumpSpeed * kinematic->jumpFactor * deltaTime;
+			if (kinematic->jumpSpeed > kinematic->maxJumpSpeed)
+				kinematic->jumpSpeed = kinematic->maxJumpSpeed;
+		}
+		
+		if (keyboard->KeyReleased("space") || kinematic->currentJumpTime >= kinematic->maxJumpTime)
+		{
+			//puts("released");
+			kinematic->jumpSpeed = kinematic->minJumpSpeed;
+			kinematic->direction.y = 0.0f;
+			kinematic->currentJumpTime = kinematic->maxJumpTime;
+		}
+
 		kinematic->gravity += kinematic->gravity * kinematic->gravityFactor * deltaTime;
 		if (kinematic->gravity > kinematic->maxGravity)
 			kinematic->gravity = kinematic->maxGravity;
 
-		printf("gravity: %f\n", kinematic->gravity);
+		//printf("gravity: %f\n", kinematic->gravity);
 
-		kinematic->velocity.y = kinematic->gravity;
+		if (kinematic->direction.y == 0.0f && kinematic->jumpSpeed * kinematic->direction.y * deltaTime != 0.0f)
+		{
+			printf("this result: %f,%f,%f\n", kinematic->jumpSpeed, kinematic->direction.y, deltaTime);
+		}
 
-		//	printf("currentSpeed: %f\n", kinematic->currentSpeed);
+		kinematic->velocity.y = (kinematic->gravity * deltaTime) + (kinematic->jumpSpeed * kinematic->direction.y * deltaTime);
+
 		//old way
 		kinematic->velocity.x = kinematic->direction.x * kinematic->currentSpeed * deltaTime;
 	}
