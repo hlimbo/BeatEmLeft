@@ -198,10 +198,18 @@ int main(int argc, char* argv[])
 	playerKinematic->direction = Vect2(0.0f, 0.0f);//direction depends on what key is pressed
 	playerKinematic->accelFactor = 1.7f;
 	playerKinematic->acceleration = Vect2(0.0f, 0.0f);
-	playerKinematic->gravity = 1.2f;
-	playerKinematic->minGravity = 1.2f;
-	playerKinematic->maxGravity = 500.0f;
-	playerKinematic->gravityFactor = 2.7f;
+	playerKinematic->gravity = 75.4f;
+	playerKinematic->minGravity = 75.4f;
+	playerKinematic->maxGravity = 525.0f;
+	playerKinematic->gravityFactor = 3.6f;
+
+	//jumping
+	playerKinematic->jumpSpeed = 85.6f;
+	playerKinematic->minJumpSpeed = 85.6f;
+	playerKinematic->maxJumpSpeed = 495.0f;
+	playerKinematic->jumpFactor = 10.5f;
+	playerKinematic->currentJumpTime = 0.5f;
+	playerKinematic->maxJumpTime = 0.5f;
 
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;

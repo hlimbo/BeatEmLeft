@@ -111,16 +111,16 @@ void KeyboardController::HandleInput(const SDL_Event& event)
 				break;
 				//action keys
 			case SDLK_a:
-				keys["a"] = KeyStates::PRESSED;
+				keys["a"] = KeyStates::HELD;
 				break;
 			case SDLK_s:
-				keys["s"] = KeyStates::PRESSED;
+				keys["s"] = KeyStates::HELD;
 				break;
 			case SDLK_d:
-				keys["d"] = KeyStates::PRESSED;
+				keys["d"] = KeyStates::HELD;
 				break;
 			case SDLK_SPACE:
-				keys["space"] = KeyStates::PRESSED;
+				keys["space"] = KeyStates::HELD;
 				break;
 			}
 		}

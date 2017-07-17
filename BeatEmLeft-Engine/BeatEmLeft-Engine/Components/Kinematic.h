@@ -33,6 +33,15 @@ struct Kinematic
 	float maxGravity;
 	float gravityFactor;
 
+	//should make more components for these things possibly
+	//jumping
+	float minJumpSpeed;
+	float maxJumpSpeed;
+	float jumpFactor;
+	float jumpSpeed;
+	float maxJumpTime;
+	float currentJumpTime;
+
 	float mass;
 
 	const char* type;
