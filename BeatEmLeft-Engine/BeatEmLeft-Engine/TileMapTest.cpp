@@ -258,9 +258,15 @@ int main(int argc, char* argv[])
 
 		renderSys.Update(render);
 
+		//temporary draw circle bounds tile
 		SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
 		SDL_Point center = SDL_Point{ (int)roundf(tileTransform->position.x),(int)roundf(tileTransform->position.y) };
 		DrawCircle(render, center, (int)tileCircle->radius);
+
+		//temporary draw circle bounds player
+		SDL_SetRenderDrawColor(render, 0, 0, 255, 255);
+		SDL_Point pcenter = SDL_Point{ (int)roundf(playerTransform->position.x),(int)roundf(playerTransform->position.y) };
+		DrawCircle(render, pcenter, (int)playerCircle->radius);
 
 		renderSys.Draw(render);
 
