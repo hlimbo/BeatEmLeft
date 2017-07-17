@@ -30,6 +30,9 @@ public:
 	//deltaTime = in seconds
 	void UpdatePositions(float deltaTime);
 
+	//obtains a new rate of speed to add to acceleration
+	float GetDeltaSpeed(Kinematic* kinematic);
+
 private:
 	//do not need to free these pointers as these get freed in ecs
 	ECS* ecs;

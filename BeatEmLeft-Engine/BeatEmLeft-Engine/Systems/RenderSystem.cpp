@@ -54,12 +54,12 @@ bool RenderSystem::SetEntityToFollow(int id)
 		SDL_Point targetPos = getFloatToIntegerCoordinates(transformComponent->position);
 		
 		//set a camera offset relative to the entity ~ camera centered on target entity
-		//camera.x = (targetPos.x + spriteComponent->width / 2) - (camera.w / 2);
-		//camera.y = (targetPos.y + spriteComponent->height / 2) - (camera.h / 2);
+		camera.x = (targetPos.x + spriteComponent->width / 2) - (camera.w / 2);
+		camera.y = (targetPos.y + spriteComponent->height / 2) - (camera.h / 2);
 		
 		//have camera not move for now
-		camera.x = 0;
-		camera.y = 0;
+		//camera.x = 0;
+		//camera.y = 0;
 
 		//camera bounds check relative to world coordinates
 		if (camera.x < 0)
