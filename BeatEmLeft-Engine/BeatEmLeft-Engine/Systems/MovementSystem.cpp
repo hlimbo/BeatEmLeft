@@ -188,16 +188,26 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 
 
 		//Platformer movement controller
-		if (keyboard->KeyPressed("left") || keyboard->KeyHeld("left"))
+		if (keyboard->KeyPressed("left"))
 		{
 			kinematic->direction.x = -1.0f;
+			kinematic->currentSpeed = kinematic->minSpeed;
+		}
+
+		if (keyboard->KeyHeld("left"))
+		{
 			float newSpeed = kinematic->currentSpeed + GetDeltaSpeed(kinematic) * deltaTime;
 			kinematic->currentSpeed = (newSpeed > kinematic->maxSpeed) ? kinematic->maxSpeed : newSpeed;
 		}
 
-		if (keyboard->KeyPressed("right") || keyboard->KeyHeld("right"))
+		if (keyboard->KeyPressed("right"))
 		{
 			kinematic->direction.x = 1.0f;
+			kinematic->currentSpeed = kinematic->minSpeed;
+		}
+
+		if (keyboard->KeyHeld("right"))
+		{
 			float newSpeed = kinematic->currentSpeed + GetDeltaSpeed(kinematic) * deltaTime;
 			kinematic->currentSpeed = (newSpeed > kinematic->maxSpeed) ? kinematic->maxSpeed : newSpeed;
 		}
@@ -212,7 +222,6 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 		if (keyboard->KeyHeld("left") && keyboard->KeyHeld("right"))
 		{
 			kinematic->direction.x = 0.0f;
-			kinematic->currentSpeed = kinematic->minSpeed;
 		}
 
 		//jumping
@@ -221,8 +230,7 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 		//	puts("press");
 			kinematic->currentJumpTime = 0.0f;		
 		}
-
-		if (keyboard->KeyHeld("space") && kinematic->currentJumpTime <= kinematic->maxJumpTime)
+		else if (keyboard->KeyHeld("space") && kinematic->currentJumpTime < kinematic->maxJumpTime)
 		{
 			//puts("held");
 			//printf("kinematic jump time: %f\n", kinematic->currentJumpTime);
@@ -233,8 +241,17 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 				kinematic->jumpSpeed = kinematic->maxJumpSpeed;
 		}
 		
-		if (keyboard->KeyReleased("space") || kinematic->currentJumpTime >= kinematic->maxJumpTime)
+		if (keyboard->KeyReleased("space"))
 		{
+			//printf("current jumpTime: %f\n", kinematic->currentJumpTime);
+			//puts("released");
+			kinematic->jumpSpeed = kinematic->minJumpSpeed;
+			kinematic->direction.y = 0.0f;
+		}
+
+		if (kinematic->currentJumpTime >= kinematic->maxJumpTime)
+		{
+		//	printf("current jumpTime max: %f\n", kinematic->currentJumpTime);
 			//puts("released");
 			kinematic->jumpSpeed = kinematic->minJumpSpeed;
 			kinematic->direction.y = 0.0f;
@@ -397,6 +414,8 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 								//change the velocity instead of correcting the position
 								float adjustedVelY = deltaP.y * timeY;
 								pk->velocity.y = adjustedVelY;
+								
+								//not sure if gravity should be changed here...
 								pk->gravity = pk->minGravity;
 							}
 

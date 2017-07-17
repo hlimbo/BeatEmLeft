@@ -192,15 +192,17 @@ int main(int argc, char* argv[])
 	playerSprite->height = 40;
 	
 	auto playerKinematic = new Kinematic();
-	playerKinematic->minSpeed = 102.2f;
+	playerKinematic->minSpeed = 155.0f;
 	playerKinematic->maxSpeed = 363.2f;
 	playerKinematic->currentSpeed = playerKinematic->minSpeed;
 	playerKinematic->direction = Vect2(0.0f, 0.0f);//direction depends on what key is pressed
 	playerKinematic->accelFactor = 1.7f;
-	playerKinematic->acceleration = Vect2(0.0f, 0.0f);
+	//playerKinematic->acceleration = Vect2(0.0f, 0.0f);//not really using this...
+	
+	//gravity
 	playerKinematic->gravity = 75.4f;
 	playerKinematic->minGravity = 75.4f;
-	playerKinematic->maxGravity = 525.0f;
+	playerKinematic->maxGravity = 492.5f;
 	playerKinematic->gravityFactor = 3.6f;
 
 	//jumping
@@ -208,8 +210,16 @@ int main(int argc, char* argv[])
 	playerKinematic->minJumpSpeed = 85.6f;
 	playerKinematic->maxJumpSpeed = 495.0f;
 	playerKinematic->jumpFactor = 10.5f;
-	playerKinematic->currentJumpTime = 0.5f;
-	playerKinematic->maxJumpTime = 0.5f;
+	playerKinematic->currentJumpTime = 0.0f;
+	playerKinematic->maxJumpTime = 0.65f;
+
+	float someDiff = (playerKinematic->jumpSpeed * playerKinematic->jumpFactor) - (playerKinematic->gravity * playerKinematic->gravityFactor);
+	float someTime = 0.0f;
+	if (someDiff != 0.0f)
+		someTime = ((playerKinematic->gravity - playerKinematic->jumpSpeed) / someDiff) * 1000.0f;
+	
+	printf("some time: %f\n", someTime);
+
 
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
@@ -318,6 +328,7 @@ int main(int argc, char* argv[])
 		}
 
 	//	printf("fps: %d\n", (int)observedFPS);
+	//	printf("deltaTime: %f\n", observedDeltaTime);
 	}
 
 	ecs.FreeKeyboard();
