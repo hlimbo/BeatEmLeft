@@ -186,6 +186,7 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 
 		//}
 
+
 		//Platformer movement controller
 		if (keyboard->KeyPressed("left") || keyboard->KeyHeld("left"))
 		{
@@ -208,10 +209,7 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 		}
 
 		//if both left and right keys are held and/or pressed don't move
-		if ((keyboard->KeyPressed("left") && keyboard->KeyPressed("right")) ||
-			(keyboard->KeyHeld("left") && keyboard->KeyHeld("right")) ||
-			(keyboard->KeyPressed("left") && keyboard->KeyHeld("right")) ||
-			(keyboard->KeyHeld("left") && keyboard->KeyPressed("right")))
+		if (keyboard->KeyHeld("left") && keyboard->KeyHeld("right"))
 		{
 			kinematic->direction.x = 0.0f;
 			kinematic->currentSpeed = kinematic->minSpeed;
@@ -220,13 +218,13 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 		//jumping
 		if (keyboard->KeyPressed("space"))
 		{
-			puts("press");
+		//	puts("press");
 			kinematic->currentJumpTime = 0.0f;		
 		}
 
-		if ((keyboard->KeyPressed("space") || keyboard->KeyHeld("space")) && kinematic->currentJumpTime <= kinematic->maxJumpTime)
+		if (keyboard->KeyHeld("space") && kinematic->currentJumpTime <= kinematic->maxJumpTime)
 		{
-		//	puts("held");
+			//puts("held");
 			//printf("kinematic jump time: %f\n", kinematic->currentJumpTime);
 			kinematic->currentJumpTime += deltaTime;
 			kinematic->direction.y = -1.0f;
@@ -249,10 +247,10 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 
 		//printf("gravity: %f\n", kinematic->gravity);
 
-		if (kinematic->direction.y == 0.0f && kinematic->jumpSpeed * kinematic->direction.y * deltaTime != 0.0f)
-		{
-			printf("this result: %f,%f,%f\n", kinematic->jumpSpeed, kinematic->direction.y, deltaTime);
-		}
+		//if (kinematic->direction.y == 0.0f && kinematic->jumpSpeed * kinematic->direction.y * deltaTime != 0.0f)
+		//{
+		//	printf("this result: %f,%f,%f\n", kinematic->jumpSpeed, kinematic->direction.y, deltaTime);
+		//}
 
 		kinematic->velocity.y = (kinematic->gravity * deltaTime) + (kinematic->jumpSpeed * kinematic->direction.y * deltaTime);
 

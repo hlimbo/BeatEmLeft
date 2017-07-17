@@ -18,39 +18,38 @@ enum class KeyStates
 	RELEASED, //this state means the key was released in one frame or more frames(current frame).
 };
 
-//used as a way to identify what kind of event triggered the input
-enum class InputEventType
-{
-	KEYDOWN,  //equivalent to SDL_KEYDOWN
-	KEYREPEAT, //equivalent to SDL_KEYDOWN && event.key.repeat != 0;
-	KEYUP, //equivalent to SDL_KEYUP
-	UNDEFINED //used to ignore events from SDL_Event we don't care about
-};
-
 class KeyboardController
 {
 public:
-	KeyboardController() { inputType = InputEventType::UNDEFINED; }
+	//about 3 frames of keyboard delay from transitioning between pressed to held state
+	KeyboardController() {	latency = 55.7f; }
+	KeyboardController(float latency) { this->latency = latency; }
 	~KeyboardController() {}
 
 	//will take in a file later on.......this should be dealt with towards the end of the engine..
 	void Init();
 	void HandleInput(const SDL_Event& event);
-
+	//use this for handling between pressed and held keys
+	//Usage:call this method after HandleInput, outside of the while(SDL_PollEvent(&event)) loop
+	void UpdateKeyStates(float deltaTime);
 
 	bool KeyPressed(std::string keyName);
 	bool KeyHeld(std::string keyName);
 	bool KeyReleased(std::string keyName);
-	InputEventType GetInputType();
+
+	inline float GetLatency() { return latency; }
 private:
 	std::unordered_map<std::string, KeyStates> keys;
-	//this gets updated every time handleInput is called.
-	//can be set to UNDEFINED if no new key input events were triggered
-	InputEventType inputType;
-
-	//debug variables
-	int startPressedTime;
-	int counter;
+	std::unordered_map<std::string, float> elapsedTime;
+	
+	//latency is the amount of time required in milliseconds to change the keyboard
+	//state from pressed to held
+	//the longer the latency, the less responsive the keyboard input gets
+	//the lower the latency, the more responsive the keyboard input gets
+	//however, the latency value should never be less than or equal to the amount
+	//of time it takes in milliseconds to update a frame as responsiveness of the keys
+	//depends on the framerate of the game
+	float latency;
 };
 
 #endif
