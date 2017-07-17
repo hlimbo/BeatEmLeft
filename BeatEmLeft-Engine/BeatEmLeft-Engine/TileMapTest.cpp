@@ -138,9 +138,10 @@ int main(int argc, char* argv[])
 	string mapFilePath = mainPath + string("funky_map.txt");
 	MapFileLoader::Load(mapFilePath.c_str(), &map);
 
-	Transform* tileTransform = nullptr;
-	Sprite* tileSprite = nullptr;
-	CircleCollider* tileCircle = nullptr;
+	//temp
+	//Transform* tileTransform = nullptr;
+	//Sprite* tileSprite = nullptr;
+	//CircleCollider* tileCircle = nullptr;
 
 	for (int r = 0;r < map.rowCount;++r)
 	{
@@ -174,9 +175,9 @@ int main(int argc, char* argv[])
 				ecs.circleColliders.AddComponent(tileID, circleCollider);
 
 				//temp
-				tileTransform = transform;
-				tileSprite = sprite;
-				tileCircle = circleCollider;
+			//	tileTransform = transform;
+			//	tileSprite = sprite;
+			//	tileCircle = circleCollider;
 			}
 		}
 	}
@@ -184,18 +185,23 @@ int main(int argc, char* argv[])
 	//player entity creation
 	int playerID = ecs.entitySystem.CreateEntity("Player");
 	auto playerTransform = new Transform();
-	playerTransform->position = Vect2(20.0f, 35.3f);
+	playerTransform->position = Vect2(20.0f, 0.0f);
 	
 	auto playerSprite = new Sprite(store.Get("blue.png"));
 	playerSprite->width = 40;
 	playerSprite->height = 40;
 	
 	auto playerKinematic = new Kinematic();
-	playerKinematic->minSpeed = 100.0f;
-	playerKinematic->maxSpeed = 552.3f;
+	playerKinematic->minSpeed = 102.2f;
+	playerKinematic->maxSpeed = 363.2f;
 	playerKinematic->currentSpeed = playerKinematic->minSpeed;
 	playerKinematic->direction = Vect2(0.0f, 0.0f);//direction depends on what key is pressed
 	playerKinematic->accelFactor = 1.7f;
+	playerKinematic->acceleration = Vect2(0.0f, 0.0f);
+	playerKinematic->gravity = 1.2f;
+	playerKinematic->minGravity = 1.2f;
+	playerKinematic->maxGravity = 500.0f;
+	playerKinematic->gravityFactor = 2.7f;
 
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
@@ -249,24 +255,25 @@ int main(int argc, char* argv[])
 		}
 
 		movementSys.UpdateKinematics(deltaTime);
-	//	movementSys.CheckForCollisions(observedDeltaTime);
+		movementSys.CheckForCollisions(observedDeltaTime);
 
 		movementSys.UpdatePositions(deltaTime);
-	//	movementSys.CorrectCollisionOverlaps(observedDeltaTime);
+		movementSys.CorrectCollisionOverlaps(observedDeltaTime);
 
-		movementSys.CheckForCircleCollisions(observedDeltaTime);
+		//don't need for now
+		//movementSys.CheckForCircleCollisions(observedDeltaTime);
 
 		renderSys.Update(render);
 
-		//temporary draw circle bounds tile
-		SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
-		SDL_Point center = SDL_Point{ (int)roundf(tileTransform->position.x),(int)roundf(tileTransform->position.y) };
-		DrawCircle(render, center, (int)tileCircle->radius);
+		////temporary draw circle bounds tile
+		//SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
+		//SDL_Point center = SDL_Point{ (int)roundf(tileTransform->position.x),(int)roundf(tileTransform->position.y) };
+		//DrawCircle(render, center, (int)tileCircle->radius);
 
-		//temporary draw circle bounds player
-		SDL_SetRenderDrawColor(render, 0, 0, 255, 255);
-		SDL_Point pcenter = SDL_Point{ (int)roundf(playerTransform->position.x),(int)roundf(playerTransform->position.y) };
-		DrawCircle(render, pcenter, (int)playerCircle->radius);
+		////temporary draw circle bounds player
+		//SDL_SetRenderDrawColor(render, 0, 0, 255, 255);
+		//SDL_Point pcenter = SDL_Point{ (int)roundf(playerTransform->position.x),(int)roundf(playerTransform->position.y) };
+		//DrawCircle(render, pcenter, (int)playerCircle->radius);
 
 		renderSys.Draw(render);
 
