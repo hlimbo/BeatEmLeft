@@ -91,13 +91,15 @@ int main(int argc, char* argv[])
 	string playerPath = mainPath + string("blue.png");
 	string backgroundPath = mainPath + string("Background.png");
 	string tilePath = mainPath + string("block.png");
-	string sheetPath = mainPath + string("treyArt.png");
+	string sheetPath = mainPath + string("walk_right.png");
+	//string sheetPath = mainPath + string("treyArt.png");
 
 	TextureStore store(render);
 	store.Load("Background.png", backgroundPath);
 	store.Load("block.png", tilePath);
 	store.Load("blue.png", playerPath);
-	store.Load("treyArt.png", sheetPath);
+	store.Load("walk_right.png", sheetPath);
+	//store.Load("treyArt.png", sheetPath);
 
 	ECS ecs;
 
@@ -225,10 +227,12 @@ int main(int argc, char* argv[])
 
 	//temp
 	SpriteSheet spriteSheet;
-	SDL_Texture* srcTexture = store.Get("treyArt.png");
+	SDL_Texture* srcTexture = store.Get("walk_right.png");
+	//SDL_Texture* srcTexture = store.Get("treyArt.png");
 	spriteSheet.scaleX = 0.5f;
 	spriteSheet.scaleY = 0.5f;
-	spriteSheet.SetTextureAttributes(srcTexture, 300, 450);
+	//spriteSheet.SetTextureAttributes(srcTexture, 300, 450);
+	spriteSheet.SetTextureAttributes(srcTexture, 500, 500);
 	int frameIndex = 0;
 	float leftSwitchDelayTime = 0.0f;
 	float rightSwitchDelayTime = 0.0f;
@@ -338,15 +342,10 @@ int main(int argc, char* argv[])
 		//	}
 		//}
 
-		spriteSheet.PlayAnimation(deltaTime, 0.5f);
+		spriteSheet.PlayAnimation(deltaTime, 0.25f);
 
 		//const SDL_Rect* frame = spriteSheet.GetFrame(frameIndex);
 		const SDL_Rect frame = spriteSheet.GetCurrentFrame();
-		SDL_Rect bounds;
-		bounds.x = 255;
-		bounds.y = 305;
-		bounds.h = 350 * 0.5;
-		bounds.w = 450 * 0.5;
 		SDL_Texture* sheetTexture = spriteSheet.texture;
 
 		SDL_RenderCopy(render, sheetTexture, &frame, spriteSheet.GetBounds());
