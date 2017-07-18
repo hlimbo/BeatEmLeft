@@ -26,6 +26,7 @@
 #include "EntitySystem.h"
 #include "ComponentManager.h"
 #include "../Components/Sprite.h"
+#include "../Components/SpriteSheet.h"
 #include "../Components/Transform.h"
 #include "../Components/Kinematic.h"
 #include "../Components/BoxCollider.h"
@@ -43,6 +44,7 @@ struct ECS
 	ComponentManager<Kinematic> kinematics;
 	ComponentManager<BoxCollider> boxColliders;
 	ComponentManager<CircleCollider> circleColliders;
+	ComponentManager<SpriteSheet> spriteSheets;
 
 //Keyboard Interface-------------------------------------------------------------
 	void InitKeyboard()

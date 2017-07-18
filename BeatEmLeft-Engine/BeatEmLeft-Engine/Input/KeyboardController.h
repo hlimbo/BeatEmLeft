@@ -22,7 +22,7 @@ class KeyboardController
 {
 public:
 	//about 3 frames of keyboard delay from transitioning between pressed to held state
-	KeyboardController() {	latency = 55.7f; }
+	KeyboardController() { latency = 55.7f;}
 	KeyboardController(float latency) { this->latency = latency; }
 	~KeyboardController() {}
 

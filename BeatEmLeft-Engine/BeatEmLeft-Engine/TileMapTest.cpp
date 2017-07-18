@@ -11,6 +11,7 @@
 #include "Components/Sprite.h"
 #include "Components/Transform.h"
 #include "Components/BoxCollider.h"
+#include "Components/SpriteSheet.h"
 #include "Systems/ECS.h"
 #include "Core.h"
 #include "Systems/MovementSystem.h"
@@ -90,11 +91,13 @@ int main(int argc, char* argv[])
 	string playerPath = mainPath + string("blue.png");
 	string backgroundPath = mainPath + string("Background.png");
 	string tilePath = mainPath + string("block.png");
+	string sheetPath = mainPath + string("treyArt.png");
 
 	TextureStore store(render);
 	store.Load("Background.png", backgroundPath);
 	store.Load("block.png", tilePath);
 	store.Load("blue.png", playerPath);
+	store.Load("treyArt.png", sheetPath);
 
 	ECS ecs;
 
@@ -218,8 +221,18 @@ int main(int argc, char* argv[])
 	if (someDiff != 0.0f)
 		someTime = ((playerKinematic->gravity - playerKinematic->jumpSpeed) / someDiff) * 1000.0f;
 	
-	printf("some time: %f\n", someTime);
+	//printf("some time: %f\n", someTime);
 
+	//temp
+	SpriteSheet spriteSheet;
+	SDL_Texture* srcTexture = store.Get("treyArt.png");
+	spriteSheet.scaleX = 0.5f;
+	spriteSheet.scaleY = 0.5f;
+	spriteSheet.SetTextureAttributes(srcTexture, 300, 450);
+	int frameIndex = 0;
+	float leftSwitchDelayTime = 0.0f;
+	float rightSwitchDelayTime = 0.0f;
+	float maxDelayTime = 0.02785f;//measured in seconds
 
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
@@ -280,6 +293,7 @@ int main(int argc, char* argv[])
 		movementSys.UpdatePositions(deltaTime);
 		movementSys.CorrectCollisionOverlaps(observedDeltaTime);
 
+		
 		//don't need for now
 		//movementSys.CheckForCircleCollisions(observedDeltaTime);
 
@@ -294,6 +308,48 @@ int main(int argc, char* argv[])
 		//SDL_SetRenderDrawColor(render, 0, 0, 255, 255);
 		//SDL_Point pcenter = SDL_Point{ (int)roundf(playerTransform->position.x),(int)roundf(playerTransform->position.y) };
 		//DrawCircle(render, pcenter, (int)playerCircle->radius);
+
+		//temp draw spriteSheet
+		//if (keyboard->KeyPressed("a"))
+		//{
+		//	if (leftSwitchDelayTime > maxDelayTime)
+		//	{
+		//		frameIndex = (frameIndex + 1) % spriteSheet.GetFrameCount();
+		//		leftSwitchDelayTime = 0.0f;
+		//	}
+		//	else
+		//	{
+		//		leftSwitchDelayTime += deltaTime;
+		//	}
+		//}
+		//if (keyboard->KeyPressed("d"))
+		//{
+		//	if (rightSwitchDelayTime > maxDelayTime)
+		//	{
+		//		if (--frameIndex < 0)
+		//		{
+		//			frameIndex = spriteSheet.GetFrameCount() - 1;
+		//		}
+		//		rightSwitchDelayTime = 0.0f;
+		//	}
+		//	else
+		//	{
+		//		rightSwitchDelayTime += deltaTime;
+		//	}
+		//}
+
+		spriteSheet.PlayAnimation(deltaTime, 0.5f);
+
+		//const SDL_Rect* frame = spriteSheet.GetFrame(frameIndex);
+		const SDL_Rect frame = spriteSheet.GetCurrentFrame();
+		SDL_Rect bounds;
+		bounds.x = 255;
+		bounds.y = 305;
+		bounds.h = 350 * 0.5;
+		bounds.w = 450 * 0.5;
+		SDL_Texture* sheetTexture = spriteSheet.texture;
+
+		SDL_RenderCopy(render, sheetTexture, &frame, spriteSheet.GetBounds());
 
 		renderSys.Draw(render);
 
@@ -332,5 +388,6 @@ int main(int argc, char* argv[])
 	}
 
 	ecs.FreeKeyboard();
+
 	return 0;
 }
