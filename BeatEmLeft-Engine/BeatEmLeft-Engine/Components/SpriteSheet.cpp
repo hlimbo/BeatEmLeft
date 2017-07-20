@@ -56,17 +56,7 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture * srcTexture,int frameWidth,i
 		frames[i].x = (c % colCount) * frames[i].w;
 		frames[i].y = (r / rowCount) * frames[i].h;
 	}
-
-	/*for (int r = 0;r < rowCount;++r)
-	{
-		for (int c = 0;c < colCount;++c)
-		{
-			frames[r + c].x = (c % colCount) * frames[r + c].w;
-			frames[r + c].y = (r / rowCount) * frames[r + c].h;
-		}
-	}*/
 	
-	currentFrame = frames[0];
 	currentFrameIndex = 0;
 
 	//temp code..... might need to change these coordinates regularly if I decide
@@ -74,8 +64,8 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture * srcTexture,int frameWidth,i
 	bounds.x = 0;
 	bounds.y = 0;
 
-	bounds.h = frameWidth * scaleX;
-	bounds.w = frameHeight * scaleY;
+	bounds.h = (int)(frameWidth * scaleX);
+	bounds.w = (int)(frameHeight * scaleY);
 
 	return true;
 }
@@ -85,18 +75,19 @@ const SDL_Rect* SpriteSheet::GetFrame(int frameIndex)
 	return &frames[frameIndex];
 }
 
-void SpriteSheet::PlayAnimation(float deltaTime,float delayTime)
+SDL_Rect SpriteSheet::PlayAnimation(float deltaTime,float delayTime)
 {
 	if (currentTime > delayTime)
 	{
 		currentTime = 0.0f;
 		currentFrameIndex = (currentFrameIndex + 1) % frameCount;
-		currentFrame = frames[currentFrameIndex];
 	}
 	else
 	{
 		currentTime += deltaTime;
 	}
+
+	return frames[currentFrameIndex];
 }
 
 void SpriteSheet::ResetAnimation()
