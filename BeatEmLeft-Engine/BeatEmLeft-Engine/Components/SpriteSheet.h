@@ -15,7 +15,6 @@ struct SpriteSheet
 	bool SetTextureAttributes(SDL_Texture* srcTexture, int frameWidth, int frameHeight);
 
 	const SDL_Rect* GetFrame(int frameIndex);
-	const SDL_Rect GetCurrentFrame() { return currentFrame; }
 	int GetFrameCount() { return frameCount; }
 	const SDL_Rect* GetBounds() { return &bounds; }
 	const char* type;
@@ -25,7 +24,7 @@ struct SpriteSheet
 	//images per second describe the rate at which the frames in the texture change
 	//delayTime controls how fast the images on the sprite sheet changed.
 	//delayTime is measured in seconds
-	void PlayAnimation(float deltaTime,float delayTime);
+	SDL_Rect PlayAnimation(float deltaTime,float delayTime);
 	void ResetAnimation();
 
 private:
@@ -33,7 +32,6 @@ private:
 	int frameCount;
 	int frameWidth, frameHeight;
 	
-	SDL_Rect currentFrame;
 	float currentTime;//measured in seconds.. used to change frames in PlayAnimation
 	int currentFrameIndex;
 

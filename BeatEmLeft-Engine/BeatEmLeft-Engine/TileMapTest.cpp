@@ -342,10 +342,8 @@ int main(int argc, char* argv[])
 		//	}
 		//}
 
-		spriteSheet.PlayAnimation(deltaTime, 0.25f);
-
 		//const SDL_Rect* frame = spriteSheet.GetFrame(frameIndex);
-		const SDL_Rect frame = spriteSheet.GetCurrentFrame();
+		SDL_Rect frame = spriteSheet.PlayAnimation(deltaTime, 0.25f);
 		SDL_Texture* sheetTexture = spriteSheet.texture;
 
 		SDL_RenderCopy(render, sheetTexture, &frame, spriteSheet.GetBounds());
@@ -374,13 +372,12 @@ int main(int argc, char* argv[])
 		startCount = endCount;
 
 		//display fps text in title
-		if ((int)currentTime % 100 == 0)
-		{
-
+	//	if ((int)currentTime % 100 == 0)
+	//	{
 			std::string title("Beat Em Left");
 			title += std::string(" | FPS: ") + std::to_string(observedFPS);
 			SDL_SetWindowTitle(core.getWindow(), title.c_str());
-		}
+		//}
 
 	//	printf("fps: %d\n", (int)observedFPS);
 	//	printf("deltaTime: %f\n", observedDeltaTime);
