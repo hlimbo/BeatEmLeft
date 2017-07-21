@@ -110,6 +110,7 @@ void RenderSystem::Update(SDL_Renderer* render)
 			}
 			else if (playerID == *it)
 			{
+
 				//this effect makes it as if the camera is following the player.
 				//but in reality this is making sure the player stays withing bounds of the camera.
 				//convert player world coordinates to screen coordinates relative to camera
@@ -174,24 +175,37 @@ void RenderSystem::Update(SDL_Renderer* render)
 		return;
 
 	SpriteSheet* currentAnim = playerAnimation->Get("idle");
+	SDL_Rect srcRect = currentAnim->PlayAnimation(0.166f, 0.5f);
+	SDL_RendererFlip flip = SDL_FLIP_NONE;
 
 	if (playerKinematic->velocity.x != 0.0f && playerKinematic->velocity.y == 0.0f)
 	{
 		currentAnim = playerAnimation->Get("walk");
+		if (playerKinematic->velocity.x < 0.0f)
+			flip = SDL_FLIP_HORIZONTAL;
+		else
+			flip = SDL_FLIP_NONE;
+		srcRect = currentAnim->PlayAnimation(0.166f, 0.5f);
 	}
-
-
-	SDL_Rect srcRect = currentAnim->PlayAnimation(0.166f, 0.25f);
+	if (playerKinematic->velocity.y != 0.0f)
+	{
+		currentAnim = playerAnimation->Get("jump");
+		if (playerKinematic->velocity.x < 0.0f)
+			flip = SDL_FLIP_HORIZONTAL;
+		else
+			flip = SDL_FLIP_NONE;
+		srcRect = currentAnim->PlayAnimation(0.166f, 2.5f);
+	}
 
 	//convert game coordinates to screen coordinates
 	SDL_Point screenCoords = getFloatToIntegerCoordinates(playerTransform->position);
 	SDL_Rect screenBounds;
 	screenBounds.x = screenCoords.x - camera.x;
 	screenBounds.y = screenCoords.y - camera.y;
-	screenBounds.w = 32;
-	screenBounds.h = 64;
-	SDL_RenderCopy(render, currentAnim->texture, &srcRect, &screenBounds);
-	
+	screenBounds.w = 32 * 2;
+	screenBounds.h = 64 * 2;
+	//SDL_RenderCopy(render, currentAnim->texture, &srcRect, &screenBounds);
+	SDL_RenderCopyEx(render, currentAnim->texture, &srcRect, &screenBounds, 0.0f, NULL, flip);
 }
 
 void RenderSystem::Draw(SDL_Renderer* render)
