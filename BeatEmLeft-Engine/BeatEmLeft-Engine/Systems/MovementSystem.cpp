@@ -329,6 +329,9 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 
 	if (pt != nullptr && pb != nullptr && pk != nullptr)
 	{
+		//temp
+		//Vect2 tempOffset(7.0f, 1.0f);
+
 		Vect2 newP(pt->position + pk->velocity);
 		Vect2 oldP(pt->position);
 		Vect2 deltaP(newP - oldP);

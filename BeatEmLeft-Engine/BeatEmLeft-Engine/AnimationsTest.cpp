@@ -97,19 +97,24 @@ int main(int argc, char* argv[])
 
 	int playerID = ecs.entitySystem.CreateEntity("Player");
 	
+	auto playerTransform = new Transform();
+	playerTransform->position = Vect2(20.0f, 0.0f);
+
 	//Sprite
 	auto playerSprite = new Sprite(store.Get("blue.png"));
-	playerSprite->width = 40;
-	playerSprite->height = 80;
+	playerSprite->width = 32;
+	playerSprite->height = 32;
+	//temp variables
+	float offSetLeft = 0.0f;//7.0f;
+	float offSetTop = 0.0f;//1.0f;
+	playerSprite->position.x = playerTransform->position.x + offSetLeft;
+	playerSprite->position.y = playerTransform->position.y + offSetTop;
 
 	//SpriteSheets / Animations
 	auto playerAnimation = new Animation();
 	playerAnimation->Add("idle", new SpriteSheet(store.Get("adv_idle.png"), 32, 64));
 	playerAnimation->Add("walk", new SpriteSheet(store.Get("adv_walk.png"), 32, 64));
 	playerAnimation->Add("jump", new SpriteSheet(store.Get("adv_jump.png"), 32, 64));
-		
-	auto playerTransform = new Transform();
-	playerTransform->position = Vect2(20.0f, 0.0f);
 
 	auto playerKinematic = new Kinematic();
 	playerKinematic->minSpeed = 155.0f;
@@ -135,8 +140,10 @@ int main(int argc, char* argv[])
 
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
-	playerBox->width = 39;
-	playerBox->height = 79;
+	//playerBox->position.x += offSetLeft;
+	//playerBox->position.y += offSetTop;
+	playerBox->width = 32;
+	playerBox->height = 32;
 
 	ecs.transforms.AddComponent(playerID, playerTransform);
 	ecs.kinematics.AddComponent(playerID, playerKinematic);
