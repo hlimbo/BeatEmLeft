@@ -41,6 +41,22 @@ bool KeyboardController::KeyReleased(std::string keyName)
 	return keys.at(keyName) == KeyStates::RELEASED;
 }
 
+void KeyboardController::PrintKeyStatuses()
+{
+	for (auto it = keys.begin();it != keys.end();++it)
+	{
+		switch (it->second)
+		{
+		case KeyStates::PRESSED:
+			printf("%s is pressed\n", it->first.c_str());
+			break;
+		case KeyStates::HELD:
+			printf("%s is held\n", it->first.c_str());
+			break;
+		}
+	}
+}
+
 //the subtle difference between gamepad controller events
 //and key events is that key events get checked every update
 //e.g. if key is down for more than 1 frame, it will continue to 

@@ -2,26 +2,22 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
-
 #include <Vect2.h>
 
-#include "Systems/RenderSystem.h"
-#include "Systems/ComponentManager.h"
-#include "Systems/EntitySystem.h"
-#include "Components/Sprite.h"
-#include "Components/Transform.h"
-#include "Components/BoxCollider.h"
-#include "Components/SpriteSheet.h"
-#include "Components/Animation.h"
-#include "Systems/ECS.h"
-#include "Core.h"
-#include "Systems/MovementSystem.h"
+#include "../Core.h"
+#include "../Systems/ECS.h"
+#include "../Systems/RenderSystem.h"
+#include "../Systems/MovementSystem.h"
 
-#include "Input/KeyboardController.h"
-#include "Input/GameController.h"
-#include "Utility/TextureLoader.h"
-#include "Utility/TextureStore.h"
-#include "Utility/MapFileLoader.h"
+#include "../Systems/ComponentManager.h"
+#include "../Systems/EntitySystem.h"
+#include "../Components/Sprite.h"
+#include "../Components/Transform.h"
+#include "../Components/BoxCollider.h"
+#include "../Components/SpriteSheet.h"
+
+#include "../Input/KeyboardController.h"
+#include "../Utility/TextureStore.h"
 
 using namespace std;
 
@@ -29,32 +25,23 @@ int main(int argc, char* argv[])
 {
 	Core core;
 	SDL_Renderer* render = core.getRenderer();
+	ECS ecs;
+	ecs.InitKeyboard();
 
 	//setup texture file paths
 	string mainPath(SDL_GetBasePath());
 	mainPath += string("resources\\");
 
-	string idlePath = mainPath + string("adv_idle.png");
-	string walkPath = mainPath + string("adv_walk.png");
-	string jumpPath = mainPath + string("adv_jump.png");
-
-	string backgroundPath = mainPath + string("Background.png");
-	string tilePath = mainPath + string("block.png");
 	string playerPath = mainPath + string("blue.png");
+	string backgroundPath = mainPath + string("Background.png");
+	string redPath = mainPath + string("redblock.png");
+	string blockPath = mainPath + string("block.png");
 
 	TextureStore store(render);
 	store.Load("Background.png", backgroundPath);
-	store.Load("block.png", tilePath);
-	store.Load("adv_idle.png", idlePath);
-	store.Load("adv_walk.png", walkPath);
-	store.Load("adv_jump.png", jumpPath);
+	store.Load("block.png", blockPath);
 	store.Load("blue.png", playerPath);
-
-	MapFileLoader::TileMap map;
-	string mapFilePath = mainPath + string("funky_map.txt");
-	MapFileLoader::Load(mapFilePath.c_str(), &map);
-
-	ECS ecs;
+	store.Load("redblock.png", redPath);
 
 	int bgID = ecs.entitySystem.CreateEntity("Background");
 	auto bgTransform = new Transform();
@@ -63,58 +50,29 @@ int main(int argc, char* argv[])
 	ecs.transforms.AddComponent(bgID, bgTransform);
 	ecs.sprites.AddComponent(bgID, bgSprite);
 
-	float tileWidth = (float)map.tileWidth;
-	float tileHeight = (float)map.tileHeight;
-	//int pad = 1;
-	//tiles initialization
-	for (int r = 0;r < map.rowCount;++r)
-	{
-		for (int c = 0;c < map.colCount;++c)
-		{
-			if (map.contents[r][c] == 1)
-			{
-				int tileID = ecs.entitySystem.CreateEntity("Tile");
-				//construct list of tileCoordinates
-				Vect2 tilePosition((float)c * (float)(tileWidth),
-					(float)r * (float)(tileHeight));
-				auto transform = new Transform(tilePosition);
+	int blockID = ecs.entitySystem.CreateEntity("Tile");
+	auto blockTransform = new Transform(Vect2(100.0f,0.0f));
+	auto blockSprite = new Sprite(store.Get("redblock.png"));
+	blockSprite->width = 40;
+	blockSprite->height = 40;
+	auto blockCollider = new BoxCollider();
+	blockCollider->position = blockTransform->position;
+	blockCollider->width = 40.0f;
+	blockCollider->height = 40.0f;
 
-				auto sprite = new Sprite(store.Get("block.png"));
-				sprite->width = tileWidth;
-				sprite->height = tileHeight;
-
-				auto boxCollider = new BoxCollider();
-				boxCollider->position = tilePosition;
-				boxCollider->width = (float)tileWidth;
-				boxCollider->height = (float)tileHeight;
-
-				ecs.transforms.AddComponent(tileID, transform);
-				ecs.sprites.AddComponent(tileID, sprite);
-				ecs.boxColliders.AddComponent(tileID, boxCollider);
-			}
-		}
-	}
-
-	int playerID = ecs.entitySystem.CreateEntity("Player");
+	ecs.transforms.AddComponent(blockID, blockTransform);
+	ecs.sprites.AddComponent(blockID, blockSprite);
+	ecs.boxColliders.AddComponent(blockID, blockCollider);
 	
+
+	//player entity creation
+	int playerID = ecs.entitySystem.CreateEntity("Player");
 	auto playerTransform = new Transform();
 	playerTransform->position = Vect2(20.0f, 0.0f);
 
-	//Sprite
 	auto playerSprite = new Sprite(store.Get("blue.png"));
-	playerSprite->width = 50;
-	playerSprite->height = 64;
-	//temp variables
-	float offSetLeft = 0.0f;//7.0f;
-	float offSetTop = 0.0f;//1.0f;
-	playerSprite->position.x = playerTransform->position.x + offSetLeft;
-	playerSprite->position.y = playerTransform->position.y + offSetTop;
-
-	//SpriteSheets / Animations
-	auto playerAnimation = new Animation();
-	playerAnimation->Add("idle", new SpriteSheet(store.Get("adv_idle.png"), 32, 64));
-	playerAnimation->Add("walk", new SpriteSheet(store.Get("adv_walk.png"), 32, 64));
-	playerAnimation->Add("jump", new SpriteSheet(store.Get("adv_jump.png"), 32, 64));
+	playerSprite->width = 40;
+	playerSprite->height = 40;
 
 	auto playerKinematic = new Kinematic();
 	playerKinematic->minSpeed = 155.0f;
@@ -122,13 +80,12 @@ int main(int argc, char* argv[])
 	playerKinematic->currentSpeed = playerKinematic->minSpeed;
 	playerKinematic->direction = Vect2(0.0f, 0.0f);//direction depends on what key is pressed
 	playerKinematic->accelFactor = 1.7f;
-	//playerKinematic->acceleration = Vect2(0.0f, 0.0f);//not really using this...
 
 	//gravity
-	playerKinematic->gravity = 75.4f;
-	playerKinematic->minGravity = 75.4f;
-	playerKinematic->maxGravity = 492.5f;
-	playerKinematic->gravityFactor = 3.6f;
+	playerKinematic->gravity = 0.0f;
+	playerKinematic->minGravity = 0.0f;
+	playerKinematic->maxGravity = 0.0f;
+	playerKinematic->gravityFactor = 0.0f;
 
 	//jumping
 	playerKinematic->jumpSpeed = 85.6f;
@@ -140,20 +97,16 @@ int main(int argc, char* argv[])
 
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
-	//playerBox->position.x += offSetLeft;
-	//playerBox->position.y += offSetTop;
-	playerBox->width = 50;
-	playerBox->height = 64;
+	playerBox->width = (float)playerSprite->width;
+	playerBox->height = (float)playerSprite->height;
 
 	ecs.transforms.AddComponent(playerID, playerTransform);
+	ecs.sprites.AddComponent(playerID, playerSprite);
 	ecs.kinematics.AddComponent(playerID, playerKinematic);
 	ecs.boxColliders.AddComponent(playerID, playerBox);
-	ecs.animations.AddComponent(playerID, playerAnimation);
-	ecs.sprites.AddComponent(playerID, playerSprite);
-	ecs.InitKeyboard();
+
 	KeyboardController* keyboard = ecs.RegisterKeyboard(playerID);
 
-	//initialize systems
 	RenderSystem renderSys(&ecs);
 	renderSys.Init(SCREEN_WIDTH, SCREEN_HEIGHT);
 	MovementSystem movementSys(&ecs);
@@ -180,16 +133,60 @@ int main(int argc, char* argv[])
 			if (event.type == SDL_QUIT)
 				running = false;
 
+			if (event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					printf("left mouse click (%d,%d)\n", event.button.x, event.button.y);
+				}
+			}
+
 			keyboard->HandleInput(event);
 		}
-
 		keyboard->UpdateKeyStates(observedDeltaTime);
+		//keyboard->PrintKeyStatuses();
 
 		movementSys.UpdateKinematics(deltaTime);
 		movementSys.CheckForCollisions(observedDeltaTime);
 
 		movementSys.UpdatePositions(deltaTime);
 		movementSys.CorrectCollisionOverlaps(observedDeltaTime);
+
+		//check for rectangle overlap
+		Vect2 playerPos = playerTransform->position;
+		Vect2 boxPos = blockTransform->position;
+
+		//if (playerPos.x < boxPos.x + blockCollider->width &&
+		//	playerPos.x + playerBox->width > boxPos.x)
+		//{
+		//	puts("detected x-axis overlap");
+		//}
+
+		//if (playerPos.y < boxPos.y + blockCollider->height &&
+		//	playerPos.y + playerBox->height > boxPos.y)
+		//{
+		//	puts("detected y-axis overlap");
+		//}
+
+		//if (playerPos.x < boxPos.x + blockCollider->width &&
+		//	playerPos.x + playerBox->width > boxPos.x  &&
+		//	playerPos.y < boxPos.y + blockCollider->height &&
+		//	playerPos.y + playerBox->height > boxPos.y)
+		//{
+		//	Vect2 normal = VectMath::Normalize(playerKinematic->velocity);
+
+		//	Vect2 pen = playerPos - boxPos;
+
+		//	if (normal.x > 0.0f)
+		//	{
+		//		playerTransform->position.x += (pen.x + playerBox->width) * -1.0f * normal.x;
+		//	}
+		//	else if (normal.y < 0.0f)
+		//	{
+
+		//	}
+		//}
+
 
 		renderSys.Update(render);
 		renderSys.Draw(render);
@@ -225,6 +222,5 @@ int main(int argc, char* argv[])
 	}
 
 	ecs.FreeKeyboard();
-
 	return 0;
 }
