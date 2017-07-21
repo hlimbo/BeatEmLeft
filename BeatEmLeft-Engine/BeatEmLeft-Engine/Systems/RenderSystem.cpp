@@ -4,6 +4,10 @@
 #include "../Components/Transform.h"
 #include <SDL2/SDL_render.h>
 
+#include "../Components/Animation.h"
+#include "../Components/SpriteSheet.h"
+#include "../Components/Kinematic.h"
+
 RenderSystem::RenderSystem()
 {
 	ecs = nullptr;
@@ -161,6 +165,33 @@ void RenderSystem::Update(SDL_Renderer* render)
 			}
 		}
 	}
+
+	//temp code
+	auto playerTransform = ecs->transforms.GetComponent(playerID);
+	auto playerKinematic = ecs->kinematics.GetComponent(playerID);
+	auto playerAnimation = ecs->animations.GetComponent(playerID);
+	if (playerTransform == nullptr || playerKinematic == nullptr || playerAnimation == nullptr)
+		return;
+
+	SpriteSheet* currentAnim = playerAnimation->Get("idle");
+
+	if (playerKinematic->velocity.x != 0.0f && playerKinematic->velocity.y == 0.0f)
+	{
+		currentAnim = playerAnimation->Get("walk");
+	}
+
+
+	SDL_Rect srcRect = currentAnim->PlayAnimation(0.166f, 0.25f);
+
+	//convert game coordinates to screen coordinates
+	SDL_Point screenCoords = getFloatToIntegerCoordinates(playerTransform->position);
+	SDL_Rect screenBounds;
+	screenBounds.x = screenCoords.x - camera.x;
+	screenBounds.y = screenCoords.y - camera.y;
+	screenBounds.w = 32;
+	screenBounds.h = 64;
+	SDL_RenderCopy(render, currentAnim->texture, &srcRect, &screenBounds);
+	
 }
 
 void RenderSystem::Draw(SDL_Renderer* render)

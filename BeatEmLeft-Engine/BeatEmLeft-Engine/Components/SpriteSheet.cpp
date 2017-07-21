@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <typeinfo.h>
 
-SpriteSheet::SpriteSheet()
+SpriteSheet::SpriteSheet(SDL_Texture* texture,int frameWidth,int frameHeight)
 {
-	texture = NULL;
-	frames = NULL;
+	this->texture = NULL;
 	type = typeid(SpriteSheet).name();
 	currentTime = 0.0f;
+	SetTextureAttributes(texture, frameWidth, frameHeight);
 }
 
 SpriteSheet::~SpriteSheet()

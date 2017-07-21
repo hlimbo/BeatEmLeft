@@ -367,6 +367,7 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 						{
 							pk->velocity.x = adjustedVelX;
 						}
+			
 					}
 				}
 				else if (deltaP.x < 0.0f) //player moving to the left
@@ -509,7 +510,7 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 			//bottom left of player
 			if (isOnLineSegment_in(newP.x, tile->position.x, tile->position.x + box->width))
 			{
-				//puts("inside box bottom left");
+				puts("inside box bottom left");
 				float diffY = newP.y + pb->height - tile->position.y;
 				float diffX = tile->position.x + box->width - newP.x;
 				newP.y -= diffY;
@@ -520,7 +521,7 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 			//bottom right of player
 			else if (isOnLineSegment_in(newP.x + pb->width, tile->position.x, tile->position.x + box->width))
 			{
-			//	puts("inside box bottom right");
+				puts("inside box bottom right");
 				float diffY = newP.y + pb->height - tile->position.y;
 				float diffX = newP.x + pb->width - tile->position.x;
 				newP.y += diffY;

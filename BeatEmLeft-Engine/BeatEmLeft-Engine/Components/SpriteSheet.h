@@ -6,7 +6,7 @@
 
 struct SpriteSheet
 {
-	SpriteSheet();
+	SpriteSheet(SDL_Texture* texture,int frameWidth,int frameHeight);
 	~SpriteSheet();
 
 	SDL_Texture* texture;
