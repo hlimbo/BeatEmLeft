@@ -47,9 +47,10 @@ public:
 		if (components.find(id) != components.end())
 			return false;
 
+		//I don't think I will need this since this class is a templated class.
 		//here don't allow to add a component of a different type
-		if (type != "" &&  strcmp(component->type,type) != 0)
-			return false;
+		//if (type != "" &&  strcmp(component->type,type) != 0)
+			//return false;
 
 		components.insert(make_pair(id, component));
 		return true;

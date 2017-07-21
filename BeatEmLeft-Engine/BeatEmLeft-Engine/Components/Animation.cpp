@@ -20,9 +20,8 @@ Animation::~Animation()
 
 bool Animation::Add(std::string name, SpriteSheet* sheet)
 {
-	if (spriteSheets[name] == nullptr)
+	if (spriteSheets.find(name) != spriteSheets.end())
 	{
-		Remove(name);
 		return false;
 	}
 

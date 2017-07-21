@@ -12,6 +12,7 @@
 #include "Components/Transform.h"
 #include "Components/BoxCollider.h"
 #include "Components/SpriteSheet.h"
+#include "Components/Animation.h"
 #include "Systems/ECS.h"
 #include "Core.h"
 #include "Systems/MovementSystem.h"
@@ -24,62 +25,6 @@
 
 using namespace std;
 
-void CalcCirclePoints(SDL_Point* points, int startIndex, int cx, int cy, int x, int y)
-{
-	points[startIndex] = SDL_Point{ cx - x, cy - y };
-	points[startIndex + 1] = SDL_Point{ cx - y, cy - x };
-	points[startIndex + 2] = SDL_Point{ cx + y, cy - x };
-	points[startIndex + 3] = SDL_Point{ cx + x, cy - y };
-	points[startIndex + 4] = SDL_Point{ cx - x, cy + y };
-	points[startIndex + 5] = SDL_Point{ cx - y, cy + x };
-	points[startIndex + 6] = SDL_Point{ cx + y, cy + x };
-	points[startIndex + 7] = SDL_Point{ cx + x, cy + y };
-}
-
-int DrawCircle(SDL_Renderer* renderer, int cx, int cy, int radius)
-{
-	//draw the circle here using Bresenham’s Algorithm
-	int p = 0;
-	int q = radius;
-	int numPixelsToDraw = q * 8;
-	SDL_Point* points = (SDL_Point*)malloc(sizeof(SDL_Point) * numPixelsToDraw);
-	//d = decision parameter which acts as a function
-	//which helps decide to draw the next pixel to its horizontally adjacent neighbor or its diagonally adjacent neighbor
-	int d = 3 - 2 * radius;
-
-	while (p < q)
-	{
-		//slightly better optimization:: batch all points into one draw call ~ draw calls are expensive
-		CalcCirclePoints(points, p * 8, cx, cy, p, q);
-		++p;
-		if (d < 0)
-		{
-			d = d + (4 * p) + 6;
-		}
-		else
-		{
-			d = d + (4 * (p - q)) + 10;
-			--q;
-		}
-	}
-
-	int result = SDL_RenderDrawPoints(renderer, points, numPixelsToDraw);
-	free(points);
-	return result;
-}
-
-int DrawCircle(SDL_Renderer* renderer, SDL_Point center, int radius)
-{
-	return DrawCircle(renderer, center.x, center.y, radius);
-}
-
-
-//use this function to check if a coordinate is between minCoordinate and maxCoordinate
-bool isOnLineSegment(float coordinate, float minCoordinate, float maxCoordinate)
-{
-	return coordinate > minCoordinate && coordinate < maxCoordinate;
-}
-
 int main(int argc, char* argv[])
 {
 	Core core;
@@ -88,24 +33,29 @@ int main(int argc, char* argv[])
 	//setup texture file paths
 	string mainPath(SDL_GetBasePath());
 	mainPath += string("resources\\");
-	string playerPath = mainPath + string("blue.png");
+
+	string idlePath = mainPath + string("adv_idle.png");
+	string walkPath = mainPath + string("adv_walk.png");
+	string jumpPath = mainPath + string("adv_jump.png");
+
 	string backgroundPath = mainPath + string("Background.png");
 	string tilePath = mainPath + string("block.png");
-	string sheetPath = mainPath + string("walk_right.png");
-	//string sheetPath = mainPath + string("treyArt.png");
+	string playerPath = mainPath + string("blue.png");
 
 	TextureStore store(render);
 	store.Load("Background.png", backgroundPath);
 	store.Load("block.png", tilePath);
+	store.Load("adv_idle.png", idlePath);
+	store.Load("adv_walk.png", walkPath);
+	store.Load("adv_jump.png", jumpPath);
 	store.Load("blue.png", playerPath);
-	store.Load("walk_right.png", sheetPath);
-	//store.Load("treyArt.png", sheetPath);
+
+	MapFileLoader::TileMap map;
+	string mapFilePath = mainPath + string("funky_map.txt");
+	MapFileLoader::Load(mapFilePath.c_str(), &map);
 
 	ECS ecs;
 
-	//entity component creation
-
-	//background entity creation
 	int bgID = ecs.entitySystem.CreateEntity("Background");
 	auto bgTransform = new Transform();
 	bgTransform->position = Vect2(0.0f, 0.0f);
@@ -113,36 +63,10 @@ int main(int argc, char* argv[])
 	ecs.transforms.AddComponent(bgID, bgTransform);
 	ecs.sprites.AddComponent(bgID, bgSprite);
 
-	//TileMap Creation ~ 12x12 grid = 480x480 screen
-	const int tileWidth = 40;
-	const int tileHeight = 40;
-	const int rowLength = 12;
-	const int colLength = 12;
-	int pad = 1;
-
-	//0 = empty spot, 1 = filled spot
-	int tileMap[rowLength][colLength] = 
-	{
-		{ 0,0,0,0,0,0,0,0,1,1,1,1 },
-		{ 0,0,0,0,0,0,0,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0,0,0,0,0 },
-		{ 0,0,1,1,1,1,1,1,1,1,0,0 },
-		{ 0,0,0,1,1,1,1,1,1,0,0,0 },
-		{ 0,0,0,1,1,1,1,1,1,0,0,0 },
-		{ 0,0,0,0,1,1,1,1,0,0,0,0 },
-		{ 0,0,0,0,0,1,1,0,0,0,0,0 },
-		{ 0,0,0,0,0,0,0,0,0,0,0,0 }
-
-	};
-
-	//map file loader test
-	MapFileLoader::TileMap map;
-	string mapFilePath = mainPath + string("funky_map.txt");
-	MapFileLoader::Load(mapFilePath.c_str(), &map);
-
+	float tileWidth = (float)map.tileWidth;
+	float tileHeight = (float)map.tileHeight;
+	//int pad = 1;
+	//tiles initialization
 	for (int r = 0;r < map.rowCount;++r)
 	{
 		for (int c = 0;c < map.colCount;++c)
@@ -151,8 +75,8 @@ int main(int argc, char* argv[])
 			{
 				int tileID = ecs.entitySystem.CreateEntity("Tile");
 				//construct list of tileCoordinates
-				Vect2 tilePosition((float)c * (float)(tileWidth + pad),
-					(float)r * (float)(tileHeight + pad));
+				Vect2 tilePosition((float)c * (float)(tileWidth),
+					(float)r * (float)(tileHeight));
 				auto transform = new Transform(tilePosition);
 
 				auto sprite = new Sprite(store.Get("block.png"));
@@ -163,7 +87,7 @@ int main(int argc, char* argv[])
 				boxCollider->position = tilePosition;
 				boxCollider->width = (float)tileWidth;
 				boxCollider->height = (float)tileHeight;
-			
+
 				ecs.transforms.AddComponent(tileID, transform);
 				ecs.sprites.AddComponent(tileID, sprite);
 				ecs.boxColliders.AddComponent(tileID, boxCollider);
@@ -171,15 +95,22 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	//player entity creation
 	int playerID = ecs.entitySystem.CreateEntity("Player");
-	auto playerTransform = new Transform();
-	playerTransform->position = Vect2(20.0f, 0.0f);
 	
+	//Sprite
 	auto playerSprite = new Sprite(store.Get("blue.png"));
 	playerSprite->width = 40;
-	playerSprite->height = 40;
-	
+	playerSprite->height = 80;
+
+	//SpriteSheets / Animations
+	auto playerAnimation = new Animation();
+	playerAnimation->Add("idle", new SpriteSheet(store.Get("adv_idle.png"), 32, 64));
+	playerAnimation->Add("walk", new SpriteSheet(store.Get("adv_walk.png"), 32, 64));
+	playerAnimation->Add("jump", new SpriteSheet(store.Get("adv_jump.png"), 32, 64));
+		
+	auto playerTransform = new Transform();
+	playerTransform->position = Vect2(20.0f, 0.0f);
+
 	auto playerKinematic = new Kinematic();
 	playerKinematic->minSpeed = 155.0f;
 	playerKinematic->maxSpeed = 363.2f;
@@ -187,7 +118,7 @@ int main(int argc, char* argv[])
 	playerKinematic->direction = Vect2(0.0f, 0.0f);//direction depends on what key is pressed
 	playerKinematic->accelFactor = 1.7f;
 	//playerKinematic->acceleration = Vect2(0.0f, 0.0f);//not really using this...
-	
+
 	//gravity
 	playerKinematic->gravity = 75.4f;
 	playerKinematic->minGravity = 75.4f;
@@ -202,51 +133,24 @@ int main(int argc, char* argv[])
 	playerKinematic->currentJumpTime = 0.0f;
 	playerKinematic->maxJumpTime = 0.65f;
 
-	float someDiff = (playerKinematic->jumpSpeed * playerKinematic->jumpFactor) - (playerKinematic->gravity * playerKinematic->gravityFactor);
-	float someTime = 0.0f;
-	if (someDiff != 0.0f)
-		someTime = ((playerKinematic->gravity - playerKinematic->jumpSpeed) / someDiff) * 1000.0f;
-	
-	//printf("some time: %f\n", someTime);
-
-	//temp
-	SpriteSheet spriteSheet(store.Get("walk_right.png"), 500, 500);
-	//SDL_Texture* srcTexture = store.Get("treyArt.png");
-	spriteSheet.scaleX = 0.5f;
-	spriteSheet.scaleY = 0.5f;
-	//spriteSheet.SetTextureAttributes(srcTexture, 300, 450);
-	//spriteSheet.SetTextureAttributes(srcTexture, 500, 500);
-	int frameIndex = 0;
-	float leftSwitchDelayTime = 0.0f;
-	float rightSwitchDelayTime = 0.0f;
-	float maxDelayTime = 0.02785f;//measured in seconds
-
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
-	playerBox->width = (float)playerSprite->width;
-	playerBox->height = (float)playerSprite->height;
-
-	auto playerCircle = new CircleCollider();
-	playerCircle->position = playerTransform->position;
-	playerCircle->radius = (float)playerSprite->width;
+	playerBox->width = 39;
+	playerBox->height = 79;
 
 	ecs.transforms.AddComponent(playerID, playerTransform);
-	ecs.sprites.AddComponent(playerID, playerSprite);
 	ecs.kinematics.AddComponent(playerID, playerKinematic);
 	ecs.boxColliders.AddComponent(playerID, playerBox);
-	ecs.circleColliders.AddComponent(playerID, playerCircle);
+	ecs.animations.AddComponent(playerID, playerAnimation);
+	ecs.sprites.AddComponent(playerID, playerSprite);
 	ecs.InitKeyboard();
 	KeyboardController* keyboard = ecs.RegisterKeyboard(playerID);
 
-	//initialize systems after components have been initialized.
+	//initialize systems
 	RenderSystem renderSys(&ecs);
 	renderSys.Init(SCREEN_WIDTH, SCREEN_HEIGHT);
 	MovementSystem movementSys(&ecs);
 	movementSys.Init();
-
-
-	//here I know that the tileIDs won't change since they don't get destroyed
-	vector<int> tileIDs = ecs.entitySystem.GetIDs("Tile");
 
 	//---------------- Game Loop ------------------//
 
@@ -279,21 +183,8 @@ int main(int argc, char* argv[])
 
 		movementSys.UpdatePositions(deltaTime);
 		movementSys.CorrectCollisionOverlaps(observedDeltaTime);
-	
-		//don't need for now
-		//movementSys.CheckForCircleCollisions(observedDeltaTime);
 
 		renderSys.Update(render);
-
-		//const SDL_Rect* frame = spriteSheet.GetFrame(frameIndex);
-		SDL_Rect frame = spriteSheet.PlayAnimation(deltaTime, 0.25f);
-		SDL_Texture* sheetTexture = spriteSheet.texture;
-
-		int status = SDL_RenderCopy(render, sheetTexture, &frame, spriteSheet.GetBounds());
-		if (status != 0)
-			fprintf(stderr, "error: %s\n", SDL_GetError());
-
-
 		renderSys.Draw(render);
 
 		endCount = SDL_GetPerformanceCounter();
@@ -318,15 +209,12 @@ int main(int argc, char* argv[])
 		startCount = endCount;
 
 		//display fps text in title
-	//	if ((int)currentTime % 100 == 0)
-	//	{
+		if ((int)currentTime % 100 == 0)
+		{
 			std::string title("Beat Em Left");
 			title += std::string(" | FPS: ") + std::to_string(observedFPS);
 			SDL_SetWindowTitle(core.getWindow(), title.c_str());
-		//}
-
-	//	printf("fps: %d\n", (int)observedFPS);
-	//	printf("deltaTime: %f\n", observedDeltaTime);
+		}
 	}
 
 	ecs.FreeKeyboard();

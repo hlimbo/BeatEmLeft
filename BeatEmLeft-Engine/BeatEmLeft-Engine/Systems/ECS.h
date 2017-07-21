@@ -32,6 +32,7 @@
 #include "../Components/BoxCollider.h"
 #include "../Components/CircleCollider.h"
 #include "../Input/KeyboardController.h"
+#include "../Components/Animation.h"
 
 //this is a much nicer way of looking at the managers and system 
 //at a very high level!
@@ -45,6 +46,7 @@ struct ECS
 	ComponentManager<BoxCollider> boxColliders;
 	ComponentManager<CircleCollider> circleColliders;
 	ComponentManager<SpriteSheet> spriteSheets;
+	ComponentManager<Animation> animations;
 
 //Keyboard Interface-------------------------------------------------------------
 	void InitKeyboard()
