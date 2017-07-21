@@ -200,8 +200,10 @@ void RenderSystem::Update(SDL_Renderer* render)
 	//convert game coordinates to screen coordinates
 	SDL_Point screenCoords = getFloatToIntegerCoordinates(playerTransform->position);
 	SDL_Rect screenBounds;
-	screenBounds.x = screenCoords.x - camera.x;
-	screenBounds.y = screenCoords.y - camera.y;
+	//move this to sprite component and spritesheet component
+	SDL_Point tempoffset{ 20,1 };
+	screenBounds.x = screenCoords.x - camera.x - tempoffset.x;
+	screenBounds.y = screenCoords.y - camera.y - tempoffset.y;
 	screenBounds.w = 32 * 2;
 	screenBounds.h = 64 * 2;
 	//SDL_RenderCopy(render, currentAnim->texture, &srcRect, &screenBounds);

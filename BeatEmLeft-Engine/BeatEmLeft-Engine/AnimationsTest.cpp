@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 
 	string backgroundPath = mainPath + string("Background.png");
 	string tilePath = mainPath + string("block.png");
-	string playerPath = mainPath + string("blue.png");
+	string playerPath = mainPath + string("redblock.png");
 
 	TextureStore store(render);
 	store.Load("Background.png", backgroundPath);
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 	store.Load("adv_idle.png", idlePath);
 	store.Load("adv_walk.png", walkPath);
 	store.Load("adv_jump.png", jumpPath);
-	store.Load("blue.png", playerPath);
+	store.Load("redblock.png", playerPath);
 
 	MapFileLoader::TileMap map;
 	string mapFilePath = mainPath + string("funky_map.txt");
@@ -80,8 +80,8 @@ int main(int argc, char* argv[])
 				auto transform = new Transform(tilePosition);
 
 				auto sprite = new Sprite(store.Get("block.png"));
-				sprite->width = tileWidth;
-				sprite->height = tileHeight;
+				sprite->width = (int)tileWidth;
+				sprite->height = (int)tileHeight;
 
 				auto boxCollider = new BoxCollider();
 				boxCollider->position = tilePosition;
@@ -99,16 +99,16 @@ int main(int argc, char* argv[])
 	
 	auto playerTransform = new Transform();
 	playerTransform->position = Vect2(20.0f, 0.0f);
+	
+	//temp
+	Vect2 offset(7.0f, 1.0f);
 
 	//Sprite
-	auto playerSprite = new Sprite(store.Get("blue.png"));
+	auto playerSprite = new Sprite(store.Get("redblock.png"));
 	playerSprite->width = 20;
-	playerSprite->height = 80;
-	//temp variables
-	float offSetLeft = 0.0f;//7.0f;
-	float offSetTop = 0.0f;//1.0f;
-	playerSprite->position.x = playerTransform->position.x + offSetLeft;
-	playerSprite->position.y = playerTransform->position.y + offSetTop;
+	playerSprite->height = 90;
+	playerSprite->position.x = (int)playerTransform->position.x + offset.x;
+	playerSprite->position.y = (int)playerTransform->position.y + offset.y;
 
 	//SpriteSheets / Animations
 	auto playerAnimation = new Animation();
@@ -140,10 +140,8 @@ int main(int argc, char* argv[])
 
 	auto playerBox = new BoxCollider();
 	playerBox->position = playerTransform->position;
-	//playerBox->position.x += offSetLeft;
-	//playerBox->position.y += offSetTop;
 	playerBox->width = 20;
-	playerBox->height = 80;
+	playerBox->height = 90;
 
 	ecs.transforms.AddComponent(playerID, playerTransform);
 	ecs.kinematics.AddComponent(playerID, playerKinematic);

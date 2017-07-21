@@ -471,7 +471,7 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 		if (tile == nullptr || box == nullptr)
 			continue;
 
-		//diagonals
+		//diagonals - only needed if the game is a top-down shooter or rpg where you are allowed to moved diagonally
 		//if (isOnLineSegment_in(newP.y, tile->position.y, tile->position.y + box->height))
 		//{
 		//	//top left corner of player 
@@ -526,6 +526,13 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 		//	
 		//}
 
+		//temporary checks
+		//if (pt->position.y + pb->height == box->position.y)
+		//{
+		//	puts("matching!!");
+		//	pt->position.y -= 1.0f;
+		//}
+
 		//this check ensures if boxes that are of the same size as the tiles or bigger
 		//properly get their positions corrected after overlap
 		if (isOverlapping_in(*pb, *box))
@@ -560,8 +567,8 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 		}
 
 
-		//make sure boxcollider position is in sync with transform position
-		box->position = pt->position;
+		//make sure player boxcollider position is in sync with player transform position
+		pb->position = pt->position;
 	}
 }
 
@@ -581,7 +588,7 @@ void MovementSystem::UpdatePositions(float deltaTime)
 		}
 
 		BoxCollider* box = ecs->boxColliders.GetComponent(*it);
-		if (box != nullptr)
+		if (box != nullptr &&  transform != nullptr)
 		{
 			box->position = transform->position;
 		}
