@@ -102,8 +102,8 @@ int main(int argc, char* argv[])
 
 	//Sprite
 	auto playerSprite = new Sprite(store.Get("blue.png"));
-	playerSprite->width = 50;
-	playerSprite->height = 64;
+	playerSprite->width = 20;
+	playerSprite->height = 80;
 	//temp variables
 	float offSetLeft = 0.0f;//7.0f;
 	float offSetTop = 0.0f;//1.0f;
@@ -131,9 +131,9 @@ int main(int argc, char* argv[])
 	playerKinematic->gravityFactor = 3.6f;
 
 	//jumping
-	playerKinematic->jumpSpeed = 85.6f;
-	playerKinematic->minJumpSpeed = 85.6f;
-	playerKinematic->maxJumpSpeed = 495.0f;
+	playerKinematic->jumpSpeed = 110.6f;    
+	playerKinematic->minJumpSpeed = 110.6f;
+	playerKinematic->maxJumpSpeed = 550.5f;
 	playerKinematic->jumpFactor = 10.5f;
 	playerKinematic->currentJumpTime = 0.0f;
 	playerKinematic->maxJumpTime = 0.65f;
@@ -142,8 +142,8 @@ int main(int argc, char* argv[])
 	playerBox->position = playerTransform->position;
 	//playerBox->position.x += offSetLeft;
 	//playerBox->position.y += offSetTop;
-	playerBox->width = 50;
-	playerBox->height = 64;
+	playerBox->width = 20;
+	playerBox->height = 80;
 
 	ecs.transforms.AddComponent(playerID, playerTransform);
 	ecs.kinematics.AddComponent(playerID, playerKinematic);

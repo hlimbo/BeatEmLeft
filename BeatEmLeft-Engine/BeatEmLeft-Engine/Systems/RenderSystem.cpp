@@ -202,8 +202,8 @@ void RenderSystem::Update(SDL_Renderer* render)
 	SDL_Rect screenBounds;
 	screenBounds.x = screenCoords.x - camera.x;
 	screenBounds.y = screenCoords.y - camera.y;
-	screenBounds.w = 32;
-	screenBounds.h = 64;
+	screenBounds.w = 32 * 2;
+	screenBounds.h = 64 * 2;
 	//SDL_RenderCopy(render, currentAnim->texture, &srcRect, &screenBounds);
 	SDL_RenderCopyEx(render, currentAnim->texture, &srcRect, &screenBounds, 0.0f, NULL, flip);
 }
