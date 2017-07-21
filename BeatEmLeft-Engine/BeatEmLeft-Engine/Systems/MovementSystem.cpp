@@ -15,6 +15,14 @@ bool isOnLineSegment_in(float coordinate, float minCoordinate, float maxCoordina
 	return coordinate > minCoordinate && coordinate < maxCoordinate;
 }
 
+bool isOverlapping_in(const BoxCollider& b1, const BoxCollider& b2)
+{
+	return b1.position.x < b2.position.x + b2.width &&
+		b1.position.x + b1.width > b2.position.x &&
+		b1.position.y < b2.position.y + b2.height &&
+		b1.position.y + b1.height > b2.position.y;
+}
+
 //Note: speed != velocity (velocity = speed * direction)
 //custom functionality of how stuff should accelerate
 float accelerate_in(float currentSpeed, float maxSpeed, float deltaTime, float deltaSpeed)
@@ -74,205 +82,190 @@ void MovementSystem::UpdateKinematics(float deltaTime)
 			continue;
 
 		//TOP DOWN movement controller
-		//if (keyboard != nullptr && transform != nullptr && kinematic != nullptr)
-		//{
-		//	if (keyboard->KeyReleased("left") &&
-		//		keyboard->KeyReleased("right") &&
-		//		keyboard->KeyReleased("up") &&
-		//		keyboard->KeyReleased("down"))
-		//	{
-		//		kinematic->direction = Vect2(0.0f, 0.0f);
-		//		kinematic->currentSpeed = kinematic->minSpeed;
-		//	}
-		//	else if ((keyboard->KeyPressed("left") && keyboard->KeyPressed("right")) ||
-		//		(keyboard->KeyHeld("left") && keyboard->KeyHeld("right")) ||
-		//		(keyboard->KeyPressed("left") && keyboard->KeyHeld("right")) ||
-		//		(keyboard->KeyHeld("left") && keyboard->KeyPressed("right")))
-		//	{
-		//		//don't move the player if that is the case
-		//		kinematic->direction.x = 0.0f;
-		//		//this will be problematic when implementing jump
-		//		//since if both <- and -> are pressed at the same time while in the air
-		//		//falling will feel floaty (y velocity does not accelerate downwards
-		//		//and instead y velocity remains constant)
-		//		kinematic->currentSpeed = kinematic->minSpeed;
-		//	}
-		//	else
-		//	{
-		//		//to compensate for the half a second lag from transitioning from key pressed to held
-		//		//I will apply some acceleration to both states.
+		if (keyboard != nullptr && transform != nullptr && kinematic != nullptr)
+		{
+			if (keyboard->KeyReleased("left") &&
+				keyboard->KeyReleased("right") &&
+				keyboard->KeyReleased("up") &&
+				keyboard->KeyReleased("down"))
+			{
+				kinematic->direction = Vect2(0.0f, 0.0f);
+				kinematic->currentSpeed = kinematic->minSpeed;
+			}
+			else if (keyboard->KeyHeld("left") && keyboard->KeyHeld("right"))
+			{
+				kinematic->direction.x = 0.0f;
+				kinematic->currentSpeed = kinematic->minSpeed;
+			}
+			else
+			{
+				float ds = kinematic->accelFactor;
+				if (keyboard->KeyPressed("left"))
+				{
+					kinematic->direction.x = -1.0f;
+					kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
+					//kinematic->velocity.x = -kinematic->currentSpeed * deltaTime;
+				}
+				else if (keyboard->KeyHeld("left"))
+				{
+					kinematic->direction.x = -1.0f;
+					kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
+					//kinematic->velocity.x = -kinematic->currentSpeed * deltaTime;
+				}
 
-		//		//a lot more complicated than having only 2 keyboard states released
-		//		//or pressed this is because I want precise button presses for the game
-		//		//will make it into a fighting esque like game.
+				if (keyboard->KeyPressed("right"))
+				{
+					kinematic->direction.x = 1.0f;
+					kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
+					//kinematic->velocity.x = kinematic->currentSpeed * deltaTime;
+				}
+				else if (keyboard->KeyHeld("right"))
+				{
+					kinematic->direction.x = 1.0f;
+					kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
+					//kinematic->velocity.x = kinematic->currentSpeed * deltaTime;
+				}
 
-		//		//float ds = 1.7f;//how much should velocity change per update
-		//		float ds = kinematic->accelFactor;
-		//		if (keyboard->KeyPressed("left"))
-		//		{
-		//			kinematic->direction.x = -1.0f;
-		//			kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
-		//			//kinematic->velocity.x = -kinematic->currentSpeed * deltaTime;
-		//		}
-		//		else if (keyboard->KeyHeld("left"))
-		//		{
-		//			kinematic->direction.x = -1.0f;
-		//			kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
-		//			//kinematic->velocity.x = -kinematic->currentSpeed * deltaTime;
-		//		}
+				if (keyboard->KeyPressed("up"))
+				{
+					kinematic->direction.y = -1.0f;
+					kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
+					//kinematic->velocity.y = -kinematic->currentSpeed * deltaTime;
+				}
+				else if (keyboard->KeyHeld("up"))
+				{
+					kinematic->direction.y = -1.0f;
+					kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
+					//kinematic->velocity.y = -kinematic->currentSpeed * deltaTime;
+				}
 
-		//		if (keyboard->KeyPressed("right"))
-		//		{
-		//			kinematic->direction.x = 1.0f;
-		//			kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
-		//			//kinematic->velocity.x = kinematic->currentSpeed * deltaTime;
-		//		}
-		//		else if (keyboard->KeyHeld("right"))
-		//		{
-		//			kinematic->direction.x = 1.0f;
-		//			kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
-		//			//kinematic->velocity.x = kinematic->currentSpeed * deltaTime;
-		//		}
+				if (keyboard->KeyPressed("down"))
+				{
+					kinematic->direction.y = 1.0f;
+					kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
+					//kinematic->velocity.y = kinematic->currentSpeed * deltaTime;
+				}
+				else if (keyboard->KeyHeld("down"))
+				{
+					kinematic->direction.y = 1.0f;
+					kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
+					//kinematic->velocity.y = kinematic->currentSpeed * deltaTime;
+				}
 
-		//		if (keyboard->KeyPressed("up"))
-		//		{
-		//			kinematic->direction.y = -1.0f;
-		//			kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
-		//			//kinematic->velocity.y = -kinematic->currentSpeed * deltaTime;
-		//		}
-		//		else if (keyboard->KeyHeld("up"))
-		//		{
-		//			kinematic->direction.y = -1.0f;
-		//			kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
-		//			//kinematic->velocity.y = -kinematic->currentSpeed * deltaTime;
-		//		}
+				//temp code handling diagonals (only applies to keyboard)
+				//up-left
+				if (kinematic->direction.x == -1.0f && kinematic->direction.y == -1.0f)
+				{
+					kinematic->direction = Vect2(cosf(5 * (float)M_PI / 4), sinf(-(float)M_PI / 4));
+				}
+				//up-right
+				else if (kinematic->direction.x == 1.0f && kinematic->direction.y == -1.0f)
+				{
+					kinematic->direction = Vect2(cosf((float)M_PI / 4), sinf(-(float)M_PI / 4));
+				}
+				//down-left
+				else if (kinematic->direction.x == -1.0f && kinematic->direction.y == 1.0f)
+				{
+					kinematic->direction = Vect2(cosf(5 * (float)M_PI / 4), sinf((float)M_PI / 4));
+				}
+				//down-right
+				else if (kinematic->direction.x == 1.0f && kinematic->direction.y == 1.0f)
+				{
+					kinematic->direction = Vect2(cosf((float)M_PI / 4), sinf((float)M_PI / 4));
+				}
 
-		//		if (keyboard->KeyPressed("down"))
-		//		{
-		//			kinematic->direction.y = 1.0f;
-		//			kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
-		//			//kinematic->velocity.y = kinematic->currentSpeed * deltaTime;
-		//		}
-		//		else if (keyboard->KeyHeld("down"))
-		//		{
-		//			kinematic->direction.y = 1.0f;
-		//			kinematic->currentSpeed = accelerate_in(kinematic->currentSpeed, kinematic->maxSpeed, deltaTime, ds);
-		//			//kinematic->velocity.y = kinematic->currentSpeed * deltaTime;
-		//		}
+			}
 
-		//		//temp code handling diagonals (only applies to keyboard)
-		//		//up-left
-		//		if (kinematic->direction.x == -1.0f && kinematic->direction.y == -1.0f)
-		//		{
-		//			kinematic->direction = Vect2(cosf(5 * (float)M_PI / 4), sinf(-(float)M_PI / 4));
-		//		}
-		//		//up-right
-		//		else if (kinematic->direction.x == 1.0f && kinematic->direction.y == -1.0f)
-		//		{
-		//			kinematic->direction = Vect2(cosf((float)M_PI / 4), sinf(-(float)M_PI / 4));
-		//		}
-		//		//down-left
-		//		else if (kinematic->direction.x == -1.0f && kinematic->direction.y == 1.0f)
-		//		{
-		//			kinematic->direction = Vect2(cosf(5 * (float)M_PI / 4), sinf((float)M_PI / 4));
-		//		}
-		//		//down-right
-		//		else if (kinematic->direction.x == 1.0f && kinematic->direction.y == 1.0f)
-		//		{
-		//			kinematic->direction = Vect2(cosf((float)M_PI / 4), sinf((float)M_PI / 4));
-		//		}
-
-		//	}
-
-		//}
+			kinematic->velocity = Vect2(kinematic->direction.x, kinematic->direction.y) * kinematic->currentSpeed * deltaTime;
+		}
 
 
 		//Platformer movement controller
-		if (keyboard->KeyPressed("left"))
-		{
-			kinematic->direction.x = -1.0f;
-			kinematic->currentSpeed = kinematic->minSpeed;
-		}
-
-		if (keyboard->KeyHeld("left"))
-		{
-			float newSpeed = kinematic->currentSpeed + GetDeltaSpeed(kinematic) * deltaTime;
-			kinematic->currentSpeed = (newSpeed > kinematic->maxSpeed) ? kinematic->maxSpeed : newSpeed;
-		}
-
-		if (keyboard->KeyPressed("right"))
-		{
-			kinematic->direction.x = 1.0f;
-			kinematic->currentSpeed = kinematic->minSpeed;
-		}
-
-		if (keyboard->KeyHeld("right"))
-		{
-			float newSpeed = kinematic->currentSpeed + GetDeltaSpeed(kinematic) * deltaTime;
-			kinematic->currentSpeed = (newSpeed > kinematic->maxSpeed) ? kinematic->maxSpeed : newSpeed;
-		}
-
-		if (keyboard->KeyReleased("left") && keyboard->KeyReleased("right"))
-		{
-			kinematic->direction.x = 0.0f;
-			kinematic->currentSpeed = kinematic->minSpeed;
-		}
-
-		//if both left and right keys are held and/or pressed don't move
-		if (keyboard->KeyHeld("left") && keyboard->KeyHeld("right"))
-		{
-			kinematic->direction.x = 0.0f;
-		}
-
-		//jumping
-		if (keyboard->KeyPressed("space"))
-		{
-		//	puts("press");
-			kinematic->currentJumpTime = 0.0f;		
-		}
-		else if (keyboard->KeyHeld("space") && kinematic->currentJumpTime < kinematic->maxJumpTime)
-		{
-			//puts("held");
-			//printf("kinematic jump time: %f\n", kinematic->currentJumpTime);
-			kinematic->currentJumpTime += deltaTime;
-			kinematic->direction.y = -1.0f;
-			kinematic->jumpSpeed += kinematic->jumpSpeed * kinematic->jumpFactor * deltaTime;
-			if (kinematic->jumpSpeed > kinematic->maxJumpSpeed)
-				kinematic->jumpSpeed = kinematic->maxJumpSpeed;
-		}
-		
-		if (keyboard->KeyReleased("space"))
-		{
-			//printf("current jumpTime: %f\n", kinematic->currentJumpTime);
-			//puts("released");
-			kinematic->jumpSpeed = kinematic->minJumpSpeed;
-			kinematic->direction.y = 0.0f;
-		}
-
-		if (kinematic->currentJumpTime >= kinematic->maxJumpTime)
-		{
-		//	printf("current jumpTime max: %f\n", kinematic->currentJumpTime);
-			//puts("released");
-			kinematic->jumpSpeed = kinematic->minJumpSpeed;
-			kinematic->direction.y = 0.0f;
-			kinematic->currentJumpTime = kinematic->maxJumpTime;
-		}
-
-		kinematic->gravity += kinematic->gravity * kinematic->gravityFactor * deltaTime;
-		if (kinematic->gravity > kinematic->maxGravity)
-			kinematic->gravity = kinematic->maxGravity;
-
-		//printf("gravity: %f\n", kinematic->gravity);
-
-		//if (kinematic->direction.y == 0.0f && kinematic->jumpSpeed * kinematic->direction.y * deltaTime != 0.0f)
+		//if (keyboard->KeyPressed("left"))
 		//{
-		//	printf("this result: %f,%f,%f\n", kinematic->jumpSpeed, kinematic->direction.y, deltaTime);
+		//	kinematic->direction.x = -1.0f;
+		//	kinematic->currentSpeed = kinematic->minSpeed;
 		//}
 
-		kinematic->velocity.y = (kinematic->gravity * deltaTime) + (kinematic->jumpSpeed * kinematic->direction.y * deltaTime);
+		//if (keyboard->KeyHeld("left"))
+		//{
+		//	float newSpeed = kinematic->currentSpeed + GetDeltaSpeed(kinematic) * deltaTime;
+		//	kinematic->currentSpeed = (newSpeed > kinematic->maxSpeed) ? kinematic->maxSpeed : newSpeed;
+		//}
 
-		//old way
-		kinematic->velocity.x = kinematic->direction.x * kinematic->currentSpeed * deltaTime;
+		//if (keyboard->KeyPressed("right"))
+		//{
+		//	kinematic->direction.x = 1.0f;
+		//	kinematic->currentSpeed = kinematic->minSpeed;
+		//}
+
+		//if (keyboard->KeyHeld("right"))
+		//{
+		//	float newSpeed = kinematic->currentSpeed + GetDeltaSpeed(kinematic) * deltaTime;
+		//	kinematic->currentSpeed = (newSpeed > kinematic->maxSpeed) ? kinematic->maxSpeed : newSpeed;
+		//}
+
+		//if (keyboard->KeyReleased("left") && keyboard->KeyReleased("right"))
+		//{
+		//	kinematic->direction.x = 0.0f;
+		//	kinematic->currentSpeed = kinematic->minSpeed;
+		//}
+
+		////if both left and right keys are held and/or pressed don't move
+		//if (keyboard->KeyHeld("left") && keyboard->KeyHeld("right"))
+		//{
+		//	kinematic->direction.x = 0.0f;
+		//}
+
+		////jumping
+		//if (keyboard->KeyPressed("space"))
+		//{
+		////	puts("press");
+		//	kinematic->currentJumpTime = 0.0f;		
+		//}
+		//else if (keyboard->KeyHeld("space") && kinematic->currentJumpTime < kinematic->maxJumpTime)
+		//{
+		//	//puts("held");
+		//	//printf("kinematic jump time: %f\n", kinematic->currentJumpTime);
+		//	kinematic->currentJumpTime += deltaTime;
+		//	kinematic->direction.y = -1.0f;
+		//	kinematic->jumpSpeed += kinematic->jumpSpeed * kinematic->jumpFactor * deltaTime;
+		//	if (kinematic->jumpSpeed > kinematic->maxJumpSpeed)
+		//		kinematic->jumpSpeed = kinematic->maxJumpSpeed;
+		//}
+		//
+		//if (keyboard->KeyReleased("space"))
+		//{
+		//	//printf("current jumpTime: %f\n", kinematic->currentJumpTime);
+		//	//puts("released");
+		//	kinematic->jumpSpeed = kinematic->minJumpSpeed;
+		//	kinematic->direction.y = 0.0f;
+		//}
+
+		//if (kinematic->currentJumpTime >= kinematic->maxJumpTime)
+		//{
+		////	printf("current jumpTime max: %f\n", kinematic->currentJumpTime);
+		//	//puts("released");
+		//	kinematic->jumpSpeed = kinematic->minJumpSpeed;
+		//	kinematic->direction.y = 0.0f;
+		//	kinematic->currentJumpTime = kinematic->maxJumpTime;
+		//}
+
+		//kinematic->gravity += kinematic->gravity * kinematic->gravityFactor * deltaTime;
+		//if (kinematic->gravity > kinematic->maxGravity)
+		//	kinematic->gravity = kinematic->maxGravity;
+
+		////printf("gravity: %f\n", kinematic->gravity);
+
+		////if (kinematic->direction.y == 0.0f && kinematic->jumpSpeed * kinematic->direction.y * deltaTime != 0.0f)
+		////{
+		////	printf("this result: %f,%f,%f\n", kinematic->jumpSpeed, kinematic->direction.y, deltaTime);
+		////}
+
+		//kinematic->velocity.y = (kinematic->gravity * deltaTime) + (kinematic->jumpSpeed * kinematic->direction.y * deltaTime);
+
+		////old way
+		//kinematic->velocity.x = kinematic->direction.x * kinematic->currentSpeed * deltaTime;
 	}
 
 }
@@ -472,8 +465,6 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 
 	Vect2 newP(pt->position);
 
-	SDL_Point pixelCoords = SDL_Point{ (int)roundf(newP.x), (int)roundf(newP.y) };
-
 	vector<int> tileIDs = ecs->entitySystem.GetIDs("Tile");
 	for (vector<int>::iterator it = tileIDs.begin();it != tileIDs.end();++it)
 	{
@@ -482,6 +473,7 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 		if (tile == nullptr || box == nullptr)
 			continue;
 
+		//diagonals
 		if (isOnLineSegment_in(newP.y, tile->position.y, tile->position.y + box->height))
 		{
 			//top left corner of player 
@@ -499,11 +491,12 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 			//top right corner of player
 			else if (isOnLineSegment_in(newP.x + pb->width, tile->position.x, tile->position.x + box->width))
 			{
-				//puts("inside box top right");
+				puts("inside box top right");
 				float diffY = tile->position.y + box->height - newP.y;
 				float diffX = newP.x + pb->width - tile->position.x;
+				
 				newP.y += diffY;
-				newP.x += diffX;
+				newP.x -= diffX;
 
 				pt->position = newP;
 			}
@@ -527,13 +520,47 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 				puts("inside box bottom right");
 				float diffY = newP.y + pb->height - tile->position.y;
 				float diffX = newP.x + pb->width - tile->position.x;
-				newP.y += diffY;
+				newP.y -= diffY;
 				newP.x -= diffX;
 
 				pt->position = newP;
 			}
 			
 		}
+
+		//this check ensures if boxes that are of the same size as the tiles or bigger
+		//properly get their positions corrected after overlap
+		if (isOverlapping_in(*pb, *box))
+		{
+			//Vect2 normal = VectMath::Normalize(pk->velocity);
+			Vect2 oldPos(pt->position - pk->velocity);
+			Vect2 pen = pt->position - tile->position;
+
+			Vect2 deltaPos(pt->position - oldPos);
+
+			if (deltaPos.x > 0.0f)
+			{
+				pt->position.x += (pen.x + pb->width) * -1.0f;
+			}
+			else if (deltaPos.x < 0.0f)
+			{
+				pen.x = box->position.x + box->width - pt->position.x;
+				pt->position.x += pen.x;
+			}
+
+			if (deltaPos.y > 0.0f)
+			{
+				pt->position.y += (pen.y + pb->height) * -1.0f;
+			}
+			else if (deltaPos.y < 0.0f)
+			{
+				pen.y = pt->position.y - (box->position.y + box->width);
+				pt->position.y -= (pen.y) * 1.0f;
+			}
+		}
+
+		//make sure boxcollider position is in sync with transform position
+		box->position = pt->position;
 	}
 }
 
@@ -547,11 +574,15 @@ void MovementSystem::UpdatePositions(float deltaTime)
 		Transform* transform = transforms->GetComponent(*it);
 		Kinematic* kinematic = kinematics->GetComponent(*it);
 
-		//should probably copy new position to go to in the boxCollider's position
-		//first..
 		if (transform != nullptr && kinematic != nullptr)
 		{
 			transform->position = transform->position + kinematic->velocity;
+		}
+
+		BoxCollider* box = ecs->boxColliders.GetComponent(*it);
+		if (box != nullptr)
+		{
+			box->position = transform->position;
 		}
 	}
 }

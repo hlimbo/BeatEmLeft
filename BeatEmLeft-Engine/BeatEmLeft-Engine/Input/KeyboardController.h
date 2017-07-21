@@ -38,6 +38,10 @@ public:
 	bool KeyReleased(std::string keyName);
 
 	inline float GetLatency() { return latency; }
+
+	//debug
+	void PrintKeyStatuses();
+
 private:
 	std::unordered_map<std::string, KeyStates> keys;
 	std::unordered_map<std::string, float> elapsedTime;
