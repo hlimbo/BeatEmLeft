@@ -27,6 +27,11 @@ struct SpriteSheet
 	SDL_Rect PlayAnimation(float deltaTime,float delayTime);
 	void ResetAnimation();
 
+	SDL_Point position;
+	SDL_Point offset;
+
+	SDL_Point GetPosition() { return SDL_Point{ position.x - offset.x, position.y - offset.y }; }
+
 private:
 	SDL_Rect* frames;
 	int frameCount;
