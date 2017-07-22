@@ -23,6 +23,18 @@ bool isOverlapping_in(const BoxCollider& b1, const BoxCollider& b2)
 		b1.position.y + b1.height > b2.position.y;
 }
 
+bool isOverlappingX_in(const BoxCollider& b1, const BoxCollider& b2)
+{
+	return b1.position.x < b2.position.x + b2.width &&
+		b1.position.x + b1.width > b2.position.x;
+}
+
+bool isOverlappingY_in(const BoxCollider& b1, const BoxCollider& b2)
+{
+	return	b1.position.y < b2.position.y + b2.height &&
+		b1.position.y + b1.height > b2.position.y;
+}
+
 //Note: speed != velocity (velocity = speed * direction)
 //custom functionality of how stuff should accelerate
 float accelerate_in(float currentSpeed, float maxSpeed, float deltaTime, float deltaSpeed)
@@ -318,8 +330,8 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 	BoxCollider* pb = ecs->boxColliders.GetComponent(playerID);
 	Kinematic* pk = kinematics->GetComponent(playerID);
 
-	if (pt != nullptr && pb != nullptr && pk != nullptr)
-	{
+	if (pt == nullptr || pb == nullptr || pk == nullptr)
+		return;
 		//temp
 		//Vect2 tempOffset(7.0f, 1.0f);
 
@@ -336,6 +348,105 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 			//skip this tile if it does not have these components
 			if (tile == nullptr || box == nullptr)
 				continue;
+
+			BoxCollider playerBox;
+			playerBox.position = pt->position + pk->velocity;
+			playerBox.width = pb->width;
+			playerBox.height = pb->height;
+
+			//if (isOverlapping_in(playerBox, *box))
+			//{
+			//	//check top side of tile
+			//	//if player is moving downwards
+			//	if (deltaP.y > 0.0f)
+			//	{
+			//		float timeY = (tile->position.y - (oldP.y + pb->height)) / deltaP.y;
+
+			//		//there is some numerical error with the time not being = to 0.0f
+			//		if (fabsf(timeY) < 0.001f)
+			//			timeY = 0.0f;
+
+			//		if (timeY >= 0 && timeY <= deltaTimeInMS)
+			//		{
+			//			//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
+			//			float contactY = (oldP.y + pb->height) + (deltaP.y * timeY);
+			//			if (newP.y + pb->height > contactY)
+			//			{
+			//				//change the velocity instead of correcting the position
+			//				float adjustedVelY = deltaP.y * timeY;
+			//				pk->velocity.y = adjustedVelY;
+
+			//				//not sure if gravity should be changed here...
+			//				pk->gravity = pk->minGravity;
+			//			}
+
+			//		}
+
+			//	}
+			//	//check bottom side of tile
+			//	else if (deltaP.y < 0.0f)
+			//	{
+			//		float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
+
+			//		//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+			//		if (fabsf(timeY2) < 0.001f)
+			//			timeY2 = 0.0f;
+
+			//		if (timeY2 >= 0 && timeY2 <= deltaTimeInMS)
+			//		{
+			//			float contactY2 = oldP.y + (deltaP.y * timeY2);
+			//			if (newP.y < contactY2)
+			//			{
+			//				float adjustedVelY = deltaP.y * timeY2;
+			//				pk->velocity.y = adjustedVelY;
+			//			}
+			//		}
+			//	}
+
+			//	if (deltaP.x > 0.0f)
+			//	{
+			//		//left side tile
+			//		float timeX = (tile->position.x - (oldP.x + pb->width)) / deltaP.x;
+
+			//		//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+			//		if (fabsf(timeX) < 0.001f)
+			//			timeX = 0.0f;
+
+			//		//predicting how much delta velocity is needed this frame
+			//		//in order to not overlap against a non-moving entity with a box collider attached
+			//		if (timeX >= 0 && timeX <= deltaTimeInMS)
+			//		{
+			//			float adjustedVelX = deltaP.x * timeX;
+			//			float contactX = (oldP.x + pb->width) + adjustedVelX;
+			//			if (newP.x + pb->width > contactX)
+			//			{
+			//				pk->velocity.x = adjustedVelX;
+			//			}
+
+			//		}
+			//	}
+			//	else if (deltaP.x < 0.0f) //player moving to the left
+			//	{
+			//		//right side tile
+			//		float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
+
+			//		//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
+			//		if (fabsf(timeX2) < 0.001f)
+			//			timeX2 = 0.0f;
+
+			//		if (timeX2 >= 0 && timeX2 <= deltaTimeInMS)
+			//		{
+			//			float contactX2 = oldP.x + (deltaP.x * timeX2);
+
+			//			if (newP.x < contactX2)
+			//			{
+			//				float adjustedVelX = deltaP.x * timeX2;
+			//				pk->velocity.x = adjustedVelX;
+			//			}
+			//		}
+			//	}
+
+			//}
 
 			//check left or right side of tile
 			if (isOnLineSegment_in(oldP.y, tile->position.y, tile->position.y + box->height)
@@ -437,8 +548,7 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 						}
 					}
 				}
-		}
-	}
+			}
 }
 
 //will try to find any collisions that resulted in an overlap
@@ -547,11 +657,13 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 			if (deltaPos.x > 0.0f)
 			{
 				pt->position.x += (pen.x + pb->width) * -1.0f;
+				pk->velocity.x = 0.0f;
 			}
 			else if (deltaPos.x < 0.0f)
 			{
 				pen.x = box->position.x + box->width - pt->position.x;
 				pt->position.x += pen.x;
+				pk->velocity.x = 0.0f;
 			}
 
 			//this causes the player to teleport away

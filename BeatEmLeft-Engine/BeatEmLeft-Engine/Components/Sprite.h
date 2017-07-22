@@ -16,9 +16,14 @@ struct Sprite
 
 	//modify this width and height to see changes in size of image on screen
 	int width, height;
+
+	SDL_Point GetPosition() { return SDL_Point{ position.x - offset.x,position.y - offset.y }; }
+	
 	//pixel coordinates of image
 	SDL_Point position;
-	//flipping the image
+	//used to set the pivot point of an image
+	SDL_Point offset;
+
 	SDL_RendererFlip flip;
 	const char* type;
 private:

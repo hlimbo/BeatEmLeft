@@ -44,7 +44,7 @@ void RenderSystem::SetLocation(int x, int y)
 }
 
 //temporary level dimensions
-#define LEVEL_WIDTH 1024
+#define LEVEL_WIDTH 2048
 #define LEVEL_HEIGHT 920
 //#define LEVEL_WIDTH 2048
 //#define LEVEL_HEIGHT 1840
@@ -197,16 +197,16 @@ void RenderSystem::Update(SDL_Renderer* render)
 		srcRect = currentAnim->PlayAnimation(0.166f, 2.5f);
 	}
 
-	//convert game coordinates to screen coordinates
-	SDL_Point screenCoords = getFloatToIntegerCoordinates(playerTransform->position);
-	SDL_Rect screenBounds;
+	//convert game coordinates to screen coordinates	
 	//move this to sprite component and spritesheet component
-	SDL_Point tempoffset{ 20,1 };
-	screenBounds.x = screenCoords.x - camera.x - tempoffset.x;
-	screenBounds.y = screenCoords.y - camera.y - tempoffset.y;
+	SDL_Point tempoffset{ 20, 1 };
+	currentAnim->offset = tempoffset;
+	currentAnim->position = getFloatToIntegerCoordinates(playerTransform->position);
+	SDL_Rect screenBounds;
+	screenBounds.x = currentAnim->GetPosition().x - camera.x;
+	screenBounds.y = currentAnim->GetPosition().y - camera.y;
 	screenBounds.w = 32 * 2;
 	screenBounds.h = 64 * 2;
-	//SDL_RenderCopy(render, currentAnim->texture, &srcRect, &screenBounds);
 	SDL_RenderCopyEx(render, currentAnim->texture, &srcRect, &screenBounds, 0.0f, NULL, flip);
 }
 

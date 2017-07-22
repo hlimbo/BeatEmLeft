@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 	playerTransform->position = Vect2(20.0f, 0.0f);
 	
 	//temp
-	Vect2 offset(7.0f, 1.0f);
+	SDL_Point offset{ 7, 1 };
 
 	//Sprite
 	auto playerSprite = new Sprite(store.Get("redblock.png"));
