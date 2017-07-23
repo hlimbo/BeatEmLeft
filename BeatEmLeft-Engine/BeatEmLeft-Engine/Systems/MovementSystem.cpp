@@ -5,6 +5,8 @@
 #include "../Components/Kinematic.h"
 #include "../Input/KeyboardController.h"
 
+#include "../Utility/CollisionQuery.h"
+
 #include <vector>
 
 using namespace std;
@@ -349,118 +351,14 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 			if (tile == nullptr || box == nullptr)
 				continue;
 
-			BoxCollider playerBox;
-			playerBox.position = pt->position + pk->velocity;
-			playerBox.width = pb->width;
-			playerBox.height = pb->height;
-
-			//if (isOverlapping_in(playerBox, *box))
-			//{
-			//	//check top side of tile
-			//	//if player is moving downwards
-			//	if (deltaP.y > 0.0f)
-			//	{
-			//		float timeY = (tile->position.y - (oldP.y + pb->height)) / deltaP.y;
-
-			//		//there is some numerical error with the time not being = to 0.0f
-			//		if (fabsf(timeY) < 0.001f)
-			//			timeY = 0.0f;
-
-			//		if (timeY >= 0 && timeY <= deltaTimeInMS)
-			//		{
-			//			//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
-			//			float contactY = (oldP.y + pb->height) + (deltaP.y * timeY);
-			//			if (newP.y + pb->height > contactY)
-			//			{
-			//				//change the velocity instead of correcting the position
-			//				float adjustedVelY = deltaP.y * timeY;
-			//				pk->velocity.y = adjustedVelY;
-
-			//				//not sure if gravity should be changed here...
-			//				pk->gravity = pk->minGravity;
-			//			}
-
-			//		}
-
-			//	}
-			//	//check bottom side of tile
-			//	else if (deltaP.y < 0.0f)
-			//	{
-			//		float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
-
-			//		//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-			//		if (fabsf(timeY2) < 0.001f)
-			//			timeY2 = 0.0f;
-
-			//		if (timeY2 >= 0 && timeY2 <= deltaTimeInMS)
-			//		{
-			//			float contactY2 = oldP.y + (deltaP.y * timeY2);
-			//			if (newP.y < contactY2)
-			//			{
-			//				float adjustedVelY = deltaP.y * timeY2;
-			//				pk->velocity.y = adjustedVelY;
-			//			}
-			//		}
-			//	}
-
-			//	if (deltaP.x > 0.0f)
-			//	{
-			//		//left side tile
-			//		float timeX = (tile->position.x - (oldP.x + pb->width)) / deltaP.x;
-
-			//		//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-			//		if (fabsf(timeX) < 0.001f)
-			//			timeX = 0.0f;
-
-			//		//predicting how much delta velocity is needed this frame
-			//		//in order to not overlap against a non-moving entity with a box collider attached
-			//		if (timeX >= 0 && timeX <= deltaTimeInMS)
-			//		{
-			//			float adjustedVelX = deltaP.x * timeX;
-			//			float contactX = (oldP.x + pb->width) + adjustedVelX;
-			//			if (newP.x + pb->width > contactX)
-			//			{
-			//				pk->velocity.x = adjustedVelX;
-			//			}
-
-			//		}
-			//	}
-			//	else if (deltaP.x < 0.0f) //player moving to the left
-			//	{
-			//		//right side tile
-			//		float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
-
-			//		//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-			//		if (fabsf(timeX2) < 0.001f)
-			//			timeX2 = 0.0f;
-
-			//		if (timeX2 >= 0 && timeX2 <= deltaTimeInMS)
-			//		{
-			//			float contactX2 = oldP.x + (deltaP.x * timeX2);
-
-			//			if (newP.x < contactX2)
-			//			{
-			//				float adjustedVelX = deltaP.x * timeX2;
-			//				pk->velocity.x = adjustedVelX;
-			//			}
-			//		}
-			//	}
-
-			//}
-
 			//check left or right side of tile
-			if (isOnLineSegment_in(oldP.y, tile->position.y, tile->position.y + box->height)
-				|| isOnLineSegment_in(oldP.y + pb->height, tile->position.y, tile->position.y + box->height))
+			if (CollisionQuery::IsOnLineSegment(oldP.y, tile->position.y, tile->position.y + box->height)
+				|| CollisionQuery::IsOnLineSegment(oldP.y + pb->height, tile->position.y, tile->position.y + box->height))
 			{
 				//player moving to the right
 				if (deltaP.x > 0.0f)
 				{
-					//left side tile
-					float timeX = (tile->position.x - (oldP.x + pb->width)) / deltaP.x;
-
-					//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-					if (fabsf(timeX) < 0.001f)
-						timeX = 0.0f;
+					float timeX = CollisionQuery::GetContactTime(oldP.x + pb->width, newP.x + pb->width, tile->position.x);
 
 					//predicting how much delta velocity is needed this frame
 					//in order to not overlap against a non-moving entity with a box collider attached
@@ -478,11 +376,7 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 				else if (deltaP.x < 0.0f) //player moving to the left
 				{
 					//right side tile
-					float timeX2 = (oldP.x - (tile->position.x + box->width)) / fabsf(deltaP.x);
-
-					//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-					if (fabsf(timeX2) < 0.001f)
-						timeX2 = 0.0f;
+					float timeX2 = CollisionQuery::GetContactTime(oldP.x, newP.x, tile->position.x + box->width);
 
 					if (timeX2 >= 0 && timeX2 <= deltaTimeInMS)
 					{
@@ -498,18 +392,14 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 			}
 
 			//check top or bottom side of tile
-			if (isOnLineSegment_in(oldP.x, tile->position.x, tile->position.x + box->width)
-				|| isOnLineSegment_in(oldP.x + pb->width, tile->position.x, tile->position.x + box->width))
+			if (CollisionQuery::IsOnLineSegment(oldP.x, tile->position.x, tile->position.x + box->width)
+				|| CollisionQuery::IsOnLineSegment(oldP.x + pb->width, tile->position.x, tile->position.x + box->width))
 			{
 					//check top side of tile
 					//if player is moving downwards
 					if (deltaP.y > 0.0f)
 					{
-						float timeY = (tile->position.y - (oldP.y + pb->height)) / deltaP.y;
-
-						//there is some numerical error with the time not being = to 0.0f
-						if (fabsf(timeY) < 0.001f)
-							timeY = 0.0f;
+						float timeY = CollisionQuery::GetContactTime(oldP.y + pb->height, newP.y + pb->height, tile->position.y);
 
 						if (timeY >= 0 && timeY <= deltaTimeInMS)
 						{
@@ -531,11 +421,7 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 					//check bottom side of tile
 					else if (deltaP.y < 0.0f)
 					{
-						float timeY2 = (oldP.y - (tile->position.y + box->height)) / fabsf(deltaP.y);
-
-						//check for numerical error here where the values don't always return 0.0f e.g. instead returns -0.000003
-						if (fabsf(timeY2) < 0.001f)
-							timeY2 = 0.0f;
+						float timeY2 = CollisionQuery::GetContactTime(oldP.y, newP.y, tile->position.y + box->height);
 
 						if (timeY2 >= 0 && timeY2 <= deltaTimeInMS)
 						{
@@ -645,7 +531,7 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 
 		//this check ensures if boxes that are of the same size as the tiles or bigger
 		//properly get their positions corrected after overlap
-		if (isOverlapping_in(*pb, *box))
+		if (CollisionQuery::IsOverlapping(*pb, *box))
 		{
 			//Vect2 normal = VectMath::Normalize(pk->velocity);
 			Vect2 oldPos(pt->position - pk->velocity);
