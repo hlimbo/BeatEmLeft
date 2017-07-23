@@ -178,6 +178,19 @@ int main(int argc, char* argv[])
 			if (event.type == SDL_QUIT)
 				running = false;
 
+			if (event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					//screen to game world coordinates as ints
+					SDL_Point gameCoords;
+					gameCoords.x = renderSys.camera.x + event.button.x;
+					gameCoords.y = renderSys.camera.y + event.button.y;
+					printf("left mouse click (%d,%d)\n", event.button.x, event.button.y);
+					printf("game world coords(%d, %d)\n", gameCoords.x, gameCoords.y);
+				}
+			}
+
 			keyboard->HandleInput(event);
 		}
 

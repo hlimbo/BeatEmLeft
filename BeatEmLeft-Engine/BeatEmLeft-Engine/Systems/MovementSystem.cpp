@@ -351,6 +351,18 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 			if (tile == nullptr || box == nullptr)
 				continue;
 
+			//temp
+			//BoxCollider playerBox;
+			//playerBox.position = pt->position + pk->velocity;
+			//playerBox.width = pb->width;
+			//playerBox.height = pb->height;
+
+			//CollisionQuery::GetOverlappedBox(playerBox, *box);
+
+
+			float timeX = 0.0f;
+			float timeY = 0.0f;
+
 			//check left or right side of tile
 			if (CollisionQuery::IsOnLineSegment(oldP.y, tile->position.y, tile->position.y + box->height)
 				|| CollisionQuery::IsOnLineSegment(oldP.y + pb->height, tile->position.y, tile->position.y + box->height))
@@ -358,7 +370,8 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 				//player moving to the right
 				if (deltaP.x > 0.0f)
 				{
-					float timeX = CollisionQuery::GetContactTime(oldP.x + pb->width, newP.x + pb->width, tile->position.x);
+					timeX = CollisionQuery::GetContactTime(oldP.x + pb->width, newP.x + pb->width, tile->position.x);
+				//	printf("timeX: %f\n", timeX);
 
 					//predicting how much delta velocity is needed this frame
 					//in order to not overlap against a non-moving entity with a box collider attached
@@ -366,8 +379,10 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 					{
 						float adjustedVelX = deltaP.x * timeX;
 						float contactX = (oldP.x + pb->width) + adjustedVelX;
+						float cy = oldP.y + (deltaP.y * timeX);
 						if (newP.x + pb->width > contactX)
 						{
+							//printf("contact pt: (%f, %f)\n", contactX, cy);
 							pk->velocity.x = adjustedVelX;
 						}
 			
@@ -376,15 +391,16 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 				else if (deltaP.x < 0.0f) //player moving to the left
 				{
 					//right side tile
-					float timeX2 = CollisionQuery::GetContactTime(oldP.x, newP.x, tile->position.x + box->width);
+					timeX = CollisionQuery::GetContactTime(oldP.x, newP.x, tile->position.x + box->width);
+					//printf("timeX2: %f\n", timeX);
 
-					if (timeX2 >= 0 && timeX2 <= deltaTimeInMS)
+					if (timeX >= 0 && timeX <= deltaTimeInMS)
 					{
-						float contactX2 = oldP.x + (deltaP.x * timeX2);
+						float contactX2 = oldP.x + (deltaP.x * timeX);
 
 						if (newP.x < contactX2)
 						{
-							float adjustedVelX = deltaP.x * timeX2;
+							float adjustedVelX = deltaP.x * timeX;
 							pk->velocity.x = adjustedVelX;
 						}
 					}
@@ -395,46 +411,49 @@ void MovementSystem::CheckForCollisions(float deltaTimeInMS)
 			if (CollisionQuery::IsOnLineSegment(oldP.x, tile->position.x, tile->position.x + box->width)
 				|| CollisionQuery::IsOnLineSegment(oldP.x + pb->width, tile->position.x, tile->position.x + box->width))
 			{
-					//check top side of tile
-					//if player is moving downwards
-					if (deltaP.y > 0.0f)
+				//check top side of tile
+				//if player is moving downwards
+				if (deltaP.y > 0.0f)
+				{
+					timeY = CollisionQuery::GetContactTime(oldP.y + pb->height, newP.y + pb->height, tile->position.y);
+
+					if (timeY >= 0 && timeY <= deltaTimeInMS)
 					{
-						float timeY = CollisionQuery::GetContactTime(oldP.y + pb->height, newP.y + pb->height, tile->position.y);
-
-						if (timeY >= 0 && timeY <= deltaTimeInMS)
+						//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
+						float contactY = (oldP.y + pb->height) + (deltaP.y * timeY);
+						if (newP.y + pb->height > contactY)
 						{
-							//Note: deltaP.y * timeY is how much the player would need to move to touch the tile.
-							float contactY = (oldP.y + pb->height) + (deltaP.y * timeY);
-							if (newP.y + pb->height > contactY)
-							{
-								//change the velocity instead of correcting the position
-								float adjustedVelY = deltaP.y * timeY;
-								pk->velocity.y = adjustedVelY;
+						//	printf("timeY: %f\n", timeY);
+							//change the velocity instead of correcting the position
+							float adjustedVelY = deltaP.y * timeY;
+							pk->velocity.y = adjustedVelY;
 								
-								//not sure if gravity should be changed here...
-								pk->gravity = pk->minGravity;
-							}
-
+							//not sure if gravity should be changed here...
+							pk->gravity = pk->minGravity;
 						}
 
 					}
-					//check bottom side of tile
-					else if (deltaP.y < 0.0f)
-					{
-						float timeY2 = CollisionQuery::GetContactTime(oldP.y, newP.y, tile->position.y + box->height);
 
-						if (timeY2 >= 0 && timeY2 <= deltaTimeInMS)
+				}
+				//check bottom side of tile
+				else if (deltaP.y < 0.0f)
+				{
+					timeY = CollisionQuery::GetContactTime(oldP.y, newP.y, tile->position.y + box->height);
+
+					if (timeY >= 0 && timeY <= deltaTimeInMS)
+					{
+						float contactY2 = oldP.y + (deltaP.y * timeY);
+						if (newP.y < contactY2)
 						{
-							float contactY2 = oldP.y + (deltaP.y * timeY2);
-							if (newP.y < contactY2)
-							{
-								float adjustedVelY = deltaP.y * timeY2;
-								pk->velocity.y = adjustedVelY;
-							}
+						//	printf("timeY2: %f\n", timeY);
+							float adjustedVelY = deltaP.y * timeY;
+							pk->velocity.y = adjustedVelY;
 						}
 					}
 				}
 			}
+
+		}
 }
 
 //will try to find any collisions that resulted in an overlap
@@ -543,6 +562,7 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 			if (deltaPos.x > 0.0f)
 			{
 				pt->position.x += (pen.x + pb->width) * -1.0f;
+				//printf("contact2 (%f, %f)\n", pt->position.x, pt->position.y);
 				pk->velocity.x = 0.0f;
 			}
 			else if (deltaPos.x < 0.0f)
@@ -555,12 +575,13 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 			//this causes the player to teleport away
 			//if (deltaPos.y > 0.0f)
 			//{
-			//	pt->position.y += (pen.y + pb->height) * -1.0f;
+			//	printf("cy: %f\n", pt->position.y + pen.y);
+			//	//pt->position.y += (pen.y + pb->height) * -1.0f;
 			//}
 			//else if (deltaPos.y < 0.0f)
 			//{
-			//	pen.y = pt->position.y - (box->position.y + box->width);
-			//	pt->position.y -= (pen.y) * 1.0f;
+			//	//pen.y = pt->position.y - (box->position.y + box->width);
+			//	//pt->position.y -= (pen.y) * 1.0f;
 			//}
 		}
 
