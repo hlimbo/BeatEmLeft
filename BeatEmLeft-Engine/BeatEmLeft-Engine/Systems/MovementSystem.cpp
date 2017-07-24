@@ -607,17 +607,20 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 	Vect2 newP(oldP + playerKinematic->velocity);
 	Vect2 deltaP(newP - oldP);
 
+	//rising slopes
 	vector<int> entityIDs = ecs->entitySystem.GetIDs("Slope");
 	for (vector<int>::iterator it = entityIDs.begin();it != entityIDs.end();++it)
 	{
-		if (*it == playerID)
-			continue;
 
 		Transform* transform = transforms->GetComponent(*it);
 		SlopeCollider* slope = ecs->slopes.GetComponent(*it);
 
 		if (transform == nullptr || slope == nullptr)
 			continue;
+
+		//commenting this out means the slopes are sticky (no jumping)
+	/*	if (!CollisionQuery::IsOnLineSegmentInclusive(newP.y, transform->position.y, transform->position.y + slope->height))
+			continue;*/
 
 		//calculate slope - box collider collisions
 		if (deltaP.x > 0) //climb up
@@ -630,9 +633,9 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 				//k = (p.y - t.y ) / t.h 
 
 				float k = (oldP.y - transform->position.y) / slope->height;
-				printf("k: %f\n", k);
+				//printf("k: %f\n", k);
 				float cx = transform->position.x + (slope->width * (1- k));
-				if (newP.x > cx)
+				if (newP.x > cx && CollisionQuery::IsOnLineSegmentInclusive(newP.y,transform->position.y,transform->position.y + slope->height))
 				{
 					//push y position upwards (calculate new y position on slope)
 					float k2 = (newP.x - transform->position.x) / slope->width;
@@ -658,17 +661,16 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 		else if (deltaP.x < 0) // climb down
 		{
 			//check if the old position this frame is on the slope tile
-			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x - playerBox->width, transform->position.x, transform->position.x + slope->width) &&
-				CollisionQuery::IsOnLineSegment(oldP.y,transform->position.y, transform->position.y + slope->height))	
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x - playerBox->width, transform->position.x, transform->position.x + slope->width))	
 			{
 				//calculate position x on slope
 				//c.x = t.x + t.w * k
 				//k = (p.y - t.y ) / t.h
 
 				float k = (oldP.y - transform->position.y) / slope->height;
-				printf("k: %f\n", k);
+				//printf("k: %f\n", k);
 				float cx = transform->position.x + (slope->width * (1 - k));
-				if (newP.x < cx)
+				if (newP.x < cx && CollisionQuery::IsOnLineSegmentInclusive(newP.y, transform->position.y, transform->position.y + slope->height))
 				{
 
 					//push y position downwards (calculate new y position on slope)
@@ -676,14 +678,7 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 					float newY = transform->position.y + (slope->height * (1 - k2));
 					playerTransform->position.y = newY - playerBox->height;
 					playerKinematic->velocity.y = 0.0f;
-					//temporarily turn off gravity here
-					/*		playerKinematic->gravity = 0.0f;
-					playerKinematic->gravityFactor = 0.0f;
-					playerKinematic->maxGravity = 0.0f;
-					playerKinematic->minGravity = 0.0f;*/
 
-					printf("k2: %f\n", k2);
-					printf("newY: %f\n", newY);
 				}
 			}
 		}  
@@ -706,6 +701,79 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 
 		}
 
+	}
+
+	Vect2 oldP2(playerTransform->position.x,playerTransform->position.y + playerBox->height);
+	Vect2 newP2(oldP2 + playerKinematic->velocity);
+	Vect2 deltaP2(newP2 - oldP2);
+
+	//descending slopes
+	vector<int> entityIDs2 = ecs->entitySystem.GetIDs("SlopeRev");
+	for (vector<int>::iterator it = entityIDs2.begin();it != entityIDs2.end();++it)
+	{
+		Transform* transform = transforms->GetComponent(*it);
+		SlopeCollider* slope = ecs->slopes.GetComponent(*it);
+
+		if (transform == nullptr || slope == nullptr)
+			continue;
+
+		if (deltaP2.x < 0) //go up
+		{
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP2.x, transform->position.x, transform->position.x + slope->width))
+			{
+				float k = (oldP2.y - transform->position.y) / slope->height;
+				printf("k: %f\n", k);
+				float cx = transform->position.x + (slope->width * k);
+				if (cx > newP2.x)
+				{
+					//push y position upwards (calculate new y position on slope)
+					float k2 = (newP2.x - transform->position.x) / slope->width;
+					float newY = transform->position.y + (slope->height * k2);
+					playerTransform->position.y = newY - playerBox->height;
+					playerKinematic->velocity.y = 0.0f;
+				}
+
+			}
+		}
+		else if (deltaP2.x > 0)//go down
+		{
+			//check if the old position this frame is on the slope tile
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP2.x + playerBox->width, transform->position.x, transform->position.x + slope->width))
+			{
+				//calculate position x on slope
+				//c.x = t.x + t.w * k
+				//k = (p.y - t.y ) / t.h
+
+				float k = (oldP2.y - transform->position.y) / slope->height;
+				//printf("k: %f\n", k);
+				float cx = transform->position.x + (slope->width * (k));
+				if (cx < newP2.x && CollisionQuery::IsOnLineSegmentInclusive(newP2.y, transform->position.y, transform->position.y + slope->height))
+				{
+
+					//push y position downwards (calculate new y position on slope)
+					float k2 = (newP2.x - transform->position.x) / slope->width;
+					float newY = transform->position.y + (slope->height * (k2));
+					playerTransform->position.y = newY - playerBox->height;
+					playerKinematic->velocity.y = 0.0f;
+
+				}
+			}
+		}
+		else if (deltaP2.x == 0 && deltaP2.y > 0) //maintain position on slope when standing still
+		{
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP2.x, transform->position.x, transform->position.x + slope->width))
+			{
+				//calculate cy (assumption transform->position.x < oldP.x < transform->position.x + slope->width)
+				float k = (oldP2.x - transform->position.x) / slope->width;
+				float cy = transform->position.y + (slope->height * (k));
+				if (newP2.y > cy)
+				{
+					playerKinematic->velocity.y = cy - oldP2.y;
+					//float peny = newP.y - cy;
+					//playerTransform->position.y -= peny;
+				}
+			}
+		}
 	}
 }
 
