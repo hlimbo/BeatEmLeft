@@ -591,6 +591,75 @@ void MovementSystem::CorrectCollisionOverlaps(float deltaTimeInMS)
 	}
 }
 
+void MovementSystem::CheckForSlopes(float deltaTimeInMS)
+{
+	//temp
+	int playerID = ecs->entitySystem.GetIDs("Player").at(0);
+	Transform* playerTransform = transforms->GetComponent(playerID);
+	BoxCollider* playerBox = ecs->boxColliders.GetComponent(playerID);
+	Kinematic* playerKinematic = ecs->kinematics.GetComponent(playerID);
+
+	if (playerTransform == nullptr || playerBox == nullptr || playerKinematic == nullptr)
+		return;
+
+	//use bottom right corner of collider
+	Vect2 oldP(playerTransform->position.x + playerBox->width,playerTransform->position.y + playerBox->height);
+	Vect2 newP(oldP + playerKinematic->velocity);
+	Vect2 deltaP(newP - oldP);
+
+	vector<int> entityIDs = ecs->entitySystem.GetIDs("Slope");
+	for (vector<int>::iterator it = entityIDs.begin();it != entityIDs.end();++it)
+	{
+		if (*it == playerID)
+			continue;
+
+		Transform* transform = transforms->GetComponent(*it);
+		SlopeCollider* slope = ecs->slopes.GetComponent(*it);
+
+		if (transform == nullptr || slope == nullptr)
+			continue;
+
+		//calculate slope - box collider collisions
+		if (deltaP.x > 0)
+		{
+			//check if the old position this frame is on the slope tile
+			if (CollisionQuery::IsOnLineSegment(oldP.x, transform->position.x, transform->position.x + slope->width) &&
+				CollisionQuery::IsOnLineSegment(oldP.y - 1.0f, transform->position.y, transform->position.y + slope->height))
+			{
+				//calculate position x on slope
+				//c.x = t.x + t.w * k
+				//k = (p.y - t.y ) / t.h
+
+				float k = (oldP.y - transform->position.y) / slope->height;
+				printf("k: %f\n", k);
+				float cx = transform->position.x + (slope->width * (1- k));
+				if (newP.x > cx)
+				{
+					//push y position upwards (calculate new y position on slope)
+					float k2 = (newP.x - transform->position.x) / slope->width;
+					float newY = transform->position.y + ((slope->height * k2) / 2);
+					playerTransform->position.y = newY - playerBox->height;
+					playerKinematic->velocity.y = 0.0f;
+					//temporarily turn off gravity here
+					playerKinematic->gravity = 0.0f;
+					playerKinematic->gravityFactor = 0.0f;
+					playerKinematic->maxGravity = 0.0f;
+					playerKinematic->minGravity = 0.0f;
+
+					printf("k2: %f\n", k2);
+					printf("newY: %f\n", newY);
+				}
+				else
+				{
+					printf("newP.x: %f\n", newP.x);
+					printf("cx: %f\n", cx);
+				}
+			}
+		}
+
+	}
+}
+
 void MovementSystem::UpdatePositions(float deltaTime)
 {
 
