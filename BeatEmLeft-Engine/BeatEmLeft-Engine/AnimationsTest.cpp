@@ -13,6 +13,7 @@
 #include "Components/BoxCollider.h"
 #include "Components/SpriteSheet.h"
 #include "Components/Animation.h"
+#include "Components/SlopeCollider.h"
 #include "Systems/ECS.h"
 #include "Core.h"
 #include "Systems/MovementSystem.h"
@@ -41,6 +42,7 @@ int main(int argc, char* argv[])
 	string backgroundPath = mainPath + string("Background.png");
 	string tilePath = mainPath + string("block.png");
 	string playerPath = mainPath + string("redblock.png");
+	string slopePath = mainPath + string("slope.png");
 
 	TextureStore store(render);
 	store.Load("Background.png", backgroundPath);
@@ -49,6 +51,7 @@ int main(int argc, char* argv[])
 	store.Load("adv_walk.png", walkPath);
 	store.Load("adv_jump.png", jumpPath);
 	store.Load("redblock.png", playerPath);
+	store.Load("slope.png", slopePath);
 
 	MapFileLoader::TileMap map;
 	string mapFilePath = mainPath + string("funky_map.txt");
@@ -71,7 +74,7 @@ int main(int argc, char* argv[])
 	{
 		for (int c = 0;c < map.colCount;++c)
 		{
-			if (map.contents[r][c] == 1)
+			if (map.contents[r][c] == 1) //block tiles
 			{
 				int tileID = ecs.entitySystem.CreateEntity("Tile");
 				//construct list of tileCoordinates
@@ -91,6 +94,30 @@ int main(int argc, char* argv[])
 				ecs.transforms.AddComponent(tileID, transform);
 				ecs.sprites.AddComponent(tileID, sprite);
 				ecs.boxColliders.AddComponent(tileID, boxCollider);
+			}
+			else if (map.contents[r][c] == 2) //slope tiles
+			{
+				int slopeID = ecs.entitySystem.CreateEntity("Slope");
+
+				Vect2 tilePosition((float)c * (float)(tileWidth),
+					(float)r * (float)(tileHeight));
+				auto transform = new Transform(tilePosition);
+
+				auto sprite = new Sprite(store.Get("slope.png"));
+				sprite->width = (int)tileWidth;
+				sprite->height = (int)tileHeight;
+
+				auto slopeCollider = new SlopeCollider(tilePosition);
+				slopeCollider->width = tileWidth;
+				slopeCollider->height = tileHeight;
+
+				ecs.transforms.AddComponent(slopeID, transform);
+				ecs.sprites.AddComponent(slopeID, sprite);
+				ecs.slopes.AddComponent(slopeID, slopeCollider);
+			
+				//debug
+				printf("slope position: (%f,%f)\n", tilePosition.x, tilePosition.y);
+				printf("slope m: %f\n", slopeCollider->GetSlope());
 			}
 		}
 	}
@@ -198,7 +225,7 @@ int main(int argc, char* argv[])
 
 		movementSys.UpdateKinematics(deltaTime);
 		movementSys.CheckForCollisions(observedDeltaTime);
-
+		movementSys.CheckForSlopes(observedDeltaTime);
 		movementSys.UpdatePositions(deltaTime);
 		movementSys.CorrectCollisionOverlaps(observedDeltaTime);
 

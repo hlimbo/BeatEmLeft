@@ -27,6 +27,9 @@ public:
 	void CheckForCollisions(float deltaTimeInMS);
 	void CorrectCollisionOverlaps(float deltaTimeInMS);
 
+	//temp function for slope colliders
+	void CheckForSlopes(float deltaTimeInMS);
+
 	//deltaTime = in seconds
 	void UpdatePositions(float deltaTime);
 
