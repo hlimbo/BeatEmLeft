@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
 	string tilePath = mainPath + string("block.png");
 	string playerPath = mainPath + string("redblock.png");
 	string slopePath = mainPath + string("slope.png");
+	string slopeRevPath = mainPath + string("slope_rev.png");
 
 	TextureStore store(render);
 	store.Load("Background.png", backgroundPath);
@@ -52,6 +53,7 @@ int main(int argc, char* argv[])
 	store.Load("adv_jump.png", jumpPath);
 	store.Load("redblock.png", playerPath);
 	store.Load("slope.png", slopePath);
+	store.Load("slope_rev.png", slopeRevPath);
 
 	MapFileLoader::TileMap map;
 	string mapFilePath = mainPath + string("funky_map.txt");
@@ -118,6 +120,26 @@ int main(int argc, char* argv[])
 				//debug
 				printf("slope position: (%f,%f)\n", tilePosition.x, tilePosition.y);
 				printf("slope m: %f\n", slopeCollider->GetSlope());
+			}
+			else if (map.contents[r][c] == 3) //slope reverse tiles
+			{
+				int slopeID = ecs.entitySystem.CreateEntity("SlopeRev");
+
+				Vect2 tilePosition((float)c * (float)(tileWidth),
+					(float)r * (float)(tileHeight));
+				auto transform = new Transform(tilePosition);
+
+				auto sprite = new Sprite(store.Get("slope_rev.png"));
+				sprite->width = (int)tileWidth;
+				sprite->height = (int)tileHeight;
+
+				auto slopeCollider = new SlopeCollider(tilePosition);
+				slopeCollider->width = tileWidth;
+				slopeCollider->height = tileHeight;
+
+				ecs.transforms.AddComponent(slopeID, transform);
+				ecs.sprites.AddComponent(slopeID, sprite);
+				ecs.slopes.AddComponent(slopeID, slopeCollider);
 			}
 		}
 	}
