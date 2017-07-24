@@ -623,8 +623,7 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 		if (deltaP.x > 0)
 		{
 			//check if the old position this frame is on the slope tile
-			if (CollisionQuery::IsOnLineSegment(oldP.x, transform->position.x, transform->position.x + slope->width) &&
-				CollisionQuery::IsOnLineSegment(oldP.y - 1.0f, transform->position.y, transform->position.y + slope->height))
+			if (CollisionQuery::IsOnLineSegment(oldP.x, transform->position.x, transform->position.x + slope->width))
 			{
 				//calculate position x on slope
 				//c.x = t.x + t.w * k
@@ -637,14 +636,14 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 				{
 					//push y position upwards (calculate new y position on slope)
 					float k2 = (newP.x - transform->position.x) / slope->width;
-					float newY = transform->position.y + ((slope->height * k2) / 2);
+					float newY = transform->position.y + (slope->height * (1- k2));
 					playerTransform->position.y = newY - playerBox->height;
 					playerKinematic->velocity.y = 0.0f;
 					//temporarily turn off gravity here
-					playerKinematic->gravity = 0.0f;
+			/*		playerKinematic->gravity = 0.0f;
 					playerKinematic->gravityFactor = 0.0f;
 					playerKinematic->maxGravity = 0.0f;
-					playerKinematic->minGravity = 0.0f;
+					playerKinematic->minGravity = 0.0f;*/
 
 					printf("k2: %f\n", k2);
 					printf("newY: %f\n", newY);
