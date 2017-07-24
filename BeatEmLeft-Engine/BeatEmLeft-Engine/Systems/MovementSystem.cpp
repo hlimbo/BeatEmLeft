@@ -658,7 +658,7 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 		else if (deltaP.x < 0) // climb down
 		{
 			//check if the old position this frame is on the slope tile
-			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x - (playerBox->width / 8), transform->position.x, transform->position.x + slope->width) &&
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x - playerBox->width, transform->position.x, transform->position.x + slope->width) &&
 				CollisionQuery::IsOnLineSegment(oldP.y,transform->position.y, transform->position.y + slope->height))	
 			{
 				//calculate position x on slope
