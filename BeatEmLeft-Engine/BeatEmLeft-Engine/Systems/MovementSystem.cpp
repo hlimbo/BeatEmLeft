@@ -724,7 +724,7 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 				float k = (oldP2.y - transform->position.y) / slope->height;
 				printf("k: %f\n", k);
 				float cx = transform->position.x + (slope->width * k);
-				if (cx > newP2.x)
+				if (cx > newP2.x && CollisionQuery::IsOnLineSegmentInclusive(newP2.y, transform->position.y, transform->position.y + slope->height))
 				{
 					//push y position upwards (calculate new y position on slope)
 					float k2 = (newP2.x - transform->position.x) / slope->width;
