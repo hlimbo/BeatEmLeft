@@ -276,12 +276,12 @@ int main(int argc, char* argv[])
 		startCount = endCount;
 
 		//display fps text in title
-		if ((int)currentTime % 100 == 0)
-		{
+		//if ((int)currentTime % 100 == 0)
+	//	{
 			std::string title("Beat Em Left");
 			title += std::string(" | FPS: ") + std::to_string(observedFPS);
 			SDL_SetWindowTitle(core.getWindow(), title.c_str());
-		}
+	//	}
 	}
 
 	ecs.FreeKeyboard();
