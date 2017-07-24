@@ -144,8 +144,8 @@ int main(int argc, char* argv[])
 	playerAnimation->Add("jump", new SpriteSheet(store.Get("adv_jump.png"), 32, 64));
 
 	auto playerKinematic = new Kinematic();
-	playerKinematic->minSpeed = 155.0f;
-	playerKinematic->maxSpeed = 363.2f;
+	playerKinematic->minSpeed = 50.0f;
+	playerKinematic->maxSpeed = 100.0f;
 	playerKinematic->currentSpeed = playerKinematic->minSpeed;
 	playerKinematic->direction = Vect2(0.0f, 0.0f);//direction depends on what key is pressed
 	playerKinematic->accelFactor = 1.7f;

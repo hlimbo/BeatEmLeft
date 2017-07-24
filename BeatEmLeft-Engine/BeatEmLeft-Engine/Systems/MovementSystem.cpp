@@ -658,8 +658,8 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 		else if (deltaP.x < 0) // climb down
 		{
 			//check if the old position this frame is on the slope tile
-			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x, transform->position.x, transform->position.x + slope->width) &&
-				CollisionQuery::IsOnLineSegmentInclusive(oldP.y,transform->position.y, transform->position.y + slope->height))	
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x - (playerBox->width / 8), transform->position.x, transform->position.x + slope->width) &&
+				CollisionQuery::IsOnLineSegment(oldP.y,transform->position.y, transform->position.y + slope->height))	
 			{
 				//calculate position x on slope
 				//c.x = t.x + t.w * k
@@ -670,6 +670,7 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 				float cx = transform->position.x + (slope->width * (1 - k));
 				if (newP.x < cx)
 				{
+
 					//push y position downwards (calculate new y position on slope)
 					float k2 = (newP.x - transform->position.x) / slope->width;
 					float newY = transform->position.y + (slope->height * (1 - k2));
@@ -684,13 +685,8 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 					printf("k2: %f\n", k2);
 					printf("newY: %f\n", newY);
 				}
-				else
-				{
-					printf("newP.x: %f\n", newP.x);
-					printf("cx: %f\n", cx);
-				}
 			}
-		}
+		}  
 		else if (deltaP.y > 0 && deltaP.x == 0)
 		{
 			//maintain position on the slope
@@ -699,7 +695,7 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 			{
 				//calculate cy (assumption transform->position.x < oldP.x < transform->position.x + slope->width)
 				float k = (oldP.x - transform->position.x) / slope->width;
-				float cy = transform->position.y + (slope->height * k);
+				float cy = transform->position.y + (slope->height * (1 - k));
 				if (newP.y > cy)
 				{
 					playerKinematic->velocity.y = cy - oldP.y;
