@@ -15,6 +15,11 @@ namespace CollisionQuery
 		return coordinate > minCoordinate && coordinate < maxCoordinate;
 	}
 
+	bool IsOnLineSegmentInclusive(float coordinate, float minCoordinate, float maxCoordinate)
+	{
+		return coordinate >= minCoordinate && coordinate <= maxCoordinate;
+	}
+
 	bool IsOverlapping(const BoxCollider& b1, const BoxCollider& b2)
 	{
 		return b1.position.x < b2.position.x + b2.width &&

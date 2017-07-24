@@ -620,14 +620,14 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 			continue;
 
 		//calculate slope - box collider collisions
-		if (deltaP.x > 0)
+		if (deltaP.x > 0) //climb up
 		{
 			//check if the old position this frame is on the slope tile
-			if (CollisionQuery::IsOnLineSegment(oldP.x, transform->position.x, transform->position.x + slope->width))
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x, transform->position.x, transform->position.x + slope->width))
 			{
 				//calculate position x on slope
 				//c.x = t.x + t.w * k
-				//k = (p.y - t.y ) / t.h
+				//k = (p.y - t.y ) / t.h 
 
 				float k = (oldP.y - transform->position.y) / slope->height;
 				printf("k: %f\n", k);
@@ -645,6 +645,42 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 					playerKinematic->maxGravity = 0.0f;
 					playerKinematic->minGravity = 0.0f;*/
 
+				//	printf("k2: %f\n", k2);
+				//	printf("newY: %f\n", newY);
+				}
+				else
+				{
+				//	printf("newP.x: %f\n", newP.x);
+				//	printf("cx: %f\n", cx);
+				}
+			}
+		}
+		else if (deltaP.x < 0) // climb down
+		{
+			//check if the old position this frame is on the slope tile
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x, transform->position.x, transform->position.x + slope->width) &&
+				CollisionQuery::IsOnLineSegmentInclusive(oldP.y,transform->position.y, transform->position.y + slope->height))	
+			{
+				//calculate position x on slope
+				//c.x = t.x + t.w * k
+				//k = (p.y - t.y ) / t.h
+
+				float k = (oldP.y - transform->position.y) / slope->height;
+				printf("k: %f\n", k);
+				float cx = transform->position.x + (slope->width * (1 - k));
+				if (newP.x < cx)
+				{
+					//push y position downwards (calculate new y position on slope)
+					float k2 = (newP.x - transform->position.x) / slope->width;
+					float newY = transform->position.y + (slope->height * (1 - k2));
+					playerTransform->position.y = newY - playerBox->height;
+					playerKinematic->velocity.y = 0.0f;
+					//temporarily turn off gravity here
+					/*		playerKinematic->gravity = 0.0f;
+					playerKinematic->gravityFactor = 0.0f;
+					playerKinematic->maxGravity = 0.0f;
+					playerKinematic->minGravity = 0.0f;*/
+
 					printf("k2: %f\n", k2);
 					printf("newY: %f\n", newY);
 				}
@@ -654,6 +690,24 @@ void MovementSystem::CheckForSlopes(float deltaTimeInMS)
 					printf("cx: %f\n", cx);
 				}
 			}
+		}
+		else if (deltaP.y > 0 && deltaP.x == 0)
+		{
+			//maintain position on the slope
+			
+			if (CollisionQuery::IsOnLineSegmentInclusive(oldP.x, transform->position.x, transform->position.x + slope->width))
+			{
+				//calculate cy (assumption transform->position.x < oldP.x < transform->position.x + slope->width)
+				float k = (oldP.x - transform->position.x) / slope->width;
+				float cy = transform->position.y + (slope->height * k);
+				if (newP.y > cy)
+				{
+					playerKinematic->velocity.y = cy - oldP.y;
+					//float peny = newP.y - cy;
+					//playerTransform->position.y -= peny;
+				}
+			}
+
 		}
 
 	}
