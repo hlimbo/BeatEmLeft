@@ -10,12 +10,12 @@ namespace CollisionQuery
 	const float tolerance = 0.0078125f;
 
 	//use this function to check if a coordinate is between minCoordinate and maxCoordinate
-	bool IsOnLineSegment(float coordinate, float minCoordinate, float maxCoordinate)
+	bool IsOnLineSegment(const float& coordinate, const float& minCoordinate, const float& maxCoordinate)
 	{
 		return coordinate > minCoordinate && coordinate < maxCoordinate;
 	}
 
-	bool IsOnLineSegmentInclusive(float coordinate, float minCoordinate, float maxCoordinate)
+	bool IsOnLineSegmentInclusive(const float& coordinate, const float& minCoordinate, const float& maxCoordinate)
 	{
 		return coordinate >= minCoordinate && coordinate <= maxCoordinate;
 	}
@@ -51,13 +51,20 @@ namespace CollisionQuery
 	
 		Note: projectedPoint != oldPoint
 	*/
-	float GetContactTime(float oldPoint, float projectedPoint, float targetPoint)
+	float GetContactTime(const float& oldPoint,const float& projectedPoint, const float& targetPoint)
 	{
 		assert(oldPoint != projectedPoint);
 		float time = fabsf((oldPoint - targetPoint) / (projectedPoint - oldPoint));
 		return (time < tolerance) ? 0.0f : time;
 	}
 
+	bool IsPointInBox(const Vect2& point, const BoxCollider& box)
+	{
+		return IsOnLineSegment(point.x, box.position.x, box.position.x + box.width) &&
+			IsOnLineSegment(point.y, box.position.y, box.position.y + box.height);
+	}
+
+	//might get rid of
 	BoxCollider GetOverlappedBox(const BoxCollider& b1, const BoxCollider& b2)
 	{
 		BoxCollider overlap;

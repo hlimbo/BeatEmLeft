@@ -8,6 +8,8 @@ SpriteSheet::SpriteSheet(SDL_Texture* texture,int frameWidth,int frameHeight)
 	type = typeid(SpriteSheet).name();
 	currentTime = 0.0f;
 	SetTextureAttributes(texture, frameWidth, frameHeight);
+	scaleX = 1.0f;
+	scaleY = 1.0f;
 }
 
 SpriteSheet::~SpriteSheet()
