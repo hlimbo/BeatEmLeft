@@ -31,6 +31,11 @@ struct SpriteSheet
 	SDL_Point offset;
 
 	SDL_Point GetPosition() { return SDL_Point{ position.x - offset.x, position.y - offset.y }; }
+	
+	int getSrcWidth() { return src_width; }
+	int getSrcHeight() { return src_height; }
+	int getFrameWidth() { return frameWidth; }
+	int getFrameHeight() { return frameHeight; }
 
 private:
 	SDL_Rect* frames;
