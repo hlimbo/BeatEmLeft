@@ -17,6 +17,8 @@ public:
 	bool Free(const std::string fileName);
 	SDL_Texture* Get(const std::string fileName);
 
+
+
 private:
 	SDL_Renderer* render;//a pointer to the game window's renderer
 	std::unordered_map<std::string, SDL_Texture*> textures;

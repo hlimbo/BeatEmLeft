@@ -781,7 +781,7 @@ void MovementSystem::UpdatePositions(float deltaTime)
 {
 
 	//this is all what we want to do here!
-	vector<int> entityIDs = ecs->entitySystem.GetIDs();
+	vector<int> entityIDs = ecs->entitySystem.GetIDs("Player");
 	for (vector<int>::iterator it = entityIDs.begin();it != entityIDs.end();++it)
 	{
 		Transform* transform = transforms->GetComponent(*it);
