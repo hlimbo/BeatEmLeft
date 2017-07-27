@@ -13,6 +13,7 @@ struct SpriteSheet
 	//Note:frameWidth and frameHeight is proportional to the actual width and height of the texture
 	//when queried
 	bool SetTextureAttributes(SDL_Texture* srcTexture, int frameWidth, int frameHeight);
+	void SetAlpha(int frameIndex, Uint8 newAlpha);
 
 	const SDL_Rect* GetFrame(int frameIndex);
 	int GetFrameCount() { return frameCount; }
@@ -39,6 +40,7 @@ struct SpriteSheet
 
 private:
 	SDL_Rect* frames;
+	Uint8* alphas;
 	int frameCount;
 	int frameWidth, frameHeight;
 	

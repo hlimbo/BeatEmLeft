@@ -289,6 +289,52 @@ int main(int argc, char* argv[])
 		SDL_UnlockTexture(newTexture);
 		mPixels = NULL;
 
+		region.x = 0;
+		SDL_LockTexture(newTexture, &region, &mPixels, &mPitch);
+
+		//Get pixel data in editable format
+		pixels = (Uint32*)mPixels;
+		
+		pixelCount = (region.h * (mPitch / Bpp)); //note: mPitch / BytesPerPixel = width of the entire texture
+													  //int pixelCount = region.h * region.w;
+													  //int pixelCount = (formattedSurface->h * formattedSurface->w);
+													  //printf("formattedSurface: %d,%d\n", formattedSurface->h, formattedSurface->w);
+													  //printf("region.h: %d | mPitch / Bpp: %d\n", region.h, mPitch / Bpp);
+													  //printf("region.w: %d\n", region.w);
+		for (int i = 0;i < pixelCount; ++i)
+		{
+			//here is sdl's function of grabbing the rgba values
+			Uint8 r, g, b, a;
+			//to use SDL_GetRGBA: I need to have the SDL_Surface's format!
+			SDL_GetRGBA(pixels[i], formattedSurface->format, &r, &g, &b, &a);
+			//	printf("%d %d %d %d\n", r, g, b, a);
+			Uint32 somePixel = pixels[i];
+
+			//here is the way to grab the rgba values from a 32 bit pixel using bit shifts
+			//equivalent to SDL_GetRGBA; without the need of its surface!
+			Uint8 red = (pixels[i] >> 24) & 0xff;
+			Uint8 green = (pixels[i] >> 16) & 0xff;
+			Uint8 blue = (pixels[i] >> 8) & 0xff;
+			Uint8 alpha = (pixels[i]) & 0xff;
+
+			//printf("rgba ( %d, %d, %d, %d)\n", red, green, blue, alpha);
+
+			//modify alpha of a pixel here
+			a = (a == 0) ? 0 : a / 2;
+			//alpha = (alpha + deltaAlpha < 0) ? 0 : (alpha + deltaAlpha > 255) ? 255 : alpha + deltaAlpha;
+			//alpha = someAlpha < 0 ? 0 : someAlpha > 255 ? 255 : someAlpha;
+
+			//equivalent to SDL_MapRGBA; (this is without utilizing the pixel format struct from the surface..
+			Uint32 color2 = someAlpha | (blue << 8) | (green << 16) | (red << 24);
+			Uint32 color = SDL_MapRGBA(formattedSurface->format, r, g, b, a);
+
+			pixels[i] = color2;
+		}
+
+		//SDL_UnlockTexture
+		SDL_UnlockTexture(newTexture);
+		mPixels = NULL;
+
 		SDL_RenderCopy(render, newTexture, NULL, NULL);
 
 		SDL_RenderPresent(render);
