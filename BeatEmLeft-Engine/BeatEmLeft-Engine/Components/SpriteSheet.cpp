@@ -44,11 +44,11 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture * srcTexture,int frameWidth,i
 		return false;
 	}
 
-	if (accessMode != SDL_TEXTUREACCESS_STREAMING)
-	{
-		fprintf(stderr, "Error: target texture needs to have access value of: SDL_TEXTUREACCESS_STREAMING\n");
-		return false;
-	}
+	//if (accessMode != SDL_TEXTUREACCESS_STREAMING)
+	//{
+	//	fprintf(stderr, "Error: target texture needs to have access value of: SDL_TEXTUREACCESS_STREAMING\n");
+	//	return false;
+	//}
 
 	this->frameWidth = frameWidth;
 	this->frameHeight = frameHeight;
@@ -85,25 +85,27 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture * srcTexture,int frameWidth,i
 
 	//initialize each frame's alpha value by retrieving each frame's alpha value
 	alphas = new Uint8[frameCount];
-	for (int i = 0;i < frameCount;++i)
-	{
-		void* mPixels;
-		int mPitch;
-		SDL_LockTexture(texture, &frames[i], &mPixels, &mPitch);
-		Uint32* pixels = (Uint32*)mPixels;
-		alphas[i] = pixels[0] & 0xff;
-		SDL_UnlockTexture(texture);
-		mPixels = NULL;
-	}
+	//for (int i = 0;i < frameCount;++i)
+	//{
+	//	void* mPixels;
+	//	int mPitch;
+	//	SDL_LockTexture(texture, &frames[i], &mPixels, &mPitch);
+	//	Uint32* pixels = (Uint32*)mPixels;
+	//	alphas[i] = pixels[0] & 0xff;
+	//	SDL_UnlockTexture(texture);
+	//	mPixels = NULL;
+	//}
 
 	return true;
 }
 
+//Note:Sometimes setting the alpha of specific portions of the texture cause errors when 
+//TextureStore tries to delete the textures that have modified alpha values.
 void SpriteSheet::SetAlpha(int frameIndex, Uint8 newAlpha)
 {
 	assert(frameIndex >= 0 && frameIndex < frameCount);
 
-	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+	SDL_SetTextureBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_BLEND);
 
 	void* mPixels;
 	int mPitch;
@@ -118,6 +120,10 @@ void SpriteSheet::SetAlpha(int frameIndex, Uint8 newAlpha)
 		Uint8 blue = (pixels[i] >> 8) & 0xff;
 		Uint8 alpha = pixels[i] & 0xff;
 
+		//if pixel is completely transparent and is black.. don't change its alpha value
+		if (alpha == 0 && red == 0 && green == 0 && blue == 0)
+			continue;
+
 		if (newAlpha > 255) newAlpha = 255;
 		if (newAlpha < 0) newAlpha = 0;
 		Uint32 color = newAlpha | (blue << 8) | (green << 16) | (red << 24);
@@ -126,6 +132,16 @@ void SpriteSheet::SetAlpha(int frameIndex, Uint8 newAlpha)
 
 	SDL_UnlockTexture(texture);
 	mPixels = NULL;
+}
+
+void SpriteSheet::SetAlpha(Uint8 newAlpha)
+{
+	SDL_SetTextureBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_BLEND);
+	newAlpha = (newAlpha > 255) ? 255 : (newAlpha < 0) ? 0 : newAlpha;
+	SDL_SetTextureAlphaMod(texture, newAlpha);
+
+	for(int i = 0;i < frameCount;++i)
+		alphas[i] = newAlpha;
 }
 
 const SDL_Rect* SpriteSheet::GetFrame(int frameIndex)

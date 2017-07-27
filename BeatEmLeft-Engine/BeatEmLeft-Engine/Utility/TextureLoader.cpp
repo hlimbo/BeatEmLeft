@@ -48,27 +48,33 @@ SDL_Texture* TextureLoader::Load(SDL_Renderer* render, const char* filepath)
 		return NULL;
 	}
 
+	SDL_Texture* newTexture = SDL_CreateTextureFromSurface(render, formatSurface);
+	Uint32 format;
+	int access;
+	int w;
+	int h;
+	SDL_QueryTexture(newTexture, &format, &access, &w, &h);
+	printf("access: %s\n", SDL_GetPixelFormatName(format));
+
 	//if I want to support alpha blending and/or color modulation, if texture streaming is too slow
 	//for my needs I will need to switch over to holding a cache of SDL_Surfaces, where every time
 	//a SDL_Surface's alpha values change, I destroy the pre-existing texture and recreate the updated
 	//texture from the updated SDL_Surface
 
-	SDL_Texture* newTexture = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, formatSurface->w, formatSurface->h);
-	if (newTexture == NULL)
-	{
-		printf("Error: %s\n", SDL_GetError());
-		return NULL;
-	}
+	//SDL_Texture* newTexture = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA8888,SDL_TextureAccess::SDL_TEXTUREACCESS_STREAMING, formatSurface->w, formatSurface->h);
+	//if (newTexture == NULL)
+	//{
+	//	printf("Error: %s\n", SDL_GetError());
+	//	return NULL;
+	//}
 
-	SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-
-	void* mPixels;
-	int mPitch;
-	SDL_LockTexture(newTexture, NULL, &mPixels, &mPitch);
-	//copy image from main memory(RAM) to vram
-	memcpy(mPixels, formatSurface->pixels, formatSurface->pitch * formatSurface->h);
-	SDL_UnlockTexture(newTexture);
-	mPixels = NULL;
+	//void* mPixels;
+	//int mPitch;
+	//SDL_LockTexture(newTexture, NULL, &mPixels, &mPitch);
+	////copy image from main memory(RAM) to vram
+	//memcpy(mPixels, formatSurface->pixels, formatSurface->pitch * formatSurface->h);
+	//SDL_UnlockTexture(newTexture);
+	//mPixels = NULL;
 
 	SDL_FreeSurface(formatSurface);
 	SDL_FreeSurface(surface);

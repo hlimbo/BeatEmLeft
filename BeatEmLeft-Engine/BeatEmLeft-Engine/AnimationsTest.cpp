@@ -166,11 +166,13 @@ int main(int argc, char* argv[])
 	playerAnimation->Add("jump", new SpriteSheet(store.Get("adv_jump.png"), 32, 64));
 
 	//experiment change alpha to a portion of any spritesheet in playerAnimation
-	//playerAnimation->Get("walk")->SetAlpha(0, 75);
-	//playerAnimation->Get("walk")->SetAlpha(1, 75);
-	//playerAnimation->Get("walk")->SetAlpha(2, 75);
-	//playerAnimation->Get("walk")->SetAlpha(3, 75);
-	//playerAnimation->Get("walk")->SetAlpha(4, 75);
+	//playerAnimation->Get("walk")->SetAlpha(0, 100);
+	//playerAnimation->Get("walk")->SetAlpha(1, 255);
+	//playerAnimation->Get("walk")->SetAlpha(2, 100);
+	//playerAnimation->Get("walk")->SetAlpha(3, 255);
+	//playerAnimation->Get("walk")->SetAlpha(4, 100);
+	//playerAnimation->Get("walk")->SetAlpha(5, 255);
+	playerAnimation->Get("walk")->SetAlpha(125);
 
 	auto playerKinematic = new Kinematic();
 	playerKinematic->minSpeed = 100.0f;

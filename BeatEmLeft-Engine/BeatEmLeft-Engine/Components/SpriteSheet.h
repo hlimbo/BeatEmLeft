@@ -13,7 +13,14 @@ struct SpriteSheet
 	//Note:frameWidth and frameHeight is proportional to the actual width and height of the texture
 	//when queried
 	bool SetTextureAttributes(SDL_Texture* srcTexture, int frameWidth, int frameHeight);
+	
+	//Note:Sometimes setting the alpha of specific portions of the texture cause errors when 
+	//TextureStore tries to delete the textures that have modified alpha values.
+	//Don't use this for now!
 	void SetAlpha(int frameIndex, Uint8 newAlpha);
+
+	//Change the Alpha Value for the entire texture
+	void SetAlpha(Uint8 newAlpha);
 
 	const SDL_Rect* GetFrame(int frameIndex);
 	int GetFrameCount() { return frameCount; }
