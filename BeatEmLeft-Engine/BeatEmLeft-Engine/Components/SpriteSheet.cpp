@@ -108,7 +108,7 @@ void SpriteSheet::SetAlpha(int frameIndex, Uint8 newAlpha)
 	SDL_SetTextureBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_BLEND);
 
 	void* mPixels;
-	int mPitch;
+	int mPitch;//Note: can only lock a texture if texture streaming is enabled
 	SDL_LockTexture(texture, &frames[frameIndex], &mPixels, &mPitch);
 
 	Uint32* pixels = (Uint32*)mPixels;
@@ -134,9 +134,11 @@ void SpriteSheet::SetAlpha(int frameIndex, Uint8 newAlpha)
 	mPixels = NULL;
 }
 
-void SpriteSheet::SetAlpha(Uint8 newAlpha)
+//I need this in spritesheet because I might want to change individual portions of the sprite sheets alpha values
+void SpriteSheet::SetAlpha(SDL_BlendMode blendMode, Uint8 newAlpha)
 {
-	SDL_SetTextureBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_BLEND);
+	assert(texture != NULL);
+	SDL_SetTextureBlendMode(texture, blendMode);
 	newAlpha = (newAlpha > 255) ? 255 : (newAlpha < 0) ? 0 : newAlpha;
 	SDL_SetTextureAlphaMod(texture, newAlpha);
 

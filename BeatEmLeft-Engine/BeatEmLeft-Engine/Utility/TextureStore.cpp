@@ -1,5 +1,6 @@
 #include "TextureStore.h"
 #include <SDL2/SDL_render.h>
+#include <assert.h>
 
 TextureStore::TextureStore(SDL_Renderer* render)
 {
@@ -47,3 +48,12 @@ SDL_Texture* TextureStore::Get(const std::string fileName)
 {
 	return textures.at(fileName);
 }
+
+void TextureStore::SetAlpha(std::string fileName, Uint8 alpha, SDL_BlendMode blendMode)
+{
+	SDL_Texture* texture = textures.at(fileName);
+	SDL_SetTextureBlendMode(texture, blendMode);
+	alpha = (alpha > 255) ? 255 : (alpha < 0) ? 0 : alpha;
+	SDL_SetTextureAlphaMod(texture, alpha);
+}
+

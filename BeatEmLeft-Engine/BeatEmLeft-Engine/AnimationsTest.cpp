@@ -55,6 +55,8 @@ int main(int argc, char* argv[])
 	store.Load("slope.png", slopePath);
 	store.Load("slope_rev.png", slopeRevPath);
 
+	store.SetAlpha("block.png", 255 / 2);
+
 	MapFileLoader::TileMap map;
 	string mapFilePath = mainPath + string("funky_map.txt");
 	MapFileLoader::Load(mapFilePath.c_str(), &map);
@@ -166,13 +168,13 @@ int main(int argc, char* argv[])
 	playerAnimation->Add("jump", new SpriteSheet(store.Get("adv_jump.png"), 32, 64));
 
 	//experiment change alpha to a portion of any spritesheet in playerAnimation
-	//playerAnimation->Get("walk")->SetAlpha(0, 100);
+	playerAnimation->Get("walk")->SetAlpha(0, 100);
 	//playerAnimation->Get("walk")->SetAlpha(1, 255);
 	//playerAnimation->Get("walk")->SetAlpha(2, 100);
 	//playerAnimation->Get("walk")->SetAlpha(3, 255);
 	//playerAnimation->Get("walk")->SetAlpha(4, 100);
 	//playerAnimation->Get("walk")->SetAlpha(5, 255);
-	playerAnimation->Get("walk")->SetAlpha(125);
+	//playerAnimation->Get("walk")->SetAlpha(SDL_BlendMode::SDL_BLENDMODE_BLEND,125);
 
 	auto playerKinematic = new Kinematic();
 	playerKinematic->minSpeed = 100.0f;

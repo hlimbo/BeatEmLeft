@@ -1,6 +1,7 @@
 #include "Sprite.h"
 #include <stdio.h>
 #include <typeinfo.h>
+#include <assert.h>
 
 Sprite::Sprite()
 {
@@ -47,3 +48,4 @@ bool Sprite::SetTextureAttributes(SDL_Texture* srcTexture)
 
 	return true;
 }
+
