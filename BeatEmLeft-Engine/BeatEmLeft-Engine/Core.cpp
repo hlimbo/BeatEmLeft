@@ -58,7 +58,8 @@ bool Core::appInitialization()
 		return false;
 	}
 
-	targetFPS = displayMode.refresh_rate;
+	//cap targetFPS to 60
+	targetFPS = displayMode.refresh_rate > 60 ? 60 : displayMode.refresh_rate;
 	targetDeltaTime = 1000.0f / targetFPS;
 
 	mainWindow = SDL_CreateWindow("Beat Em Left", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
