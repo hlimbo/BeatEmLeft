@@ -7,6 +7,7 @@
 #include "Components/SpriteSheet.h"
 #include "Utility/TextureLoader.h"
 #include "Utility/ImageStore.h"
+#include "Utility/TextureStore.h"
 
 using namespace std;
 
@@ -19,6 +20,7 @@ int main(int argc, char* argv[])
 	mainPath += string("resources\\");
 	string objectsPath = mainPath + string("objects.png");
 	string redBlockPath = mainPath + string("redblock.png");
+	string whitePath = mainPath + string("white.png");
 
 	ImageStore imageStore(render);
 	imageStore.Load("objects.png", objectsPath);
@@ -40,6 +42,14 @@ int main(int argc, char* argv[])
 	Uint8 newAlpha = 255;
 
 	SDL_Rect* frame = &frame0;
+
+	TextureStore textureStore(render);
+	SDL_Texture* whiteTexture = textureStore.Load("white.png", whitePath);
+	//textureStore.SetAlpha("white.png", 255 / 2);
+	SDL_Rect whiteRect;
+	whiteRect.x = whiteRect.y = 0;
+	whiteRect.w = 266;
+	whiteRect.h = 600;
 
 	//---------------- Game Loop ------------------//
 
@@ -83,6 +93,10 @@ int main(int argc, char* argv[])
 
 				if (event.key.keysym.sym == SDLK_LEFT)
 				{
+					whiteRect.x -= 266;
+					if (whiteRect.x < 0)
+						whiteRect.x = SCREEN_WIDTH - whiteRect.w;
+
 					if (frame == &frame0)
 						frame = &frame2;
 					else if (frame == &frame1)
@@ -92,6 +106,10 @@ int main(int argc, char* argv[])
 				}
 				if (event.key.keysym.sym == SDLK_RIGHT)
 				{
+					whiteRect.x += 267;
+					if (whiteRect.x > SCREEN_WIDTH)
+						whiteRect.x = 0;
+
 					if (frame == &frame0)
 						frame = &frame1;
 					else if (frame == &frame1)
@@ -107,6 +125,7 @@ int main(int argc, char* argv[])
 
 		SDL_RenderClear(render);
 		SDL_Texture* texture = imageStore.Get("objects.png")->texture;
+		SDL_RenderCopy(render, whiteTexture, NULL, &whiteRect);
 		SDL_RenderCopy(render, texture, NULL, NULL);
 		SDL_RenderPresent(render);
 
