@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
 	string playerPath = mainPath + string("redblock.png");
 	string slopePath = mainPath + string("slope.png");
 	string slopeRevPath = mainPath + string("slope_rev.png");
+	string whitePath = mainPath + string("white.png");
 
 	TextureStore store(render);
 	store.Load("Background.png", backgroundPath);
@@ -54,8 +55,9 @@ int main(int argc, char* argv[])
 	store.Load("redblock.png", playerPath);
 	store.Load("slope.png", slopePath);
 	store.Load("slope_rev.png", slopeRevPath);
+	store.Load("white.png", whitePath);
 
-	store.SetAlpha("block.png", 255 / 2);
+	store.SetAlpha("white.png", 255 / 2);
 
 	MapFileLoader::TileMap map;
 	string mapFilePath = mainPath + string("funky_map.txt");
@@ -263,6 +265,14 @@ int main(int argc, char* argv[])
 		movementSys.CorrectCollisionOverlaps(observedDeltaTime);
 
 		renderSys.Update(render);
+
+		SDL_Rect dstRect;
+		dstRect.h = 64;
+		dstRect.w = 64;
+		dstRect.x = 0;
+		dstRect.y = 384;
+		SDL_RenderCopy(render, store.Get("white.png"), NULL, &dstRect);
+
 		renderSys.Draw(render);
 
 		endCount = SDL_GetPerformanceCounter();
