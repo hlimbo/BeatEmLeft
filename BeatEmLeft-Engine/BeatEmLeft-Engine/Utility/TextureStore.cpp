@@ -57,3 +57,4 @@ void TextureStore::SetAlpha(std::string fileName, Uint8 alpha, SDL_BlendMode ble
 	SDL_SetTextureAlphaMod(texture, alpha);
 }
 
+
