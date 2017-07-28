@@ -16,6 +16,9 @@
 
 using namespace std;
 
+//Utilizes Textures,which are stored in vram where the GPU processes the pixel data received
+//Modify the alpha values of each pixel on the GPU via Texture Streaming
+
 //Note: its easier to manipulate an SDL_Surface's rgba values than it is manipulating an SDL_Texture's rgba values
 //Note: 2 ways to go about this:
 //1. manipulate the SDL_Surface's rgba values then create a texture from it.

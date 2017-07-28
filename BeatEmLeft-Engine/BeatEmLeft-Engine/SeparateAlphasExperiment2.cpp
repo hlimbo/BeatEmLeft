@@ -17,11 +17,14 @@
 using namespace std;
 
 //Utilizes SDL_Surfaces (which are images kept in main memory RAM where the CPU processes the pixel data).
+//Modify the alpha values of the pixel data on the CPU.
 
 //retrieves the raw pixel information in hexadecimal format
 Uint32 GetPixelInfo(void* pixels, int pitch, int Bpp, int x, int y)
 {
-	//inside the parenthesis the pixels are 8-bit addressable (Note: can only use mPitch and Bpp when the pixels are 8-bit addressable only)
+	//Note: image width = pitch / BytesPerPixel;
+
+	//inside the parenthesis the pixels are 8-bit addressable (Note: can only use pitch and Bpp when the pixels are 8-bit addressable only)
 	//outside the parenthesis the pixels become 32-bit addressable (byte addressable)
 	return *(Uint32*)((Uint8*)(pixels) + (y * pitch) + (x * Bpp));
 }
@@ -29,18 +32,32 @@ Uint32 GetPixelInfo(void* pixels, int pitch, int Bpp, int x, int y)
 //returns the color value in rgba format
 SDL_Color GetPixelColor(SDL_Surface* surface, SDL_Point point)
 {
+	if (SDL_MUSTLOCK(surface))
+		SDL_LockSurface(surface);
+
 	int Bpp = surface->format->BytesPerPixel;
 	int pitch = surface->pitch;
-	SDL_Color color;
 	Uint32 pixelInfo = GetPixelInfo(surface->pixels, pitch, Bpp, point.x, point.y);
+
+	if (SDL_MUSTLOCK(surface))
+		SDL_UnlockSurface(surface);
+
+	SDL_Color color;
 	SDL_GetRGBA(pixelInfo, surface->format, &color.r, &color.g, &color.b, &color.a);
+
 	return color;
 }
 
 void SetPixelInfo(SDL_Surface* surface, int x, int y, Uint32 pixel)
 {
+	if (SDL_MUSTLOCK(surface))
+		SDL_LockSurface(surface);
+
 	Uint32* pixels32 = (Uint32*)((Uint8*)surface->pixels + (y * surface->pitch) + (x * surface->format->BytesPerPixel));
 	*pixels32 = pixel;
+
+	if (SDL_MUSTLOCK(surface))
+		SDL_UnlockSurface(surface);
 }
 
 void SetPixelColor(SDL_Surface* surface, SDL_Point point, SDL_Color color)
@@ -85,15 +102,13 @@ int main(int argc, char* argv[])
 			//Uint32 newPixel = (alpha << formatSurface->format->Ashift) | (red << formatSurface->format->Rshift) | (green << formatSurface->format->Gshift)
 			//	| (blue << formatSurface->format->Bshift);
 			//SetPixelInfo(formatSurface, k, i, newPixel);
-
-			SDL_LockSurface(surface);
-			
 			SDL_Color color = GetPixelColor(surface, SDL_Point{ k,i });
+			if (k >= 100 && k < 150 && i < 66)
+				color.a = color.a / 4;
 			//color.a = color.a / 4;
-			color.r += color.r / 4;
+			//color.r -= color.r / 4;
 			SetPixelColor(surface, SDL_Point{ k,i }, color);
 		
-			SDL_UnlockSurface(surface);
 		}
 	}
 
@@ -166,6 +181,9 @@ int main(int argc, char* argv[])
 
 
 	printf("Number of pixels: %d\n", surfaceWidth * surfaceHeight);
+
+	SDL_FreeSurface(surface);
+	SDL_DestroyTexture(texture);
 
 	return 0;
 }

@@ -24,7 +24,6 @@ public:
 private:
 	SDL_Renderer* render;//a pointer to the game window's renderer
 	std::unordered_map<std::string, SDL_Texture*> textures;
-
 };
 
 #endif
