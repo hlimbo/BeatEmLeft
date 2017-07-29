@@ -4,11 +4,16 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_rect.h>
 
+struct Image;
+
 struct Sprite
 {
 	Sprite();
 	Sprite(SDL_Texture* srcTexture);
+	Sprite(Image* image);
 	~Sprite();
+
+	Image* image;
 
 	//helper function
 	SDL_Texture* texture;
