@@ -4,11 +4,15 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_rect.h>
 
+struct Image;
+
 struct SpriteSheet
 {
-	SpriteSheet(SDL_Texture* texture,int frameWidth,int frameHeight);
+	SpriteSheet(SDL_Renderer* render,SDL_Texture* texture,int frameWidth,int frameHeight);
+	SpriteSheet(SDL_Renderer* render,Image* image, int frameWidth, int frameHeight);
 	~SpriteSheet();
 
+	Image* image;
 	SDL_Texture* texture;
 	//Note:frameWidth and frameHeight is proportional to the actual width and height of the texture
 	//when queried
@@ -22,7 +26,7 @@ struct SpriteSheet
 
 	//Change the Alpha Value for the entire texture.
 	//If newAlpha exceeds 255, newAlpha = 255, if newAlpha is below 0, newAlpha = 0
-	void SetAlpha(SDL_BlendMode blendMode,Uint8 newAlpha);
+	void SetAlpha(Uint8 newAlpha, SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND);
 
 	const SDL_Rect* GetFrame(int frameIndex);
 	int GetFrameCount() { return frameCount; }
@@ -48,6 +52,7 @@ struct SpriteSheet
 	int getFrameHeight() { return frameHeight; }
 
 private:
+	SDL_Renderer* render;//pointer to the game window's renderer
 	SDL_Rect* frames;
 	Uint8* alphas;
 	int frameCount;

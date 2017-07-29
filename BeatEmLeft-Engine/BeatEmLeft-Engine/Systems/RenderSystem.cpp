@@ -119,7 +119,7 @@ void RenderSystem::Update(SDL_Renderer* render)
 				screenBounds.y = sprite->position.y - camera.y;
 				screenBounds.w = sprite->width;
 				screenBounds.h = sprite->height;
-				SDL_RenderCopy(render, sprite->texture, NULL/* source texture is used if I want to animate the sprite*/, &screenBounds);
+				//SDL_RenderCopy(render, sprite->texture, NULL/* source texture is used if I want to animate the sprite*/, &screenBounds);
 			}
 			else //for all other sprites... render them  (right now render order happens from lowest entity id to highest entity id)
 			{

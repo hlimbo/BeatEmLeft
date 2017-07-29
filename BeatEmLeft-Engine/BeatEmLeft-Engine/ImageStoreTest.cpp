@@ -51,6 +51,12 @@ int main(int argc, char* argv[])
 	whiteRect.w = 266;
 	whiteRect.h = 600;
 
+	SDL_Rect dstRect;
+	dstRect.x = 0;
+	dstRect.y = 0;
+	dstRect.w = 400;
+	dstRect.h = 300;
+
 	//---------------- Game Loop ------------------//
 
 	//observedDeltaTime is measured in milliseconds
@@ -84,16 +90,16 @@ int main(int argc, char* argv[])
 			{
 				if (event.key.keysym.sym == SDLK_UP)
 				{
-					newAlpha += 4;
+					newAlpha += 2;
 				}
 				if (event.key.keysym.sym == SDLK_DOWN)
 				{
-					newAlpha -= 4;
+					newAlpha -= 2;
 				}
 
 				if (event.key.keysym.sym == SDLK_LEFT)
 				{
-					whiteRect.x -= 266;
+					whiteRect.x -= 267;
 					if (whiteRect.x < 0)
 						whiteRect.x = SCREEN_WIDTH - whiteRect.w;
 
@@ -126,7 +132,13 @@ int main(int argc, char* argv[])
 		SDL_RenderClear(render);
 		SDL_Texture* texture = imageStore.Get("objects.png")->texture;
 		SDL_RenderCopy(render, whiteTexture, NULL, &whiteRect);
-		SDL_RenderCopy(render, texture, NULL, NULL);
+	
+		dstRect.x += 1;
+		if (dstRect.x > SCREEN_WIDTH)
+		{
+			dstRect.x = 0;
+		}
+		SDL_RenderCopy(render, texture, frame, &dstRect);
 		SDL_RenderPresent(render);
 
 		endCount = SDL_GetPerformanceCounter();

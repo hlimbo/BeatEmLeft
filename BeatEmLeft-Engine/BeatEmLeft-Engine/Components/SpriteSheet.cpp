@@ -1,14 +1,30 @@
 #include "SpriteSheet.h"
+#include "../Utility/TextureLoader.h"
+#include "../Utility/ImageMod.h"
 #include <stdio.h>
 #include <typeinfo.h>
 #include <assert.h>
 
-SpriteSheet::SpriteSheet(SDL_Texture* texture,int frameWidth,int frameHeight)
+SpriteSheet::SpriteSheet(SDL_Renderer* render,SDL_Texture* texture,int frameWidth,int frameHeight)
 {
+	this->render = render;
 	this->texture = NULL;
 	type = typeid(SpriteSheet).name();
 	currentTime = 0.0f;
 	SetTextureAttributes(texture, frameWidth, frameHeight);
+	scaleX = 1.0f;
+	scaleY = 1.0f;
+}
+
+SpriteSheet::SpriteSheet(SDL_Renderer* render,Image* image, int frameWidth, int frameHeight)
+{
+	this->render = render;
+	this->texture = NULL;
+	this->image = image;
+	type = typeid(SpriteSheet).name();
+	currentTime = 0.0f;
+	SetTextureAttributes(image->texture, frameWidth, frameHeight);
+	this->texture = this->image->texture;
 	scaleX = 1.0f;
 	scaleY = 1.0f;
 }
@@ -29,7 +45,7 @@ SpriteSheet::~SpriteSheet()
 	}
 }
 
-bool SpriteSheet::SetTextureAttributes(SDL_Texture * srcTexture,int frameWidth,int frameHeight)
+bool SpriteSheet::SetTextureAttributes(SDL_Texture* srcTexture,int frameWidth,int frameHeight)
 {
 	if (texture != NULL)
 		return false;
@@ -43,12 +59,6 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture * srcTexture,int frameWidth,i
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return false;
 	}
-
-	//if (accessMode != SDL_TEXTUREACCESS_STREAMING)
-	//{
-	//	fprintf(stderr, "Error: target texture needs to have access value of: SDL_TEXTUREACCESS_STREAMING\n");
-	//	return false;
-	//}
 
 	this->frameWidth = frameWidth;
 	this->frameHeight = frameHeight;
@@ -85,16 +95,6 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture * srcTexture,int frameWidth,i
 
 	//initialize each frame's alpha value by retrieving each frame's alpha value
 	alphas = new Uint8[frameCount];
-	//for (int i = 0;i < frameCount;++i)
-	//{
-	//	void* mPixels;
-	//	int mPitch;
-	//	SDL_LockTexture(texture, &frames[i], &mPixels, &mPitch);
-	//	Uint32* pixels = (Uint32*)mPixels;
-	//	alphas[i] = pixels[0] & 0xff;
-	//	SDL_UnlockTexture(texture);
-	//	mPixels = NULL;
-	//}
 
 	return true;
 }
@@ -104,43 +104,21 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture * srcTexture,int frameWidth,i
 void SpriteSheet::SetAlpha(int frameIndex, Uint8 newAlpha)
 {
 	assert(frameIndex >= 0 && frameIndex < frameCount);
+	assert(texture != NULL);
+	assert(image->texture != NULL);
 
-	SDL_SetTextureBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_BLEND);
-
-	void* mPixels;
-	int mPitch;//Note: can only lock a texture if texture streaming is enabled
-	SDL_LockTexture(texture, &frames[frameIndex], &mPixels, &mPitch);
-
-	Uint32* pixels = (Uint32*)mPixels;
-	int pixelCount = frames[frameIndex].h * (mPitch / 4);
-	for (int i = 0;i < pixelCount;++i)
-	{
-		Uint8 red = (pixels[i] >> 24) & 0xff;
-		Uint8 green = (pixels[i] >> 16) & 0xff;
-		Uint8 blue = (pixels[i] >> 8) & 0xff;
-		Uint8 alpha = pixels[i] & 0xff;
-
-		//if pixel is completely transparent and is black.. don't change its alpha value
-		if (alpha == 0 && red == 0 && green == 0 && blue == 0)
-			continue;
-
-		if (newAlpha > 255) newAlpha = 255;
-		if (newAlpha < 0) newAlpha = 0;
-		Uint32 color = newAlpha | (blue << 8) | (green << 16) | (red << 24);
-		pixels[i] = color;
-	}
-
-	SDL_UnlockTexture(texture);
-	mPixels = NULL;
+	ImageMod::SetAlpha(image, newAlpha, frames[frameIndex], render);
+	assert(texture != NULL);
+	texture = image->texture;
+	alphas[frameIndex] = newAlpha;
 }
 
 //I need this in spritesheet because I might want to change individual portions of the sprite sheets alpha values
-void SpriteSheet::SetAlpha(SDL_BlendMode blendMode, Uint8 newAlpha)
+void SpriteSheet::SetAlpha(Uint8 newAlpha,SDL_BlendMode blendMode)
 {
 	assert(texture != NULL);
-	SDL_SetTextureBlendMode(texture, blendMode);
-	newAlpha = (newAlpha > 255) ? 255 : (newAlpha < 0) ? 0 : newAlpha;
-	SDL_SetTextureAlphaMod(texture, newAlpha);
+	assert(image->texture != NULL);
+	ImageMod::SetAlpha(image, newAlpha, blendMode);
 
 	for(int i = 0;i < frameCount;++i)
 		alphas[i] = newAlpha;

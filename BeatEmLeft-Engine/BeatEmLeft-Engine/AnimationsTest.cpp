@@ -22,6 +22,8 @@
 #include "Input/GameController.h"
 #include "Utility/TextureLoader.h"
 #include "Utility/TextureStore.h"
+#include "Utility/ImageStore.h"
+#include "Utility/ImageMod.h"
 #include "Utility/MapFileLoader.h"
 
 using namespace std;
@@ -46,7 +48,7 @@ int main(int argc, char* argv[])
 	string slopeRevPath = mainPath + string("slope_rev.png");
 	string whitePath = mainPath + string("white.png");
 
-	TextureStore store(render);
+	ImageStore store(render);
 	store.Load("Background.png", backgroundPath);
 	store.Load("block.png", tilePath);
 	store.Load("adv_idle.png", idlePath);
@@ -56,8 +58,6 @@ int main(int argc, char* argv[])
 	store.Load("slope.png", slopePath);
 	store.Load("slope_rev.png", slopeRevPath);
 	store.Load("white.png", whitePath);
-
-	store.SetAlpha("white.png", 255 / 2);
 
 	MapFileLoader::TileMap map;
 	string mapFilePath = mainPath + string("funky_map.txt");
@@ -165,18 +165,27 @@ int main(int argc, char* argv[])
 
 	//SpriteSheets / Animations
 	auto playerAnimation = new Animation();
-	playerAnimation->Add("idle", new SpriteSheet(store.Get("adv_idle.png"), 32, 64));
-	playerAnimation->Add("walk", new SpriteSheet(store.Get("adv_walk.png"), 32, 64));
-	playerAnimation->Add("jump", new SpriteSheet(store.Get("adv_jump.png"), 32, 64));
+	SpriteSheet* walkSheet = new SpriteSheet(render, store.Get("adv_walk.png"), 32, 64);
+	playerAnimation->Add("idle", new SpriteSheet(render,store.Get("adv_idle.png"), 32, 64));
+	playerAnimation->Add("walk", walkSheet);
+	playerAnimation->Add("jump", new SpriteSheet(render,store.Get("adv_jump.png"), 32, 64));
 
 	//experiment change alpha to a portion of any spritesheet in playerAnimation
-	playerAnimation->Get("walk")->SetAlpha(0, 100);
-	//playerAnimation->Get("walk")->SetAlpha(1, 255);
-	//playerAnimation->Get("walk")->SetAlpha(2, 100);
-	//playerAnimation->Get("walk")->SetAlpha(3, 255);
-	//playerAnimation->Get("walk")->SetAlpha(4, 100);
-	//playerAnimation->Get("walk")->SetAlpha(5, 255);
-	//playerAnimation->Get("walk")->SetAlpha(SDL_BlendMode::SDL_BLENDMODE_BLEND,125);
+	for(int i = 0;i < walkSheet->GetFrameCount();++i)
+		walkSheet->SetAlpha(i, (Uint8)255 / 2);
+	ImageMod::SetAlpha(store.Get("adv_idle.png"), 255 / 2);
+	SDL_Rect region;
+	region.x = region.y = 0;
+	region.w = 32;
+	region.h = 64;
+	//playerAnimation->Get("walk")->SetAlpha(255 / 2);
+	//Uint8 alpha1 = 255 / 2;
+	//playerAnimation->Get("walk")->SetAlpha(0, alpha1);
+	//playerAnimation->Get("walk")->SetAlpha(1, alpha1);
+	//playerAnimation->Get("walk")->SetAlpha(2, alpha1);
+	//playerAnimation->Get("walk")->SetAlpha(3, alpha1);
+	//playerAnimation->Get("walk")->SetAlpha(4, alpha1);
+	//playerAnimation->Get("walk")->SetAlpha(5, alpha1);
 
 	auto playerKinematic = new Kinematic();
 	playerKinematic->minSpeed = 100.0f;
@@ -266,12 +275,12 @@ int main(int argc, char* argv[])
 
 		renderSys.Update(render);
 
-		SDL_Rect dstRect;
-		dstRect.h = 64;
-		dstRect.w = 64;
-		dstRect.x = 0;
-		dstRect.y = 384;
-		SDL_RenderCopy(render, store.Get("white.png"), NULL, &dstRect);
+		//SDL_Rect dstRect;
+		//dstRect.h = 64;
+		//dstRect.w = 64;
+		//dstRect.x = 0;
+		//dstRect.y = 384;
+		//SDL_RenderCopy(render, store.Get("white.png")->texture, NULL, &dstRect);
 
 		renderSys.Draw(render);
 
