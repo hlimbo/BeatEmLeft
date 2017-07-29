@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
 	string slopePath = mainPath + string("slope.png");
 	string slopeRevPath = mainPath + string("slope_rev.png");
 	string whitePath = mainPath + string("white.png");
+	string diddyPath = mainPath + string("diddy_idle.png");
 
 	ImageStore store(render);
 	store.Load("Background.png", backgroundPath);
@@ -58,6 +59,7 @@ int main(int argc, char* argv[])
 	store.Load("slope.png", slopePath);
 	store.Load("slope_rev.png", slopeRevPath);
 	store.Load("white.png", whitePath);
+	store.Load("diddy_idle.png", diddyPath);
 
 	MapFileLoader::TileMap map;
 	string mapFilePath = mainPath + string("funky_map.txt");
@@ -171,22 +173,11 @@ int main(int argc, char* argv[])
 	playerAnimation->Add("jump", new SpriteSheet(render,store.Get("adv_jump.png"), 32, 64));
 
 	//experiment change alpha to a portion of any spritesheet in playerAnimation
-	for(int i = 0;i < walkSheet->GetFrameCount();++i)
-		walkSheet->SetAlpha(i, (Uint8)255 / 2);
-	ImageMod::SetAlpha(store.Get("adv_idle.png"), 255 / 2);
-	SDL_Rect region;
-	region.x = region.y = 0;
-	region.w = 32;
-	region.h = 64;
-	//playerAnimation->Get("walk")->SetAlpha(255 / 2);
-	//Uint8 alpha1 = 255 / 2;
-	//playerAnimation->Get("walk")->SetAlpha(0, alpha1);
-	//playerAnimation->Get("walk")->SetAlpha(1, alpha1);
-	//playerAnimation->Get("walk")->SetAlpha(2, alpha1);
-	//playerAnimation->Get("walk")->SetAlpha(3, alpha1);
-	//playerAnimation->Get("walk")->SetAlpha(4, alpha1);
-	//playerAnimation->Get("walk")->SetAlpha(5, alpha1);
-
+	Uint8 alpha1 = 255;
+	for (int i = 0;i < walkSheet->GetFrameCount();++i)
+	{
+		walkSheet->SetAlpha(i, alpha1 / (i + 1));
+	}
 	auto playerKinematic = new Kinematic();
 	playerKinematic->minSpeed = 100.0f;
 	playerKinematic->maxSpeed = 150.0f;
@@ -227,6 +218,12 @@ int main(int argc, char* argv[])
 	renderSys.Init(SCREEN_WIDTH, SCREEN_HEIGHT);
 	MovementSystem movementSys(&ecs);
 	movementSys.Init();
+
+	SpriteSheet diddy(render, store.Get("diddy_idle.png"), 40, 32);
+	for (int i = 0;i < diddy.GetFrameCount();++i)
+	{
+		diddy.SetAlpha(i, 255 / (i + 1));
+	}
 
 	//---------------- Game Loop ------------------//
 
@@ -275,12 +272,13 @@ int main(int argc, char* argv[])
 
 		renderSys.Update(render);
 
-		//SDL_Rect dstRect;
-		//dstRect.h = 64;
-		//dstRect.w = 64;
-		//dstRect.x = 0;
-		//dstRect.y = 384;
-		//SDL_RenderCopy(render, store.Get("white.png")->texture, NULL, &dstRect);
+		SDL_Rect dstRect;
+		dstRect.h = 32 * 8;
+		dstRect.w = 40 * 8;
+		dstRect.x = 0;
+		dstRect.y = 0;
+		SDL_Rect currentFrame = diddy.PlayAnimation(deltaTime, 0.5f);
+		SDL_RenderCopy(render, store.Get("diddy_idle.png")->texture,&currentFrame, &dstRect);
 
 		renderSys.Draw(render);
 

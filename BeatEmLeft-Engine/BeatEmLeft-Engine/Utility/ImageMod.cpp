@@ -18,7 +18,6 @@ void ImageMod::SetAlpha(Image* image, Uint8 alpha, SDL_Rect region, SDL_Renderer
 	assert(region.x + region.w <= surface->w);
 	assert(region.y + region.h <= surface->h);
 
-
 	SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
 	for (int i = region.y;i < region.y + region.h;++i)
 	{
@@ -26,8 +25,8 @@ void ImageMod::SetAlpha(Image* image, Uint8 alpha, SDL_Rect region, SDL_Renderer
 		{
 			SDL_Color color = GetPixelColor(surface, SDL_Point{ k,i });
 			//ignore transparent pixels
-	/*		if (color.r == 255 && color.g == 255 && color.b == 255 && color.a == 0)
-				continue;*/
+			if (color.r == 255 && color.g == 255 && color.b == 255 && color.a == 0)
+				continue;
 			color.a = alpha;
 			SetPixelColor(surface, SDL_Point{ k,i }, color);
 		}
@@ -37,6 +36,7 @@ void ImageMod::SetAlpha(Image* image, Uint8 alpha, SDL_Rect region, SDL_Renderer
 	SDL_Texture* texture = image->texture;
 	TextureLoader::Free(texture);
 	image->texture = SDL_CreateTextureFromSurface(render, surface);
+	SDL_SetTextureBlendMode(image->texture, SDL_BLENDMODE_BLEND);
 }
 
 Uint32 ImageMod::GetPixelInfo(void* pixels, int pitch, int Bpp, int x, int y)

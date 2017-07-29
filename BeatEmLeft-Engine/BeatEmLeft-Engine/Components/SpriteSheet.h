@@ -51,10 +51,11 @@ struct SpriteSheet
 	int getFrameWidth() { return frameWidth; }
 	int getFrameHeight() { return frameHeight; }
 
+	Uint8* alphas;
 private:
 	SDL_Renderer* render;//pointer to the game window's renderer
 	SDL_Rect* frames;
-	Uint8* alphas;
+	
 	int frameCount;
 	int frameWidth, frameHeight;
 	
