@@ -7,6 +7,7 @@
 #include "../Components/Animation.h"
 #include "../Components/SpriteSheet.h"
 #include "../Components/Kinematic.h"
+#include "../Utility/TextureLoader.h"
 
 RenderSystem::RenderSystem()
 {
@@ -207,7 +208,7 @@ void RenderSystem::Update(SDL_Renderer* render)
 	screenBounds.y = currentAnim->GetPosition().y - camera.y;
 	screenBounds.w = 32 * 2;
 	screenBounds.h = 64 * 2;
-	SDL_RenderCopyEx(render, currentAnim->texture, &srcRect, &screenBounds, 0.0f, NULL, flip);
+	SDL_RenderCopyEx(render, currentAnim->image->texture, &srcRect, &screenBounds, 0.0f, NULL, flip);
 }
 
 void RenderSystem::Draw(SDL_Renderer* render)
