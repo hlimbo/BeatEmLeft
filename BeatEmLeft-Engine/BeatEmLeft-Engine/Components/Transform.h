@@ -11,6 +11,8 @@ struct Transform
 	Transform(Vect2 position)
 	{
 		this->position = position;
+		scale.x = 1.0f;
+		scale.y = 1.0f;
 		type = typeid(Transform).name();
 	}
 	~Transform() {}

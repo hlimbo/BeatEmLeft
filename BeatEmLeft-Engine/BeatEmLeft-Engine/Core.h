@@ -1,10 +1,10 @@
 #ifndef CORE_H
 #define CORE_H
 
-//#define SCREEN_WIDTH 480
-//#define SCREEN_HEIGHT 480
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+#define SCREEN_WIDTH 480
+#define SCREEN_HEIGHT 480
+//#define SCREEN_WIDTH 800
+//#define SCREEN_HEIGHT 600
 
 
 #include <SDL2/SDL_stdinc.h>
