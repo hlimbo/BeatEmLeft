@@ -40,8 +40,18 @@ int main(int argc, char* argv[])
 	const int level_height = 600;
 	const int tiles_per_row = level_width / (int)tileWidth;
 	const int tiles_per_col = level_height / (int)tileHeight;
+
 	const int x_offset = 17 / 2;
 	const int y_offset = 41 / 2;
+
+	int tiles[(600 / 56)][(800 / 56)];
+	for (int r = 0;r < tiles_per_col;++r)
+	{
+		for (int c = 0;c < tiles_per_row;++c)
+		{
+			tiles[r][c] = 0;
+		}
+	}
 
 	SDL_Texture* grid = SDL_CreateTexture(render, SDL_GetWindowPixelFormat(core.getWindow()), SDL_TEXTUREACCESS_TARGET, level_width, level_height);
 	SDL_SetTextureBlendMode(grid, SDL_BlendMode::SDL_BLENDMODE_BLEND);
@@ -67,6 +77,13 @@ int main(int argc, char* argv[])
 	SDL_RenderPresent(render);
 	//set the render target back to the window's screen.
 	SDL_SetRenderTarget(render, NULL);
+
+	//create a translucent white rect to show what tile is being placed.
+	SDL_Rect whiteBox;
+	whiteBox.w = (int)tileWidth;
+	whiteBox.h = (int)tileHeight;
+	whiteBox.x = 0;
+	whiteBox.y = 0;
 
 	//setup texture file paths
 	string mainPath(SDL_GetBasePath());
@@ -124,42 +141,66 @@ int main(int argc, char* argv[])
 				{
 					printf("left mouse click (%d,%d)\n", mousePos.x, mousePos.y);
 					printf("game world coords(%d, %d)\n", gameCoords.x, gameCoords.y);
-					//if (mousePos.x > 0 && mousePos.x + (int)tileWidth < SCREEN_WIDTH)
-					//{
-						int tileID = ecs.entitySystem.CreateEntity("Tile");
-						Vect2 tilePosition;
-					//	tilePosition.x = (float)gameCoords.x;
-					//	tilePosition.y = (float)gameCoords.y;
 
-						//clamp tile position to grid.
-						int r = gameCoords.y / (int)tileHeight;
-						int c = gameCoords.x / (int)tileWidth;
+					//clamp tile position to grid.
+					int r = gameCoords.y / (int)tileHeight;
+					int c = gameCoords.x / (int)tileWidth;
+					if (r < tiles_per_col && c < tiles_per_row && r >= 0 && c >= 0 && tiles[r][c] == 0)
+					{
+						cout << "spawn tile" << endl;
+						tiles[r][c] = 1;
+						Vect2 tilePosition;
 						tilePosition.x = c * tileWidth + x_offset;
 						tilePosition.y = r * tileHeight + y_offset;
-
+						int tileID = ecs.entitySystem.CreateEntity("Tile");
 						ecs.transforms.AddComponent(tileID, new Transform(tilePosition));
-						
+
 						Sprite* sprite = new Sprite(store.Get("box.png"));
 						sprite->width = (int)tileWidth;
 						sprite->height = (int)tileHeight;
 						ecs.sprites.AddComponent(tileID, sprite);
-					//}
+					}
 				
 				}
 
-				//TODO: remove at tile (create a simple data structure that tells us if a tile is occupying a space or not
+				//remove tile
 				if (event.button.button == SDL_BUTTON_RIGHT)
 				{
-					//check if point overlaps in a rectangle!
-					SDL_Point pixelCoords;
-					pixelCoords.y = gameCoords.y / (int)tileHeight;
-					pixelCoords.x = gameCoords.x / (int)tileWidth;
-					pixelCoords.y = (pixelCoords.y * (int)tileHeight) + y_offset;
-					pixelCoords.x = (pixelCoords.x * (int)tileWidth) + x_offset;
+					int r = gameCoords.y / (int)tileHeight;
+					int c = gameCoords.x / (int)tileWidth;
 
-					//.....
+					if (r < tiles_per_col && c < tiles_per_row && r >= 0 && c >= 0 && tiles[r][c] == 1)
+					{
+						printf("remove tile at: (%d,%d)\n", gameCoords.x, gameCoords.y);
+						tiles[r][c] = 0;
+						vector<int> ids = ecs.entitySystem.GetIDs();
+						for (auto it = ids.begin();it != ids.end();++it)
+						{
+							Transform* transform = ecs.transforms.GetComponent(*it);
+							if (transform != nullptr)
+							{
+								int ry = (int)transform->position.y / (int)tileHeight;
+								int cx = (int)transform->position.x / (int)tileWidth;
+								if (r == ry && c == cx)
+								{
+									ecs.entitySystem.RemoveEntity("Tile", *it);
+									Transform* rTrans = ecs.transforms.RemoveComponent(*it);
+									Sprite* rSprite = ecs.sprites.RemoveComponent(*it);
+									if (rTrans != nullptr)
+									{
+										delete rTrans;
+										rTrans = nullptr;
+									}
 
-					printf("remove tile at: (%d,%d)\n", gameCoords.x, gameCoords.y);
+									if (rSprite != nullptr)
+									{
+										delete rSprite;
+										rSprite = nullptr;
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 			else if (event.type == SDL_MOUSEMOTION)
@@ -168,6 +209,9 @@ int main(int argc, char* argv[])
 				mousePos.y = event.button.y;
 				gameCoords.x = renderSys.camera.x + mousePos.x;
 				gameCoords.y = renderSys.camera.y + mousePos.y;
+
+				whiteBox.x = ((gameCoords.x / (int)tileWidth) * (int)tileWidth + x_offset) - renderSys.camera.x;
+				whiteBox.y = ((gameCoords.y / (int)tileHeight) * (int)tileHeight + y_offset) - renderSys.camera.y;
 			}
 		}
 		//pixels per frame
@@ -201,6 +245,8 @@ int main(int argc, char* argv[])
 
 		renderSys.Update(render);
 		SDL_RenderCopy(render, grid, &renderSys.camera, NULL);
+		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+		SDL_RenderDrawRect(render, &whiteBox);
 		renderSys.Draw(render);
 
 		endCount = SDL_GetPerformanceCounter();
