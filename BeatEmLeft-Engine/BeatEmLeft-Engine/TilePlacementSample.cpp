@@ -119,6 +119,7 @@ int main(int argc, char* argv[])
 
 			if (event.type == SDL_MOUSEBUTTONDOWN)
 			{
+				//add a tile
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
 					printf("left mouse click (%d,%d)\n", mousePos.x, mousePos.y);
@@ -144,6 +145,21 @@ int main(int argc, char* argv[])
 						ecs.sprites.AddComponent(tileID, sprite);
 					//}
 				
+				}
+
+				//TODO: remove at tile (create a simple data structure that tells us if a tile is occupying a space or not
+				if (event.button.button == SDL_BUTTON_RIGHT)
+				{
+					//check if point overlaps in a rectangle!
+					SDL_Point pixelCoords;
+					pixelCoords.y = gameCoords.y / (int)tileHeight;
+					pixelCoords.x = gameCoords.x / (int)tileWidth;
+					pixelCoords.y = (pixelCoords.y * (int)tileHeight) + y_offset;
+					pixelCoords.x = (pixelCoords.x * (int)tileWidth) + x_offset;
+
+					//.....
+
+					printf("remove tile at: (%d,%d)\n", gameCoords.x, gameCoords.y);
 				}
 			}
 			else if (event.type == SDL_MOUSEMOTION)
