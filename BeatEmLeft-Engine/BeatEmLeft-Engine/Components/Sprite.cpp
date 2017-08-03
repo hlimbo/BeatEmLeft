@@ -7,6 +7,7 @@
 Sprite::Sprite()
 {
 	texture = NULL;
+	image = NULL;
 	flip = SDL_RendererFlip::SDL_FLIP_NONE;
 	type = typeid(Sprite).name();
 }
@@ -17,6 +18,8 @@ Sprite::~Sprite()
 Sprite::Sprite(SDL_Texture* srcTexture)
 {
 	texture = NULL; 
+	image->texture = nullptr;
+	image->surface = nullptr;
 	SetTextureAttributes(srcTexture);
 	flip = SDL_RendererFlip::SDL_FLIP_NONE;
 	type = typeid(Sprite).name();
@@ -25,6 +28,7 @@ Sprite::Sprite(SDL_Texture* srcTexture)
 Sprite::Sprite(Image* image)
 {
 	this->image = image;
+	texture = NULL;
 	SetTextureAttributes(image->texture);
 	texture = this->image->texture;
 	flip = SDL_RendererFlip::SDL_FLIP_NONE;
@@ -37,8 +41,8 @@ Sprite::Sprite(Image* image)
 //Note: This function must be called first before manipulating this sprite component's properties!
 bool Sprite::SetTextureAttributes(SDL_Texture* srcTexture)
 {
-	//if (texture != NULL)
-	//	return false;
+	if (texture != NULL)
+		return false;
 	if (srcTexture == NULL)
 		return false;
 
