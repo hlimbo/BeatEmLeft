@@ -32,17 +32,52 @@ int main(int argc, char* argv[])
 {
 	Core core;
 	SDL_Renderer* render = core.getRenderer();
+	
+	//draw a grid - pre render a static image.
+	const float tileWidth = 56;
+	const float tileHeight = 56;
+	const int level_width = 800;
+	const int level_height = 600;
+	const int tiles_per_row = level_width / (int)tileWidth;
+	const int tiles_per_col = level_height / (int)tileHeight;
+	const int x_offset = 17 / 2;
+	const int y_offset = 41 / 2;
+
+	SDL_Texture* grid = SDL_CreateTexture(render, SDL_GetWindowPixelFormat(core.getWindow()), SDL_TEXTUREACCESS_TARGET, level_width, level_height);
+	SDL_SetTextureBlendMode(grid, SDL_BlendMode::SDL_BLENDMODE_BLEND);
+	SDL_SetRenderTarget(render, grid);
+	//transparent background
+	SDL_SetRenderDrawColor(render, 255, 255, 255, 0);
+	SDL_RenderClear(render);
+	//black
+	SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+	for (int r = 0;r < tiles_per_col;++r)
+	{
+		for (int c = 0;c < tiles_per_row;++c)
+		{
+			SDL_Rect gridBox;
+			gridBox.x = c * (int)tileWidth + x_offset;
+			gridBox.y = r * (int)tileHeight + y_offset;
+			gridBox.w = (int)tileWidth;
+			gridBox.h = (int)tileHeight;
+			SDL_RenderDrawRect(render,&gridBox);
+		}
+	}
+
+	SDL_RenderPresent(render);
+	//set the render target back to the window's screen.
+	SDL_SetRenderTarget(render, NULL);
 
 	//setup texture file paths
 	string mainPath(SDL_GetBasePath());
 	mainPath += string("resources\\");
 
 	string backgroundPath = mainPath + string("hills.png");
-	string tilePath = mainPath + string("block.png");
+	string tilePath = mainPath + string("box.png");
 
 	ImageStore store(render);
 	store.Load("hills.png", backgroundPath);
-	store.Load("block.png", tilePath);
+	store.Load("box.png", tilePath);
 
 	ECS ecs;
 
@@ -88,22 +123,26 @@ int main(int argc, char* argv[])
 				{
 					printf("left mouse click (%d,%d)\n", mousePos.x, mousePos.y);
 					printf("game world coords(%d, %d)\n", gameCoords.x, gameCoords.y);
-					float tileWidth = 56;
-					float tileHeight = 56;
-					if (mousePos.x > 0 && mousePos.x + (int)tileWidth < SCREEN_WIDTH)
-					{
-						cout << "spawn tile!" << endl;
+					//if (mousePos.x > 0 && mousePos.x + (int)tileWidth < SCREEN_WIDTH)
+					//{
 						int tileID = ecs.entitySystem.CreateEntity("Tile");
 						Vect2 tilePosition;
-						tilePosition.x = (float)gameCoords.x;
-						tilePosition.y = (float)gameCoords.y;
+					//	tilePosition.x = (float)gameCoords.x;
+					//	tilePosition.y = (float)gameCoords.y;
+
+						//clamp tile position to grid.
+						int r = gameCoords.y / (int)tileHeight;
+						int c = gameCoords.x / (int)tileWidth;
+						tilePosition.x = c * tileWidth + x_offset;
+						tilePosition.y = r * tileHeight + y_offset;
+
 						ecs.transforms.AddComponent(tileID, new Transform(tilePosition));
 						
-						Sprite* sprite = new Sprite(store.Get("block.png"));
-						sprite->width = tileWidth;
-						sprite->height = tileHeight;
+						Sprite* sprite = new Sprite(store.Get("box.png"));
+						sprite->width = (int)tileWidth;
+						sprite->height = (int)tileHeight;
 						ecs.sprites.AddComponent(tileID, sprite);
-					}
+					//}
 				
 				}
 			}
@@ -119,7 +158,6 @@ int main(int argc, char* argv[])
 		int camSpeed = 2;
 		if (mousePos.x + 5 > SCREEN_WIDTH)
 		{
-			int level_width = 800;
 			if (renderSys.camera.x + renderSys.camera.w < level_width)
 			{
 				renderSys.camera.x += camSpeed;
@@ -146,6 +184,7 @@ int main(int argc, char* argv[])
 		}
 
 		renderSys.Update(render);
+		SDL_RenderCopy(render, grid, &renderSys.camera, NULL);
 		renderSys.Draw(render);
 
 		endCount = SDL_GetPerformanceCounter();
@@ -175,6 +214,8 @@ int main(int argc, char* argv[])
 		SDL_SetWindowTitle(core.getWindow(), title.c_str());
 	
 	}
+
+	SDL_DestroyTexture(grid);
 
 	return 0;
 }
