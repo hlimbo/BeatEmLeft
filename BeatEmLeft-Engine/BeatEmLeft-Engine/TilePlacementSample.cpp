@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
+#include <fstream>
 
 #include <Vect2.h>
 
@@ -32,7 +33,7 @@ int main(int argc, char* argv[])
 {
 	Core core;
 	SDL_Renderer* render = core.getRenderer();
-	
+
 	//draw a grid - pre render a static image.
 	const float tileWidth = 56;
 	const float tileHeight = 56;
@@ -78,12 +79,20 @@ int main(int argc, char* argv[])
 	//set the render target back to the window's screen.
 	SDL_SetRenderTarget(render, NULL);
 
-	//create a translucent white rect to show what tile is being placed.
+	//create a white translucent box to show what tile is being placed.
 	SDL_Rect whiteBox;
 	whiteBox.w = (int)tileWidth;
 	whiteBox.h = (int)tileHeight;
 	whiteBox.x = 0;
 	whiteBox.y = 0;
+
+	SDL_Texture* white = SDL_CreateTexture(render,SDL_GetWindowPixelFormat(core.getWindow()), SDL_TEXTUREACCESS_TARGET, whiteBox.w, whiteBox.h);
+	SDL_SetRenderTarget(render, white);
+	SDL_SetTextureBlendMode(white, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(render, 255, 255, 255, 255 / 2);
+	SDL_RenderFillRect(render, &whiteBox);
+	SDL_RenderPresent(render);
+	SDL_SetRenderTarget(render, NULL);
 
 	//setup texture file paths
 	string mainPath(SDL_GetBasePath());
@@ -134,6 +143,117 @@ int main(int argc, char* argv[])
 			if (event.type == SDL_QUIT)
 				running = false;
 
+			if (event.type == SDL_KEYDOWN)
+			{
+				//save map to .txt file
+				if (event.key.keysym.sym == SDLK_s)
+				{
+					string levelName("my_awesome_level.txt");
+					string levelPath = mainPath + levelName;
+					cout << "Saving file.... " << levelName << endl;
+					//file stuff
+					ofstream file;
+					file.open(levelPath, ifstream::out);
+					if (file.good())
+					{
+						for (int r = 0;r < tiles_per_col;++r)
+						{
+							for (int c = 0;c < tiles_per_row;++c)
+							{
+								file << tiles[r][c] << " ";
+							}
+							file << endl;
+						}
+
+						file.close();
+						cout << "Save complete in " << levelPath << endl;
+					}
+					else
+					{
+						cout << "file is bad: " << levelPath << endl;
+					}
+				}
+
+				//load map
+				if (event.key.keysym.sym == SDLK_l)
+				{
+					string levelName;
+					string levelPath;
+					cout << "Level to Load: ";
+					getline(cin, levelName);
+					levelPath = mainPath + levelName;
+					ifstream inputFile(levelPath,ios_base::in);
+					if (inputFile.good())
+					{
+						cout << "loading map: " << levelName << endl;
+						for (int r = 0;r < tiles_per_col;++r)
+						{
+							for (int c = 0;c < tiles_per_row;++c)
+							{
+								int tileNum;
+								inputFile >> tileNum;
+								//remove tiles that weren't loaded in from the .txt file
+								if (tileNum == 0 && tiles[r][c] == 1)
+								{
+									//slow operation and is temporary as I'm trying to move towards using json files to store more information
+									//about the level's data such as id
+									vector<int> ids = ecs.entitySystem.GetIDs();
+									for (auto it = ids.begin();it != ids.end();++it)
+									{
+										Transform* transform = ecs.transforms.GetComponent(*it);
+										if (transform != nullptr)
+										{
+											int ry = (int)transform->position.y / (int)tileHeight;
+											int cx = (int)transform->position.x / (int)tileWidth;
+											if (r == ry && c == cx)
+											{
+												ecs.entitySystem.RemoveEntity("Tile", *it);
+												Transform* rTrans = ecs.transforms.RemoveComponent(*it);
+												Sprite* rSprite = ecs.sprites.RemoveComponent(*it);
+												if (rTrans != nullptr)
+												{
+													delete rTrans;
+													rTrans = nullptr;
+												}
+
+												if (rSprite != nullptr)
+												{
+													delete rSprite;
+													rSprite = nullptr;
+												}
+											}
+										}
+									}
+								}
+								//reconstruct the tiles from the data
+								else if (tileNum == 1 && tiles[r][c] == 0)
+								{
+									int tileID = ecs.entitySystem.CreateEntity("Tile");
+									Vect2 tilePosition;
+									tilePosition.x = c * tileWidth + x_offset;
+									tilePosition.y = r * tileHeight + y_offset;
+									ecs.transforms.AddComponent(tileID, new Transform(tilePosition));
+									Sprite* sprite = new Sprite(store.Get("box.png"));
+									sprite->width = (int)tileWidth;
+									sprite->height = (int)tileHeight;
+									ecs.sprites.AddComponent(tileID, sprite);
+
+								}
+
+								tiles[r][c] = tileNum;
+							}
+						}
+
+						inputFile.close();
+						cout << "Load complete!" << endl;
+					}
+					else
+					{
+						cout << "file could not be opened" << endl;
+					}
+				}
+			}
+
 			if (event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				//add a tile
@@ -173,7 +293,7 @@ int main(int argc, char* argv[])
 					{
 						printf("remove tile at: (%d,%d)\n", gameCoords.x, gameCoords.y);
 						tiles[r][c] = 0;
-						vector<int> ids = ecs.entitySystem.GetIDs();
+						vector<int> ids = ecs.entitySystem.GetIDs("Tile");
 						for (auto it = ids.begin();it != ids.end();++it)
 						{
 							Transform* transform = ecs.transforms.GetComponent(*it);
@@ -245,8 +365,7 @@ int main(int argc, char* argv[])
 
 		renderSys.Update(render);
 		SDL_RenderCopy(render, grid, &renderSys.camera, NULL);
-		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
-		SDL_RenderDrawRect(render, &whiteBox);
+		SDL_RenderCopy(render, white, NULL, &whiteBox);
 		renderSys.Draw(render);
 
 		endCount = SDL_GetPerformanceCounter();
@@ -278,6 +397,7 @@ int main(int argc, char* argv[])
 	}
 
 	SDL_DestroyTexture(grid);
+	SDL_DestroyTexture(white);
 
 	return 0;
 }
