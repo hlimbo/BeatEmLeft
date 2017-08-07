@@ -9,15 +9,13 @@ struct Image;
 struct Sprite
 {
 	Sprite();
-	Sprite(SDL_Texture* srcTexture);
 	Sprite(Image* image);
 	~Sprite();
 
 	Image* image;
 
 	//helper function
-	SDL_Texture* texture;
-	bool SetTextureAttributes(SDL_Texture* srcTexture);
+	bool SetTextureAttributes(SDL_Texture* srctexture);
 
 	//modify this width and height to see changes in size of image on screen
 	int width, height;

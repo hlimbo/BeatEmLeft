@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <queue>
 #include <functional>
+#include <assert.h>
 using namespace std;
 
 //ECS - Entity Component System
@@ -262,6 +263,9 @@ public:
 
 	vector<int> GetIDs(string entityType)
 	{
+		//sanity check
+		assert(ContainsEntityType(entityType));
+
 		vector<int> ids;
 		vector<Entity> e = entitiesByType.at(entityType);
 		for (vector<Entity>::iterator it = e.begin();it != e.end();++it)

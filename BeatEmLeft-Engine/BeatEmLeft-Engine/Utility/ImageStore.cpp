@@ -25,8 +25,9 @@ ImageStore::~ImageStore()
 Image* ImageStore::Load(const std::string fileName, const std::string filePath)
 {
 	//this is possibly an O(n) check to ensure that the same fileName cannot be added more than once
+	//return the image that is already loaded into the store
 	if (images.find(fileName) != images.end())
-		return nullptr;
+		return images[fileName];
 
 	Image* image = TextureLoader::LoadImage(render, filePath.c_str());
 	if (image == nullptr)
@@ -45,6 +46,7 @@ bool ImageStore::Free(const std::string fileName)
 
 Image* ImageStore::Get(const std::string fileName)
 {
+	assert(images[fileName] != nullptr);
 	return images.at(fileName);
 }
 

@@ -33,12 +33,6 @@ void RenderSystem::Init(int cameraWidth,int cameraHeight)
 	camera.y = 0;
 	camera.w = cameraWidth;
 	camera.h = cameraHeight;
-
-	if (ecs->entitySystem.ContainsEntityType("Player"))
-	{
-		int playerID = ecs->entitySystem.GetIDs("Player").at(0);
-		SetEntityToFollow(playerID);
-	}
 }
 
 void RenderSystem::SetLocation(int x, int y)
@@ -50,9 +44,9 @@ void RenderSystem::SetLocation(int x, int y)
 //temporary level dimensions
 //#define LEVEL_WIDTH 800
 //#define LEVEL_HEIGHT 600
-#define LEVEL_WIDTH 2048
-#define LEVEL_HEIGHT 1840
-bool RenderSystem::SetEntityToFollow(int id)
+//#define LEVEL_WIDTH 2048
+//#define LEVEL_HEIGHT 1840
+bool RenderSystem::SetEntityToFollow(int id,int level_width,int level_height)
 {
 	//target entity's components
 	Transform* transformComponent = transformManager->GetComponent(id);
@@ -74,10 +68,10 @@ bool RenderSystem::SetEntityToFollow(int id)
 			camera.x = 0;
 		if (camera.y < 0)
 			camera.y = 0;
-		if (camera.x + camera.w > LEVEL_WIDTH)
-			camera.x = LEVEL_WIDTH - camera.w;
-		if (camera.y + camera.h > LEVEL_HEIGHT)
-			camera.y = LEVEL_HEIGHT - camera.h;
+		if (camera.x + camera.w > level_width)
+			camera.x = level_width - camera.w;
+		if (camera.y + camera.h > level_height)
+			camera.y = level_height - camera.h;
 	}
 
 	return transformComponent != nullptr && spriteComponent != nullptr;
@@ -97,7 +91,10 @@ void RenderSystem::Update(SDL_Renderer* render)
 	if (ecs->entitySystem.ContainsEntityType("Player"))
 	{
 		playerID = ecs->entitySystem.GetIDs("Player").at(0);
-		SetEntityToFollow(playerID);
+
+		Sprite* bgSprite = spriteManager->GetComponent(backgroundID);
+		assert(bgSprite != nullptr);
+		SetEntityToFollow(playerID, bgSprite->width,bgSprite->height);
 	}
 
 	vector<int> ids = ecs->entitySystem.GetIDs();
@@ -115,7 +112,7 @@ void RenderSystem::Update(SDL_Renderer* render)
 			if (backgroundID == *it)
 			{
 				//always render the background since all of its parts will always be seen in the game.
-				SDL_RenderCopy(render, sprite->texture, &camera, NULL);
+				SDL_RenderCopy(render, sprite->image->texture, &camera, NULL);
 			}
 			else if (playerID == *it)
 			{
@@ -127,7 +124,7 @@ void RenderSystem::Update(SDL_Renderer* render)
 				screenBounds.y = sprite->position.y - camera.y;
 				screenBounds.w = sprite->width;
 				screenBounds.h = sprite->height;
-				SDL_RenderCopy(render, sprite->texture, NULL/* source texture is used if I want to animate the sprite*/, &screenBounds);
+				SDL_RenderCopy(render, sprite->image->texture, NULL/* source texture is used if I want to animate the sprite*/, &screenBounds);
 			}
 			else //for all other sprites... render them  (right now render order happens from lowest entity id to highest entity id)
 			{
@@ -153,7 +150,7 @@ void RenderSystem::Update(SDL_Renderer* render)
 					&& screenCoords.y >= 0 && screenCoords.y < camera.h)
 				{
 					//render the sprite if it is within camera bounds
-					SDL_RenderCopy(render, sprite->texture, NULL, &screenCoords);
+					SDL_RenderCopy(render, sprite->image->texture, NULL, &screenCoords);
 				}
 				else
 				{
@@ -163,11 +160,11 @@ void RenderSystem::Update(SDL_Renderer* render)
 					rightCorner.y = screenCoords.y + screenCoords.h;
 					if (rightCorner.x >= 0 && rightCorner.x < camera.w)
 					{
-						SDL_RenderCopy(render, sprite->texture, NULL, &screenCoords);
+						SDL_RenderCopy(render, sprite->image->texture, NULL, &screenCoords);
 					}
 					else if (rightCorner.y >= 0 && rightCorner.y < camera.h)
 					{
-						SDL_RenderCopy(render, sprite->texture, NULL, &screenCoords);
+						SDL_RenderCopy(render, sprite->image->texture, NULL, &screenCoords);
 					}
 				}
 
