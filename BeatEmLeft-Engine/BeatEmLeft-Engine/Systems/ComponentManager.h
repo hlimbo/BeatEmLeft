@@ -80,6 +80,22 @@ public:
 		return component;
 	}
 
+	//programmer is not responsible for deleting the component afterwards since
+	//this function does the deletion for you to prevent memory leaks.
+	//Deletes a component if id passed in is valid, otherwise this is treated as a no-op if
+	//id is invalid.
+	void DeleteComponent(int id)
+	{
+		component* component = components[id];
+		components.erase(id);
+		if (component != nullptr)
+		{
+			delete component;
+			component = nullptr;
+		}
+
+	}
+
 	int GetComponentCount() { return components.size();  }
 	bool IsEmpty() { return components.empty();  }
 	const char* type;

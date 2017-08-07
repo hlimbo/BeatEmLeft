@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <assert.h>
 
 #include <Vect2.h>
 
@@ -28,6 +29,108 @@
 #include "Utility/MapFileLoader.h"
 
 using namespace std;
+
+//Prototyping phase: The following functions I will consider to relocate to another .cpp or .h file
+void destroyTiles(ECS* ecs)
+{
+	int deleteCount = 0;
+	if (ecs->entitySystem.ContainsEntityType("Tile"))
+	{
+		vector<int> ids = ecs->entitySystem.GetIDs("Tile");
+		for (vector<int>::iterator it = ids.begin();it != ids.end();++it)
+		{
+			ecs->transforms.DeleteComponent(*it);
+			ecs->sprites.DeleteComponent(*it);
+			ecs->entitySystem.RemoveEntity("Tile", *it);
+			++deleteCount;
+		}
+	}
+	//debug
+	printf("Number of tiles deleted: %d\n", deleteCount);
+}
+
+void constructTile(ECS* ecs, ImageStore* store, int row, int col, int tileWidth, int tileHeight, int x_offset, int y_offset)
+{
+	int tileID = ecs->entitySystem.CreateEntity("Tile");
+	Vect2 tilePosition;
+	tilePosition.x = col * (float)tileWidth + x_offset;
+	tilePosition.y = row * (float)tileHeight + y_offset;
+	ecs->transforms.AddComponent(tileID, new Transform(tilePosition));
+	//may make ImageStore a singleton since I only need exactly one imagestore instance in my code.
+	Sprite* sprite = new Sprite(store->Get("box.png"));
+	sprite->width = (int)tileWidth;
+	sprite->height = (int)tileHeight;
+	ecs->sprites.AddComponent(tileID, sprite);
+}
+
+//returns a new pre-rendered grid for the tile map editor
+SDL_Texture* preRenderGrid(Core& core,int level_width,int level_height,int tile_width,int tile_height, SDL_Texture* oldGrid = NULL)
+{
+	if(oldGrid != NULL)
+		SDL_DestroyTexture(oldGrid);
+
+	Uint32 pixelFormat = SDL_GetWindowPixelFormat(core.getWindow());
+	SDL_Renderer* render = core.getRenderer();
+	SDL_Texture* newGrid = SDL_CreateTexture(render, pixelFormat, SDL_TEXTUREACCESS_TARGET, level_width, level_height);
+	SDL_SetTextureBlendMode(newGrid, SDL_BlendMode::SDL_BLENDMODE_BLEND);
+	SDL_SetRenderTarget(render, newGrid);
+
+	//transparent background
+	SDL_SetRenderDrawColor(render, 255, 255, 255, 0);
+	SDL_RenderClear(render);
+	SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+
+	int tiles_per_col = level_height / tile_height;
+	int tiles_per_row = level_width / tile_width;
+	//center the tiles about the background
+	int x_offset = 0;//tile_width / 4;
+	int y_offset = tile_height / 2;
+
+	for (int r = 0;r < tiles_per_col;++r)
+	{
+		for (int c = 0;c < tiles_per_row;++c)
+		{
+			SDL_Rect gridBox;
+			gridBox.x = c * tile_width + x_offset;
+			gridBox.y = r * tile_height + y_offset;
+			gridBox.w = tile_width;
+			gridBox.h = tile_height;
+			SDL_RenderDrawRect(render, &gridBox);
+		}
+	}
+
+	SDL_RenderPresent(render);
+	//set the render target back to the window's screen.
+	SDL_SetRenderTarget(render, NULL);
+
+	return newGrid;
+}
+
+//returns a new pre-rendered SDL_Texture
+//returns a whiteBox with initialized values
+SDL_Texture* preRenderWhiteBox(Core& core,int tile_width,int tile_height,SDL_Rect* whiteBox,SDL_Texture* oldBox = NULL)
+{
+	if(oldBox != NULL)
+		SDL_DestroyTexture(oldBox);
+
+	whiteBox->w = tile_width;
+	whiteBox->h = tile_height;
+	whiteBox->x = 0;
+	whiteBox->y = 0;
+
+	Uint32 pixelFormat = SDL_GetWindowPixelFormat(core.getWindow());
+	SDL_Renderer* render = core.getRenderer();
+	SDL_Texture* white = SDL_CreateTexture(render, pixelFormat, SDL_TEXTUREACCESS_TARGET, whiteBox->w, whiteBox->h);
+	SDL_SetRenderTarget(render, white);
+	SDL_SetTextureBlendMode(white, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+	//SDL_RenderFillRect(render, whiteBox);
+	SDL_RenderDrawRect(render, whiteBox);
+	SDL_RenderPresent(render);
+	SDL_SetRenderTarget(render, NULL);
+
+	return white;
+}
 
 int main(int argc, char* argv[])
 {
@@ -67,9 +170,9 @@ int main(int argc, char* argv[])
 	int tiles_per_row = level_width / (int)tileWidth;
 	int tiles_per_col = level_height / (int)tileHeight;
 
-	//temp hard coded values to center grid about the background image
-	const int x_offset = 17 / 2;
-	const int y_offset = 41 / 2;
+	//attempt to center grid about the background
+	int x_offset = 0;//(int)tileWidth / 4;
+	int y_offset = (int)tileHeight / 2;
 
 	//c-style dynamic allocation
 	int** tiles = (int**)malloc(sizeof(int*) * tiles_per_col);
@@ -86,45 +189,11 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	SDL_Texture* grid = SDL_CreateTexture(render, SDL_GetWindowPixelFormat(core.getWindow()), SDL_TEXTUREACCESS_TARGET, level_width, level_height);
-	SDL_SetTextureBlendMode(grid, SDL_BlendMode::SDL_BLENDMODE_BLEND);
-	SDL_SetRenderTarget(render, grid);
-	//transparent background
-	SDL_SetRenderDrawColor(render, 255, 255, 255, 0);
-	SDL_RenderClear(render);
-	//black
-	SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
-	for (int r = 0;r < tiles_per_col;++r)
-	{
-		for (int c = 0;c < tiles_per_row;++c)
-		{
-			SDL_Rect gridBox;
-			gridBox.x = c * (int)tileWidth + x_offset;
-			gridBox.y = r * (int)tileHeight + y_offset;
-			gridBox.w = (int)tileWidth;
-			gridBox.h = (int)tileHeight;
-			SDL_RenderDrawRect(render,&gridBox);
-		}
-	}
-
-	SDL_RenderPresent(render);
-	//set the render target back to the window's screen.
-	SDL_SetRenderTarget(render, NULL);
-
+	//draw grid on some texture
+	SDL_Texture* grid = preRenderGrid(core, level_width, level_height, tileWidth, tileHeight);
 	//create a white translucent box to show what tile is being placed.
 	SDL_Rect whiteBox;
-	whiteBox.w = (int)tileWidth;
-	whiteBox.h = (int)tileHeight;
-	whiteBox.x = 0;
-	whiteBox.y = 0;
-
-	SDL_Texture* white = SDL_CreateTexture(render,SDL_GetWindowPixelFormat(core.getWindow()), SDL_TEXTUREACCESS_TARGET, whiteBox.w, whiteBox.h);
-	SDL_SetRenderTarget(render, white);
-	SDL_SetTextureBlendMode(white, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(render, 255, 255, 255, 255 / 2);
-	SDL_RenderFillRect(render, &whiteBox);
-	SDL_RenderPresent(render);
-	SDL_SetRenderTarget(render, NULL);
+	SDL_Texture* white = preRenderWhiteBox(core, tileWidth, tileHeight,&whiteBox);
 
 	ECS ecs;
 
@@ -206,6 +275,9 @@ int main(int argc, char* argv[])
 					string levelPath;
 					cout << "Level to Load: ";
 					getline(cin, levelName);
+					if (levelName == "\n" || levelName == "")
+						getline(cin, levelName);
+
 					levelPath = mainPath + levelName;
 					ifstream inputFile(levelPath,ios_base::in);
 					if (inputFile.good())
@@ -217,11 +289,17 @@ int main(int argc, char* argv[])
 						//read tile_dimensions
 						inputFile >> tileWidth >> tileHeight;
 
+						//destroy all tiles from previous loaded map
+						destroyTiles(&ecs);
+
 						//free the tiles
 						for (int i = 0;i < tiles_per_col;++i)
 							free(tiles[i]);
 						free(tiles);
 
+						// have to recalculate the x_offset and y_offset;
+						x_offset = 0;
+						y_offset = (int)tileHeight / 2;
 						//have to recalculate tiles_per_row and tiles_per_col here
 						tiles_per_row = level_width / (int)tileWidth;
 						tiles_per_col = level_height / (int)tileHeight;
@@ -233,100 +311,22 @@ int main(int argc, char* argv[])
 							tiles[i] = (int*)malloc(sizeof(int) * tiles_per_row);
 						}
 
-						for (int r = 0;r < tiles_per_col;++r)
-						{
-							for (int c = 0;c < tiles_per_row;++c)
-							{
-								tiles[r][c] = 0;
-							}
-						}
-
 						//have to reconstruct grid here
-						SDL_DestroyTexture(grid);
-						grid = SDL_CreateTexture(render, SDL_GetWindowPixelFormat(core.getWindow()), SDL_TEXTUREACCESS_TARGET, level_width, level_height);
-						SDL_SetTextureBlendMode(grid, SDL_BlendMode::SDL_BLENDMODE_BLEND);
-						SDL_SetRenderTarget(render, grid);
-						//transparent background
-						SDL_SetRenderDrawColor(render, 255, 255, 255, 0);
-						SDL_RenderClear(render);
-						//black
-						SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
-						for (int ry = 0;ry < tiles_per_col;++ry)
-						{
-							for (int cx = 0;cx < tiles_per_row;++cx)
-							{
-								SDL_Rect gridBox;
-								gridBox.x = cx * (int)tileWidth + x_offset;
-								gridBox.y = ry * (int)tileHeight + y_offset;
-								gridBox.w = (int)tileWidth;
-								gridBox.h = (int)tileHeight;
-								SDL_RenderDrawRect(render, &gridBox);
-							}
-						}
-
-						SDL_RenderPresent(render);
-						//set the render target back to the window's screen.
-						SDL_SetRenderTarget(render, NULL);
-
-
+						grid = preRenderGrid(core, level_width, level_height, tileWidth, tileHeight, grid);
 						//resize whitebox here
-						whiteBox.w = (int)tileWidth;
-						whiteBox.h = (int)tileHeight;
-						whiteBox.x = 0;
-						whiteBox.y = 0;
-
-						SDL_DestroyTexture(white);
-						white = SDL_CreateTexture(render, SDL_GetWindowPixelFormat(core.getWindow()), SDL_TEXTUREACCESS_TARGET, whiteBox.w, whiteBox.h);
-						SDL_SetRenderTarget(render, white);
-						SDL_SetTextureBlendMode(white, SDL_BLENDMODE_BLEND);
-						SDL_SetRenderDrawColor(render, 255, 255, 255, 255 / 2);
-						SDL_RenderFillRect(render, &whiteBox);
-						SDL_RenderPresent(render);
-						SDL_SetRenderTarget(render, NULL);
+						whiteBox.w = tileWidth;
+						whiteBox.h = tileHeight;	
 
 						for (int r = 0;r < tiles_per_col;++r)
 						{
 							for (int c = 0;c < tiles_per_row;++c)
 							{
-								int tileNum;
-								inputFile >> tileNum;
-								//remove tiles that weren't loaded in from the .txt file
-								if (tileNum == 0 && tiles[r][c] == 1)
-								{
-									//slow operation and is temporary as I'm trying to move towards using json files to store more information
-									//about the level's data such as id
-									vector<int> ids = ecs.entitySystem.GetIDs();
-									for (auto it = ids.begin();it != ids.end();++it)
-									{
-										Transform* transform = ecs.transforms.GetComponent(*it);
-										if (transform != nullptr)
-										{
-											int ry = (int)transform->position.y / (int)tileHeight;
-											int cx = (int)transform->position.x / (int)tileWidth;
-											if (r == ry && c == cx)
-											{
-												ecs.entitySystem.RemoveEntity("Tile", *it);
-												Transform* rTrans = ecs.transforms.RemoveComponent(*it);
-												Sprite* rSprite = ecs.sprites.RemoveComponent(*it);
-												if (rTrans != nullptr)
-												{
-													delete rTrans;
-													rTrans = nullptr;
-												}
-
-												if (rSprite != nullptr)
-												{
-													delete rSprite;
-													rSprite = nullptr;
-												}
-											}
-										}
-									}
-								}
+								inputFile >> tiles[r][c];
 								//reconstruct the tiles from the data
-								else if (tileNum == 1 && tiles[r][c] == 0)
+								if (tiles[r][c] == 1)
 								{
-									int tileID = ecs.entitySystem.CreateEntity("Tile");
+									constructTile(&ecs, &store, r, c, tileWidth, tileHeight, x_offset, y_offset);
+							/*		int tileID = ecs.entitySystem.CreateEntity("Tile");
 									Vect2 tilePosition;
 									tilePosition.x = c * (float)tileWidth + x_offset;
 									tilePosition.y = r * (float)tileHeight + y_offset;
@@ -334,21 +334,20 @@ int main(int argc, char* argv[])
 									Sprite* sprite = new Sprite(store.Get("box.png"));
 									sprite->width = (int)tileWidth;
 									sprite->height = (int)tileHeight;
-									ecs.sprites.AddComponent(tileID, sprite);
-
+									ecs.sprites.AddComponent(tileID, sprite);*/
 								}
 
-								tiles[r][c] = tileNum;
 							}
 						}
 
-						inputFile.close();
 						cout << "Load complete!" << endl;
 					}
 					else
 					{
 						cout << "file could not be opened" << endl;
 					}
+
+					inputFile.close();
 				}
 			}
 
@@ -367,7 +366,8 @@ int main(int argc, char* argv[])
 					{
 						cout << "spawn tile" << endl;
 						tiles[r][c] = 1;
-						Vect2 tilePosition;
+						constructTile(&ecs, &store, r, c, tileWidth, tileHeight, x_offset, y_offset);
+				/*		Vect2 tilePosition;
 						tilePosition.x = c * (float)tileWidth + x_offset;
 						tilePosition.y = r * (float)tileHeight + y_offset;
 						int tileID = ecs.entitySystem.CreateEntity("Tile");
@@ -376,7 +376,7 @@ int main(int argc, char* argv[])
 						Sprite* sprite = new Sprite(store.Get("box.png"));
 						sprite->width = (int)tileWidth;
 						sprite->height = (int)tileHeight;
-						ecs.sprites.AddComponent(tileID, sprite);
+						ecs.sprites.AddComponent(tileID, sprite);*/
 					}
 				
 				}
@@ -402,19 +402,8 @@ int main(int argc, char* argv[])
 								if (r == ry && c == cx)
 								{
 									ecs.entitySystem.RemoveEntity("Tile", *it);
-									Transform* rTrans = ecs.transforms.RemoveComponent(*it);
-									Sprite* rSprite = ecs.sprites.RemoveComponent(*it);
-									if (rTrans != nullptr)
-									{
-										delete rTrans;
-										rTrans = nullptr;
-									}
-
-									if (rSprite != nullptr)
-									{
-										delete rSprite;
-										rSprite = nullptr;
-									}
+									ecs.transforms.DeleteComponent(*it);
+									ecs.sprites.DeleteComponent(*it);
 								}
 							}
 						}
