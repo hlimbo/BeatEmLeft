@@ -34,8 +34,11 @@ void RenderSystem::Init(int cameraWidth,int cameraHeight)
 	camera.w = cameraWidth;
 	camera.h = cameraHeight;
 
-	//int playerID = ecs->entitySystem.GetIDs("Player").at(0);
-	//SetEntityToFollow(playerID);
+	if (ecs->entitySystem.ContainsEntityType("Player"))
+	{
+		int playerID = ecs->entitySystem.GetIDs("Player").at(0);
+		SetEntityToFollow(playerID);
+	}
 }
 
 void RenderSystem::SetLocation(int x, int y)
@@ -45,10 +48,10 @@ void RenderSystem::SetLocation(int x, int y)
 }
 
 //temporary level dimensions
-#define LEVEL_WIDTH 800
-#define LEVEL_HEIGHT 600
-//#define LEVEL_WIDTH 2048
-//#define LEVEL_HEIGHT 1840
+//#define LEVEL_WIDTH 800
+//#define LEVEL_HEIGHT 600
+#define LEVEL_WIDTH 2048
+#define LEVEL_HEIGHT 1840
 bool RenderSystem::SetEntityToFollow(int id)
 {
 	//target entity's components
@@ -89,8 +92,13 @@ void RenderSystem::Update(SDL_Renderer* render)
 	//camera tracking
 	int backgroundID = ecs->entitySystem.GetIDs("Background").at(0);
 
-	//int playerID = ecs->entitySystem.GetIDs("Player").at(0);
-	//SetEntityToFollow(playerID);
+	//ids will never be < 0
+	int playerID = -1;
+	if (ecs->entitySystem.ContainsEntityType("Player"))
+	{
+		playerID = ecs->entitySystem.GetIDs("Player").at(0);
+		SetEntityToFollow(playerID);
+	}
 
 	vector<int> ids = ecs->entitySystem.GetIDs();
 	for (auto it = ids.begin();it != ids.end();++it)
@@ -102,29 +110,25 @@ void RenderSystem::Update(SDL_Renderer* render)
 		{
 
 			sprite->position = getFloatToIntegerCoordinates(transform->position);
-			
+
 			//temp code ~ needs to be refactored...
 			if (backgroundID == *it)
 			{
-	/*			SDL_Rect bounds;
-				bounds.h = camera.h;
-				bounds.w = camera.w;*/
 				//always render the background since all of its parts will always be seen in the game.
 				SDL_RenderCopy(render, sprite->texture, &camera, NULL);
 			}
-			//else if (playerID == *it)
-			//{
-
-			//	//this effect makes it as if the camera is following the player.
-			//	//but in reality this is making sure the player stays withing bounds of the camera.
-			//	//convert player world coordinates to screen coordinates relative to camera
-			//	SDL_Rect screenBounds;
-			//	screenBounds.x = sprite->position.x - camera.x;
-			//	screenBounds.y = sprite->position.y - camera.y;
-			//	screenBounds.w = sprite->width;
-			//	screenBounds.h = sprite->height;
-			//	//SDL_RenderCopy(render, sprite->texture, NULL/* source texture is used if I want to animate the sprite*/, &screenBounds);
-			//}
+			else if (playerID == *it)
+			{
+				//this effect makes it as if the camera is following the player.
+				//but in reality this is making sure the player stays withing bounds of the camera.
+				//convert player world coordinates to screen coordinates relative to camera
+				SDL_Rect screenBounds;
+				screenBounds.x = sprite->position.x - camera.x;
+				screenBounds.y = sprite->position.y - camera.y;
+				screenBounds.w = sprite->width;
+				screenBounds.h = sprite->height;
+				SDL_RenderCopy(render, sprite->texture, NULL/* source texture is used if I want to animate the sprite*/, &screenBounds);
+			}
 			else //for all other sprites... render them  (right now render order happens from lowest entity id to highest entity id)
 			{
 				//render the sprite if it is seen by the camera (check if sprite is within screen bounds)
@@ -172,46 +176,49 @@ void RenderSystem::Update(SDL_Renderer* render)
 	}
 
 	//temp code
-	//auto playerTransform = ecs->transforms.GetComponent(playerID);
-	//auto playerKinematic = ecs->kinematics.GetComponent(playerID);
-	//auto playerAnimation = ecs->animations.GetComponent(playerID);
-	//if (playerTransform == nullptr || playerKinematic == nullptr || playerAnimation == nullptr)
-	//	return;
+	if (playerID != -1)
+	{
+		auto playerTransform = ecs->transforms.GetComponent(playerID);
+		auto playerKinematic = ecs->kinematics.GetComponent(playerID);
+		auto playerAnimation = ecs->animations.GetComponent(playerID);
+		if (playerTransform == nullptr || playerKinematic == nullptr || playerAnimation == nullptr)
+			return;
 
-	//SpriteSheet* currentAnim = playerAnimation->Get("idle");
-	//SDL_Rect srcRect = currentAnim->PlayAnimation(0.166f, 0.5f);
-	//SDL_RendererFlip flip = SDL_FLIP_NONE;
+		SpriteSheet* currentAnim = playerAnimation->Get("idle");
+		SDL_Rect srcRect = currentAnim->PlayAnimation(0.166f, 0.5f);
+		SDL_RendererFlip flip = SDL_FLIP_NONE;
 
-	//if (playerKinematic->velocity.x != 0.0f && playerKinematic->velocity.y == 0.0f)
-	//{
-	//	currentAnim = playerAnimation->Get("walk");
-	//	if (playerKinematic->velocity.x < 0.0f)
-	//		flip = SDL_FLIP_HORIZONTAL;
-	//	else
-	//		flip = SDL_FLIP_NONE;
-	//	srcRect = currentAnim->PlayAnimation(0.166f, 0.5f);
-	//}
-	//if (playerKinematic->velocity.y != 0.0f)
-	//{
-	//	currentAnim = playerAnimation->Get("jump");
-	//	if (playerKinematic->velocity.x < 0.0f)
-	//		flip = SDL_FLIP_HORIZONTAL;
-	//	else
-	//		flip = SDL_FLIP_NONE;
-	//	srcRect = currentAnim->PlayAnimation(0.166f, 2.5f);
-	//}
+		if (playerKinematic->velocity.x != 0.0f && playerKinematic->velocity.y == 0.0f)
+		{
+			currentAnim = playerAnimation->Get("walk");
+			if (playerKinematic->velocity.x < 0.0f)
+				flip = SDL_FLIP_HORIZONTAL;
+			else
+				flip = SDL_FLIP_NONE;
+			srcRect = currentAnim->PlayAnimation(0.166f, 0.5f);
+		}
+		if (playerKinematic->velocity.y != 0.0f)
+		{
+			currentAnim = playerAnimation->Get("jump");
+			if (playerKinematic->velocity.x < 0.0f)
+				flip = SDL_FLIP_HORIZONTAL;
+			else
+				flip = SDL_FLIP_NONE;
+			srcRect = currentAnim->PlayAnimation(0.166f, 2.5f);
+		}
 
-	////convert game coordinates to screen coordinates	
-	////move this to sprite component and spritesheet component
-	//SDL_Point tempoffset{ 20, 1 };
-	//currentAnim->offset = tempoffset;
-	//currentAnim->position = getFloatToIntegerCoordinates(playerTransform->position);
-	//SDL_Rect screenBounds;
-	//screenBounds.x = currentAnim->GetPosition().x - camera.x;
-	//screenBounds.y = currentAnim->GetPosition().y - camera.y;
-	//screenBounds.w = 32 * 2;
-	//screenBounds.h = 64 * 2;
-	//SDL_RenderCopyEx(render, currentAnim->image->texture, &srcRect, &screenBounds, 0.0f, NULL, flip);
+		//convert game coordinates to screen coordinates	
+		//move this to sprite component and spritesheet component
+		SDL_Point tempoffset{ 20, 1 };
+		currentAnim->offset = tempoffset;
+		currentAnim->position = getFloatToIntegerCoordinates(playerTransform->position);
+		SDL_Rect screenBounds;
+		screenBounds.x = currentAnim->GetPosition().x - camera.x;
+		screenBounds.y = currentAnim->GetPosition().y - camera.y;
+		screenBounds.w = 32 * 2;
+		screenBounds.h = 64 * 2;
+		SDL_RenderCopyEx(render, currentAnim->image->texture, &srcRect, &screenBounds, 0.0f, NULL, flip);
+	}
 }
 
 void RenderSystem::Draw(SDL_Renderer* render)
