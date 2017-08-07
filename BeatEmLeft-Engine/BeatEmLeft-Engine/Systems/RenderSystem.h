@@ -23,7 +23,7 @@ public:
 	void Init(int cameraWidth, int cameraHeight);
 	//set world coordinates of the camera
 	void SetLocation(int x, int y);
-	bool SetEntityToFollow(int id);
+	bool SetEntityToFollow(int id,int level_width,int level_height);
 	void Update(SDL_Renderer* render);
 	void Draw(SDL_Renderer* render);
 

@@ -141,12 +141,16 @@ int main(int argc, char* argv[])
 	string mainPath(SDL_GetBasePath());
 	mainPath += string("resources\\");
 
-	string backgroundPath = mainPath + string("hills.png");
+	//string backgroundPath = mainPath + string("hills.png");
 	string tilePath = mainPath + string("box.png");
 
+	//should make into a singleton
 	ImageStore store(render);
-	store.Load("hills.png", backgroundPath);
 	store.Load("box.png", tilePath);
+
+
+	string backgroundName;
+	string backgroundPath;
 
 	string levelName;
 	string levelPath;
@@ -156,10 +160,15 @@ int main(int argc, char* argv[])
 	cout << "Enter in name of file to save as: ";
 	getline(cin, levelName);
 	levelPath = mainPath + levelName;
-	cout << "Enter in level_width: ";
-	cin >> level_width;
-	cout << "Enter in level_height: ";
-	cin >> level_height;
+	
+	cout << "Enter in background file to use: ";
+	getline(cin, backgroundName);
+	backgroundPath = mainPath + backgroundName;
+	store.Load(backgroundName, backgroundPath);
+	
+	//should probably turn into a helper function
+	SDL_QueryTexture(store.Get(backgroundName)->texture, NULL, NULL, &level_width, &level_height);
+
 	cout << "Enter in tileWidth: ";
 	cin >> tileWidth;
 	cout << "Enter in tileHeight: ";
@@ -200,7 +209,7 @@ int main(int argc, char* argv[])
 	int bgID = ecs.entitySystem.CreateEntity("Background");
 	auto bgTransform = new Transform();
 	bgTransform->position = Vect2(0.0f, 0.0f);
-	auto bgSprite = new Sprite(store.Get("hills.png"));
+	auto bgSprite = new Sprite(store.Get(backgroundName));
 	ecs.transforms.AddComponent(bgID, bgTransform);
 	ecs.sprites.AddComponent(bgID, bgSprite);
 
@@ -244,6 +253,8 @@ int main(int argc, char* argv[])
 					file.open(levelPath, ifstream::out);
 					if (file.good())
 					{
+						//write image file location
+						file << backgroundPath << endl;
 						//write level dimensions
 						file << level_width << " " << level_height << endl;
 						//write tile dimensions
@@ -283,6 +294,23 @@ int main(int argc, char* argv[])
 					if (inputFile.good())
 					{
 						cout << "loading map: " << levelName << endl;
+
+						//read image filepath
+						getline(inputFile, backgroundPath);
+						//split string on last occurence of \ for windows, / for linux
+						size_t lastIndex = backgroundPath.find_last_of("/\\");
+						backgroundName = backgroundPath.substr(lastIndex + 1);
+						
+						cout << backgroundPath << endl;
+						cout <<"background filename: " <<  backgroundName << endl;
+
+						//returns the source image if background image is already loaded in the image store
+						Image* src_image = store.Load(backgroundName, backgroundPath);
+						Sprite* bg_sprite = ecs.sprites.GetComponent(bgID);
+						if (src_image != nullptr && bg_sprite != nullptr)
+						{
+							bg_sprite->SetTextureAttributes(src_image->texture);
+						}
 
 						//read level_dimensions
 						inputFile >> level_width >> level_height;
@@ -439,7 +467,6 @@ int main(int argc, char* argv[])
 
 		if (mousePos.y + 5 > SCREEN_HEIGHT)
 		{
-			int level_height = 600;
 			if (renderSys.camera.y + renderSys.camera.h < level_height)
 				renderSys.camera.y += camSpeed;
 		}
