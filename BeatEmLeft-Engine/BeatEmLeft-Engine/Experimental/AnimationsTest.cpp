@@ -5,26 +5,26 @@
 
 #include <Vect2.h>
 
-#include "Systems/RenderSystem.h"
-#include "Systems/ComponentManager.h"
-#include "Systems/EntitySystem.h"
-#include "Components/Sprite.h"
-#include "Components/Transform.h"
-#include "Components/BoxCollider.h"
-#include "Components/SpriteSheet.h"
-#include "Components/Animation.h"
-#include "Components/SlopeCollider.h"
-#include "Systems/ECS.h"
-#include "Core.h"
-#include "Systems/MovementSystem.h"
+#include "../Systems/RenderSystem.h"
+#include "../Systems/ComponentManager.h"
+#include "../Systems/EntitySystem.h"
+#include "../Components/Sprite.h"
+#include "../Components/Transform.h"
+#include "../Components/BoxCollider.h"
+#include "../Components/SpriteSheet.h"
+#include "../Components/Animation.h"
+#include "../Components/SlopeCollider.h"
+#include "../Systems/ECS.h"
+#include "../Core.h"
+#include "../Systems/MovementSystem.h"
 
-#include "Input/KeyboardController.h"
-#include "Input/GameController.h"
-#include "Utility/TextureLoader.h"
-#include "Utility/TextureStore.h"
-#include "Utility/ImageStore.h"
-#include "Utility/ImageMod.h"
-#include "Utility/MapFileLoader.h"
+#include "../Input/KeyboardController.h"
+#include "../Input/GameController.h"
+#include "../Utility/TextureLoader.h"
+#include "../Utility/TextureStore.h"
+#include "../Utility/ImageStore.h"
+#include "../Utility/ImageMod.h"
+#include "../Utility/MapFileLoader.h"
 
 using namespace std;
 
@@ -272,13 +272,13 @@ int main(int argc, char* argv[])
 
 		renderSys.Update(render);
 
-		SDL_Rect dstRect;
-		dstRect.h = 32 * 8;
-		dstRect.w = 40 * 8;
-		dstRect.x = 0;
-		dstRect.y = 0;
-		SDL_Rect currentFrame = diddy.PlayAnimation(deltaTime, 0.5f);
-		SDL_RenderCopy(render, store.Get("diddy_idle.png")->texture,&currentFrame, &dstRect);
+		//SDL_Rect dstRect;
+		//dstRect.h = 32 * 8;
+		//dstRect.w = 40 * 8;
+		//dstRect.x = 0;
+		//dstRect.y = 0;
+		//SDL_Rect currentFrame = diddy.PlayAnimation(deltaTime, 0.5f);
+		//SDL_RenderCopy(render, store.Get("diddy_idle.png")->texture,&currentFrame, &dstRect);
 
 		renderSys.Draw(render);
 

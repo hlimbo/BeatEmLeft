@@ -3,16 +3,16 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "Core.h"
-#include "Components/SpriteSheet.h"
+#include "../Core.h"
+#include "../Components/SpriteSheet.h"
 
-#include "Systems/RenderSystem.h"
-#include "Systems/ComponentManager.h"
-#include "Systems/EntitySystem.h"
-#include "Systems/ECS.h"
+#include "../Systems/RenderSystem.h"
+#include "../Systems/ComponentManager.h"
+#include "../Systems/EntitySystem.h"
+#include "../Systems/ECS.h"
 
-#include "Input/KeyboardController.h"
-#include "Utility/TextureStore.h"
+#include "../Input/KeyboardController.h"
+#include "../Utility/TextureStore.h"
 
 using namespace std;
 

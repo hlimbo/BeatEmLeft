@@ -3,11 +3,11 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "Core.h"
-#include "Components/SpriteSheet.h"
-#include "Utility/TextureLoader.h"
-#include "Utility/ImageStore.h"
-#include "Utility/TextureStore.h"
+#include "../Core.h"
+#include "../Components/SpriteSheet.h"
+#include "../Utility/TextureLoader.h"
+#include "../Utility/ImageStore.h"
+#include "../Utility/TextureStore.h"
 
 using namespace std;
 
@@ -48,21 +48,22 @@ int main(int argc, char* argv[])
 	//textureStore.SetAlpha("white.png", 255 / 2);
 	SDL_Rect whiteRect;
 	whiteRect.x = whiteRect.y = 0;
-	whiteRect.w = 266;
-	whiteRect.h = 600;
+	float wScale = 0.3333;
+	whiteRect.w = SCREEN_WIDTH * wScale;
+	whiteRect.h = SCREEN_HEIGHT;
 
 	SDL_Rect dstRect;
 	dstRect.x = 0;
 	dstRect.y = 0;
-	dstRect.w = 400;
-	dstRect.h = 300;
+	dstRect.w = SCREEN_WIDTH * wScale;
+	dstRect.h = SCREEN_HEIGHT;
 
 	//---------------- Game Loop ------------------//
 
 	//observedDeltaTime is measured in milliseconds
 	float observedDeltaTime = core.getTargetDeltaTime();
 	float deltaTime = observedDeltaTime / 1000.0f;//converts from milliseconds to seconds
-												  //to avoid unnecessary context switches os might do (which I have no control over.. cache the target delta time)
+	//to avoid unnecessary context switches os might do (which I have no control over.. cache the target delta time)
 	float targetDeltaTime = core.getTargetDeltaTime();
 	Uint64 observedFPS = core.getTargetFPS();
 	float currentTime = 0.0f;
@@ -99,7 +100,7 @@ int main(int argc, char* argv[])
 
 				if (event.key.keysym.sym == SDLK_LEFT)
 				{
-					whiteRect.x -= 267;
+					whiteRect.x -= SCREEN_WIDTH * wScale;
 					if (whiteRect.x < 0)
 						whiteRect.x = SCREEN_WIDTH - whiteRect.w;
 
@@ -110,10 +111,10 @@ int main(int argc, char* argv[])
 					else if (frame == &frame2)
 						frame = &frame1;
 				}
-				if (event.key.keysym.sym == SDLK_RIGHT)
+				else if (event.key.keysym.sym == SDLK_RIGHT)
 				{
-					whiteRect.x += 267;
-					if (whiteRect.x > SCREEN_WIDTH)
+					whiteRect.x += SCREEN_WIDTH * wScale;
+					if (whiteRect.x + 5 > SCREEN_WIDTH)
 						whiteRect.x = 0;
 
 					if (frame == &frame0)
@@ -133,12 +134,12 @@ int main(int argc, char* argv[])
 		SDL_Texture* texture = imageStore.Get("objects.png")->texture;
 		SDL_RenderCopy(render, whiteTexture, NULL, &whiteRect);
 	
-		dstRect.x += 1;
+	/*	dstRect.x += 1;
 		if (dstRect.x > SCREEN_WIDTH)
 		{
 			dstRect.x = 0;
-		}
-		SDL_RenderCopy(render, texture, frame, &dstRect);
+		}*/
+		SDL_RenderCopy(render, texture, NULL, NULL);
 		SDL_RenderPresent(render);
 
 		endCount = SDL_GetPerformanceCounter();
