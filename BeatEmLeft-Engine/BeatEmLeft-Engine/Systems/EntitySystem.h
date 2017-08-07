@@ -164,6 +164,45 @@ public:
 		return removedID;
 	}
 
+	//returns -1 if id not found otherwise, return the id that is deleted.
+	int RemoveEntity(int id)
+	{
+		int removedID = -1;
+		for (auto it = entities.begin();it != entities.end();++it)
+		{
+			if (it->id == id)
+			{
+				removedID = it->id;
+				swap(*it, entities.back());
+				entities.pop_back();
+				break;
+			}
+		}
+
+		//should speed up this function a bit if the id to remove does not exist in the system.
+		if (removedID != -1)
+		{
+			//o(n^2) search
+			for (auto it = entitiesByType.begin();it != entitiesByType.end();++it)
+			{
+				for (auto it2 = it->second.begin();it2 != it->second.end();++it2)
+				{
+					if (it2->id == id)
+					{
+						swap(*it2, it->second.back());
+						it->second.pop_back();
+						break;
+					}
+				}
+			}
+
+			unusedIDs.push(removedID);
+		}
+
+
+		return removedID;
+	}
+
 	int EntityCount(string type)
 	{
 		return entitiesByType.at(type).size();
