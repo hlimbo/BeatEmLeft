@@ -21,7 +21,6 @@ struct SpriteSheet
 	//Note:Sometimes setting the alpha of specific portions of the texture cause errors when 
 	//TextureStore tries to delete the textures that have modified alpha values.
 	//Don't use this for now since Texture_Streaming is disabled!
-	//Will look into modifying alpha values from an SDL_Surface and updating the texture as needed as an alternative!
 	void SetAlpha(int frameIndex, Uint8 newAlpha);
 
 	//Change the Alpha Value for the entire texture.
@@ -48,6 +47,7 @@ struct SpriteSheet
 	
 	int getSrcWidth() { return src_width; }
 	int getSrcHeight() { return src_height; }
+	//width and height of the tile relative to the texture's map
 	int getFrameWidth() { return frameWidth; }
 	int getFrameHeight() { return frameHeight; }
 

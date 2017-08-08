@@ -68,6 +68,9 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture* srcTexture,int frameWidth,in
 	frameCount = rowCount * colCount;
 	frames = new SDL_Rect[frameCount];
 
+	int r = 0;
+	int c = 0;
+
 	//initialize each frame rect dimensions
 	//and each image's position relative to the texture sheet
 	for (int i = 0;i < frameCount;++i)
@@ -75,12 +78,22 @@ bool SpriteSheet::SetTextureAttributes(SDL_Texture* srcTexture,int frameWidth,in
 		frames[i].h = this->frameHeight;
 		frames[i].w = this->frameWidth;
 
-		//edge case for sprite sheets that can be 1x5's or 5x1's
-		int r = rowCount == 1 ? 0 : i;
-		int c = colCount == 1 ? 0 : i;
+		//i = colCount * rowIndex + colIndex;
+		//colIndex = i - (colCount * rowIndex);
+		//rowIndex = (i - colIndex) / colCount;
 
-		frames[i].x = (c % colCount) * frames[i].w;
-		frames[i].y = (r / rowCount) * frames[i].h;
+		c = i - (colCount * r);
+		if (c >= colCount)
+		{
+			c = 0;
+			++r;
+		}
+
+		if (rowCount == 1)
+			r = 0;
+
+		frames[i].x = c * frames[i].w;
+		frames[i].y = r * frames[i].h;
 	}
 	
 	currentFrameIndex = 0;
