@@ -354,15 +354,6 @@ int main(int argc, char* argv[])
 								if (tiles[r][c] == 1)
 								{
 									constructTile(&ecs, &store, r, c, tileWidth, tileHeight, x_offset, y_offset);
-							/*		int tileID = ecs.entitySystem.CreateEntity("Tile");
-									Vect2 tilePosition;
-									tilePosition.x = c * (float)tileWidth + x_offset;
-									tilePosition.y = r * (float)tileHeight + y_offset;
-									ecs.transforms.AddComponent(tileID, new Transform(tilePosition));
-									Sprite* sprite = new Sprite(store.Get("box.png"));
-									sprite->width = (int)tileWidth;
-									sprite->height = (int)tileHeight;
-									ecs.sprites.AddComponent(tileID, sprite);*/
 								}
 
 							}
@@ -395,16 +386,6 @@ int main(int argc, char* argv[])
 						cout << "spawn tile" << endl;
 						tiles[r][c] = 1;
 						constructTile(&ecs, &store, r, c, tileWidth, tileHeight, x_offset, y_offset);
-				/*		Vect2 tilePosition;
-						tilePosition.x = c * (float)tileWidth + x_offset;
-						tilePosition.y = r * (float)tileHeight + y_offset;
-						int tileID = ecs.entitySystem.CreateEntity("Tile");
-						ecs.transforms.AddComponent(tileID, new Transform(tilePosition));
-
-						Sprite* sprite = new Sprite(store.Get("box.png"));
-						sprite->width = (int)tileWidth;
-						sprite->height = (int)tileHeight;
-						ecs.sprites.AddComponent(tileID, sprite);*/
 					}
 				
 				}

@@ -5,11 +5,14 @@
 #include <SDL2/SDL_rect.h>
 
 struct Image;
+struct SpriteSheet;
 
 struct Sprite
 {
 	Sprite();
 	Sprite(Image* image);
+	//can be constructed from a SpriteSheet where it points to a region to render
+	Sprite(SpriteSheet* sheet, int frameIndex);
 	~Sprite();
 
 	Image* image;
@@ -29,6 +32,8 @@ struct Sprite
 
 	SDL_RendererFlip flip;
 	const char* type;
+
+	SDL_Rect bounds;//might need for sprites that get constructed from sprite sheets?
 private:
 	//source width and height of image after loaded into the component
 	int src_w, src_h;

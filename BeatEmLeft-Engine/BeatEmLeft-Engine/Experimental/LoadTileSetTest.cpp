@@ -35,12 +35,26 @@ SDL_Texture* preRenderWhiteBox(Core& core, int tile_width, int tile_height, SDL_
 	return white;
 }
 
+void constructTile(ECS* ecs,SpriteSheet* srcSheet,int sheetIndex, int row, int col, int tileWidth, int tileHeight)
+{
+	int tileID = ecs->entitySystem.CreateEntity("Tile");
+	Vect2 tilePosition;
+	tilePosition.x = col * (float)tileWidth;
+	tilePosition.y = row * (float)tileHeight;
+	ecs->transforms.AddComponent(tileID, new Transform(tilePosition));
+	//example usage of constructing a sprite from a spritesheet.
+	Sprite* sprite = new Sprite(srcSheet, sheetIndex);
+	sprite->width = tileWidth;
+	sprite->height = tileHeight;
+	ecs->sprites.AddComponent(tileID, sprite);
+}
 
 int main(int argc, char* argv[])
 {
 	Core core;
 	SDL_Renderer* render = core.getRenderer();
 	ImageStore store(render);
+	ECS ecs;
 
 	string mainPath(SDL_GetBasePath());
 	mainPath += string("resources\\");
@@ -103,8 +117,13 @@ int main(int argc, char* argv[])
 		selectableRects[i].h = tileHeight;
 	}
 
+	RenderSystem renderSys(&ecs);
+	renderSys.Init(SCREEN_WIDTH, SCREEN_HEIGHT);
+
 	SDL_Point mousePos{ 0,0 };
 	int selectedFrame = 0;
+	int actualWidth = 64;
+	int actualHeight = 64;
 
 	//---------------- Game Loop ------------------//
 
@@ -126,12 +145,20 @@ int main(int argc, char* argv[])
 		{
 			if (event.type == SDL_QUIT)
 				running = false;
-			if (event.type == SDL_MOUSEMOTION)
+			else if (event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				int row = event.button.y / actualHeight;
+				int col = event.button.x / actualWidth;
+				constructTile(&ecs, &tileSheet,selectedFrame, row, col, actualWidth, actualHeight);
+			}
+			else if (event.type == SDL_MOUSEMOTION)
 			{
 				mousePos.x = event.button.x;
 				mousePos.y = event.button.y;
 			}
 		}
+
+		renderSys.Update(render);
 
 		//render each tile from the tileSheet along the bottom side of the screen
 		for (int i = 0;i < tileSheet.GetFrameCount();++i)
@@ -152,13 +179,13 @@ int main(int argc, char* argv[])
 			}
 		}
 
+		renderSys.Draw(render);
+
 		//when a tile is selected,render the tile towards the center of the screen
 		SDL_RenderCopy(render, tileSheet.texture, tileSheet.GetFrame(selectedFrame), &selectedRegion);
 		//main box
 		SDL_RenderCopy(render, white, NULL, &whiteBox);
 
-		SDL_RenderPresent(render);
-		SDL_RenderClear(render);
 
 		endCount = SDL_GetPerformanceCounter();
 		observedDeltaTime = (1000.0f * (endCount - startCount)) / performanceFrequency;//gives ms

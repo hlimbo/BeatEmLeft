@@ -39,6 +39,9 @@
 //at a very high level!
 struct ECS
 {
+	ECS() {};
+	~ECS() {};
+
 	EntitySystem entitySystem;
 
 	ComponentManager<Sprite> sprites;
@@ -51,6 +54,7 @@ struct ECS
 	ComponentManager<SlopeCollider> slopes;
 
 //Keyboard Interface-------------------------------------------------------------
+	//should probably move to another file
 	void InitKeyboard()
 	{
 		keyboard.first = -1;
