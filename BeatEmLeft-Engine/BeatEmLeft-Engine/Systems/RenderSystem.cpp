@@ -84,7 +84,9 @@ void RenderSystem::Update(SDL_Renderer* render)
 {
 
 	//camera tracking
-	int backgroundID = ecs->entitySystem.GetIDs("Background").at(0);
+	int backgroundID = -1;
+	if(ecs->entitySystem.ContainsEntityType("Background"))
+		backgroundID = ecs->entitySystem.GetIDs("Background").at(0);
 
 	//ids will never be < 0
 	int playerID = -1;
@@ -150,7 +152,7 @@ void RenderSystem::Update(SDL_Renderer* render)
 					&& screenCoords.y >= 0 && screenCoords.y < camera.h)
 				{
 					//render the sprite if it is within camera bounds
-					SDL_RenderCopy(render, sprite->image->texture, NULL, &screenCoords);
+					SDL_RenderCopy(render, sprite->image->texture, &sprite->bounds, &screenCoords);
 				}
 				else
 				{
@@ -160,11 +162,11 @@ void RenderSystem::Update(SDL_Renderer* render)
 					rightCorner.y = screenCoords.y + screenCoords.h;
 					if (rightCorner.x >= 0 && rightCorner.x < camera.w)
 					{
-						SDL_RenderCopy(render, sprite->image->texture, NULL, &screenCoords);
+						SDL_RenderCopy(render, sprite->image->texture, &sprite->bounds, &screenCoords);
 					}
 					else if (rightCorner.y >= 0 && rightCorner.y < camera.h)
 					{
-						SDL_RenderCopy(render, sprite->image->texture, NULL, &screenCoords);
+						SDL_RenderCopy(render, sprite->image->texture, &sprite->bounds, &screenCoords);
 					}
 				}
 

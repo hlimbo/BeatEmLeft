@@ -6,6 +6,7 @@
 
 struct Image;
 
+//todo: remove SDL_Texture* texture
 struct SpriteSheet
 {
 	SpriteSheet(SDL_Renderer* render,SDL_Texture* texture,int frameWidth,int frameHeight);
