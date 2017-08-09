@@ -7,6 +7,35 @@
 
 using namespace std;
 
+//returns a new pre-rendered SDL_Texture
+//returns a whiteBox with initialized values
+SDL_Texture* preRenderWhiteBox(Core& core, int tile_width, int tile_height, SDL_Rect* whiteBox, SDL_Texture* oldBox = NULL)
+{
+	if (oldBox != NULL)
+		SDL_DestroyTexture(oldBox);
+
+	whiteBox->w = tile_width;
+	whiteBox->h = tile_height;
+	whiteBox->x = 0;
+	whiteBox->y = 0;
+
+	Uint32 pixelFormat = SDL_GetWindowPixelFormat(core.getWindow());
+	SDL_Renderer* render = core.getRenderer();
+	SDL_Texture* white = SDL_CreateTexture(render, pixelFormat, SDL_TEXTUREACCESS_TARGET, whiteBox->w, whiteBox->h);
+	SDL_SetRenderTarget(render, white);
+	SDL_SetTextureBlendMode(white, SDL_BLENDMODE_BLEND);
+	//might have found a bug where render draw color changes the default render target's color as well.
+	SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+	//SDL_RenderFillRect(render, whiteBox);
+	SDL_RenderDrawRect(render, whiteBox);
+	SDL_RenderPresent(render);
+	SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
+	SDL_SetRenderTarget(render, NULL);
+
+	return white;
+}
+
+
 int main(int argc, char* argv[])
 {
 	Core core;
@@ -40,6 +69,42 @@ int main(int argc, char* argv[])
 		const SDL_Rect* frame = tileSheet.GetFrame(i);
 		cout << "frame " << i << ": " << "(" << frame->x << ", " << frame->y << ")" << endl;
 	}
+	
+
+	SDL_Rect whiteBox;
+	float scale = 0.25f;
+	int boxWidth = (int)(SCREEN_WIDTH * scale);
+	int boxHeight = (int)(SCREEN_HEIGHT * scale);
+	SDL_Texture* white = preRenderWhiteBox(core, boxWidth, boxHeight, &whiteBox);
+	whiteBox.x = SCREEN_WIDTH / 2 - boxWidth / 2;
+	whiteBox.y = SCREEN_HEIGHT / 2 - boxHeight / 2;
+
+	//these are widths and heights of each tile relative to the game's window
+	int tileWidth = 24, tileHeight = 24;
+
+	//rescaling doesn't seem to work when drawing a texture on sdl with texture access target.
+	SDL_Rect selectorBox;
+	SDL_Texture* selector = preRenderWhiteBox(core, tileWidth, tileHeight, &selectorBox);
+	selectorBox.x = 0;
+	selectorBox.y = 0;
+
+	SDL_Rect selectedRegion;
+	selectedRegion.x = whiteBox.x;
+	selectedRegion.y = whiteBox.y;
+	selectedRegion.w = whiteBox.w;
+	selectedRegion.h = whiteBox.h;
+
+	SDL_Rect* selectableRects = (SDL_Rect*)malloc(sizeof(SDL_Rect) * tileSheet.GetFrameCount());
+	for (int i = 0;i < tileSheet.GetFrameCount();++i)
+	{
+		selectableRects[i].x = i * tileWidth;
+		selectableRects[i].y = SCREEN_HEIGHT - tileHeight;
+		selectableRects[i].w = tileWidth;
+		selectableRects[i].h = tileHeight;
+	}
+
+	SDL_Point mousePos{ 0,0 };
+	int selectedFrame = 0;
 
 	//---------------- Game Loop ------------------//
 
@@ -61,28 +126,37 @@ int main(int argc, char* argv[])
 		{
 			if (event.type == SDL_QUIT)
 				running = false;
+			if (event.type == SDL_MOUSEMOTION)
+			{
+				mousePos.x = event.button.x;
+				mousePos.y = event.button.y;
+			}
 		}
 
-		//these are widths and heights of each tile relative to the game's window
-		int tileWidth = 24, tileHeight = 24;
 		//render each tile from the tileSheet along the bottom side of the screen
 		for (int i = 0;i < tileSheet.GetFrameCount();++i)
 		{
-
 			const SDL_Rect* frame = tileSheet.GetFrame(i);
-			SDL_Rect dstRect;
-			dstRect.x = i * 24;//frame->w;
-			dstRect.y = SCREEN_HEIGHT - 24;
-			dstRect.w = 24;//frame->w;
-			dstRect.h = 24;//frame->h;
+			SDL_RenderCopy(render, tileSheet.texture, frame, &selectableRects[i]);
+		}
 
-			SDL_RenderCopy(render, tileSheet.texture, frame, &dstRect);
+		//check if mouse is on a specific tile
+		for (int i = 0;i < tileSheet.GetFrameCount();++i)
+		{
+			if (SDL_PointInRect(&mousePos, &selectableRects[i]))
+			{
+				selectedFrame = i;
+				selectorBox.x = selectableRects[i].x;
+				selectorBox.y = selectableRects[i].y;
+				SDL_RenderCopy(render, selector, NULL, &selectorBox);
+			}
 		}
 
 		//when a tile is selected,render the tile towards the center of the screen
+		SDL_RenderCopy(render, tileSheet.texture, tileSheet.GetFrame(selectedFrame), &selectedRegion);
+		//main box
+		SDL_RenderCopy(render, white, NULL, &whiteBox);
 
-
-		//SDL_RenderCopy(render, srcImg->texture, NULL, NULL);
 		SDL_RenderPresent(render);
 		SDL_RenderClear(render);
 
@@ -113,7 +187,8 @@ int main(int argc, char* argv[])
 		SDL_SetWindowTitle(core.getWindow(), title.c_str());
 	}
 
-
-
+	free(selectableRects);
+	SDL_DestroyTexture(white);
+	SDL_DestroyTexture(selector);
 	return 0;
 }

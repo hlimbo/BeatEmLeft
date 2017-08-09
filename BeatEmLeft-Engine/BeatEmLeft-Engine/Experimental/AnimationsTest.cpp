@@ -150,6 +150,12 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	//experiment
+	//int tileID = ecs.entitySystem.GetIDs("Tile").at(0);
+	//Sprite* sprite = ecs.sprites.GetComponent(tileID);
+	//sprite->width = 100;
+	//sprite->height = 100;
+
 	int playerID = ecs.entitySystem.CreateEntity("Player");
 	
 	auto playerTransform = new Transform();
