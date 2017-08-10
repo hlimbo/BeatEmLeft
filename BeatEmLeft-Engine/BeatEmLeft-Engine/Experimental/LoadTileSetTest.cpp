@@ -1,4 +1,6 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -84,13 +86,12 @@ int main(int argc, char* argv[])
 		cout << "frame " << i << ": " << "(" << frame->x << ", " << frame->y << ")" << endl;
 	}
 	
-
 	SDL_Rect whiteBox;
 	float scale = 0.25f;
 	int boxWidth = (int)(SCREEN_WIDTH * scale);
 	int boxHeight = (int)(SCREEN_HEIGHT * scale);
 	SDL_Texture* white = preRenderWhiteBox(core, boxWidth, boxHeight, &whiteBox);
-	whiteBox.x = SCREEN_WIDTH / 2 - boxWidth / 2;
+	whiteBox.x = SCREEN_WIDTH - boxWidth;
 	whiteBox.y = SCREEN_HEIGHT / 2 - boxHeight / 2;
 
 	//these are widths and heights of each tile relative to the game's window
@@ -124,6 +125,37 @@ int main(int argc, char* argv[])
 	int selectedFrame = 0;
 	int actualWidth = 64;
 	int actualHeight = 64;
+
+	//create some fonts to display
+	const char* const fontPath = "resources/Rubik_Mono_One/RubikMonoOne-Regular.ttf";
+	TTF_Font* font = TTF_OpenFont(fontPath, 12);
+	if (!font)
+		printf("TTF_OpenFont: %s\n", TTF_GetError());
+
+	SDL_Color whiteText{ 255,255,255 };
+	const char* const sampleText = "The swift brown fox jumped!";
+	
+	//solidText
+	SDL_Surface* textSurface = TTF_RenderText_Solid(font, sampleText,whiteText);
+	SDL_Texture* textTextureSolid = SDL_CreateTextureFromSurface(render, textSurface);
+	SDL_FreeSurface(textSurface);
+
+	//shadedText
+	textSurface = TTF_RenderText_Shaded(font, sampleText, whiteText, SDL_Color{255,0,0});
+	SDL_Texture* textTextureShaded = SDL_CreateTextureFromSurface(render, textSurface);
+	SDL_FreeSurface(textSurface);
+
+	//blendedText
+	textSurface = TTF_RenderText_Blended(font, sampleText, whiteText);
+	SDL_Texture* textTextureBlended = SDL_CreateTextureFromSurface(render, textSurface);
+	SDL_FreeSurface(textSurface);
+
+	//SDL_ShowCursor(SDL_DISABLE);
+	//string mousePath = mainPath + string("sample_mouse.png");
+	//SDL_Surface* mouseSurface = IMG_Load(mousePath.c_str());
+	//SDL_Cursor* myCursor = SDL_CreateColorCursor(mouseSurface, 0, 0);
+	//SDL_SetCursor(myCursor);
+
 
 	//---------------- Game Loop ------------------//
 
@@ -179,12 +211,29 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		renderSys.Draw(render);
-
 		//when a tile is selected,render the tile towards the center of the screen
 		SDL_RenderCopy(render, tileSheet.texture, tileSheet.GetFrame(selectedFrame), &selectedRegion);
 		//main box
 		SDL_RenderCopy(render, white, NULL, &whiteBox);
+
+		//render textSolid
+		SDL_Rect textArea;
+		textArea.x = 0;
+		textArea.y = 0;
+		SDL_QueryTexture(textTextureSolid, NULL, NULL, &textArea.w, &textArea.h);
+		SDL_RenderCopy(render, textTextureSolid, NULL, &textArea);
+
+		//render textShaded
+		textArea.y += textArea.h;
+		SDL_QueryTexture(textTextureShaded, NULL, NULL, &textArea.w, &textArea.h);
+		SDL_RenderCopy(render, textTextureShaded, NULL, &textArea);
+
+		//render textBlended
+		textArea.y += textArea.h;
+		SDL_QueryTexture(textTextureBlended, NULL, NULL, &textArea.w, &textArea.h);
+		SDL_RenderCopy(render, textTextureBlended, NULL, &textArea);
+		
+		renderSys.Draw(render);
 
 
 		endCount = SDL_GetPerformanceCounter();
@@ -217,5 +266,13 @@ int main(int argc, char* argv[])
 	free(selectableRects);
 	SDL_DestroyTexture(white);
 	SDL_DestroyTexture(selector);
+
+	SDL_DestroyTexture(textTextureSolid);
+	SDL_DestroyTexture(textTextureShaded);
+	SDL_DestroyTexture(textTextureBlended);
+
+	TTF_CloseFont(font);
+	font = NULL;
+
 	return 0;
 }
