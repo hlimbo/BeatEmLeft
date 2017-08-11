@@ -19,7 +19,29 @@ struct ui_state
 
 	SDL_Point mousePos;
 	SDL_Point oldMousePos;
+
+	//following the tutorial for imgui: http://sol.gfxile.net/imgui/ch06.html
+	//stores the widget's id that has keyboard focus
+	int kbditem;
+	//stores the key that was pressed
+	int keyentered;
+	//stores the key modifier flags such as shift pressed
+	int keymod;
+
+	//holds the id of the last widget procesessed.
+	int lastwidget;
+
 } ui_global_state;
+
+struct Text
+{
+	SDL_Rect bounds;
+	string text;
+	int max_len;
+	SDL_Texture* texture_;
+	SDL_Surface* surface_;
+	SDL_Color color;
+};
 
 //draws the button relative to the game's window
 //returns true if button is pressed, otherwise it returns false
@@ -39,8 +61,23 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 		}
 	}
 
-	//this updates how the button is drawn depending on what the global state is in
 	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
+
+	//if no widget has keyboard focus, take it
+	if (ui_global_state.kbditem == 0)
+		ui_global_state.kbditem = ui_id;
+
+	//if we have keyboard focus, show it
+	if (ui_global_state.kbditem == ui_id)
+	{
+		SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
+		SDL_Rect outline = *bounds;
+		outline.w = 120;
+		outline.h = 35;
+		SDL_RenderFillRect(render, &outline);
+	}
+
+	//this updates how the button is drawn depending on what the global state is in
 
 	//is pressed
 	if (ui_global_state.pressedID == ui_id && ui_global_state.hoveredID == ui_id)
@@ -67,6 +104,31 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 	textArea.x = bounds->x + (bounds->w - textArea.w) / 2;
 	textArea.y = bounds->y + (bounds->h - textArea.h) / 2;
 	SDL_RenderCopy(render, text, NULL, &textArea);
+
+
+	//if we have keyboard focus, we'll need to process the keys
+	if (ui_global_state.kbditem == ui_id)
+	{
+		switch (ui_global_state.keyentered)
+		{
+		case SDLK_TAB:
+			//if tab is pressed, lose keyboard focus
+			//next widget will grab focus
+			ui_global_state.kbditem = 0;
+			//if shift was also pressed, we want to move focus to the previous widget
+			//instead
+			if (ui_global_state.keymod & KMOD_SHIFT)
+				ui_global_state.kbditem = ui_global_state.lastwidget;
+			//also clear the key so that next widget won't process it
+			ui_global_state.keyentered = 0;
+			break;
+		case SDLK_RETURN:
+			//had keyboard focus, received return,so we act as if clicked happened
+			return 1;
+		}
+	}
+
+	ui_global_state.lastwidget = ui_id;
 
 	//set color back to black after drawing
 	SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
@@ -214,6 +276,26 @@ float drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds
 	return value;
 }
 
+//label - non interactive
+//not a very good function to call if drawing many labels because it takes up cpu time and lowers fps
+//because surfaces and the textures of the text are being constantly deleted and created
+//rendered text labels should be stored in a hashmap to prevent having to convert strings to textures every frame
+void drawLabel(SDL_Renderer* render,SDL_Point screen_position,TTF_Font* font,const string& text)
+{
+	SDL_Color blue{ 0,0,255,255 };
+	SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), blue);
+	SDL_Texture* textBlended = SDL_CreateTextureFromSurface(render, textSurface);
+	SDL_FreeSurface(textSurface);
+
+	SDL_Rect textArea;
+	textArea.x = screen_position.x;
+	textArea.y = screen_position.y;
+	SDL_QueryTexture(textBlended, NULL, NULL, &textArea.w, &textArea.h);
+	SDL_RenderCopy(render, textBlended, NULL, &textArea);
+	SDL_DestroyTexture(textBlended);
+
+}
+
 int main(int argc, char* argv[])
 {
 	Core core;
@@ -224,7 +306,7 @@ int main(int argc, char* argv[])
 	mainPath += string("resources\\");
 
 	string fontPath = mainPath + string("Rubik_Mono_One/RubikMonoOne-Regular.ttf");
-	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), 16);
+	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), 24);
 	SDL_Color textColor{ 0,0,0 };
 	const char* const sampleText = "OK";
 
@@ -252,6 +334,24 @@ int main(int argc, char* argv[])
 	scrollBarRect.y = 50;
 	scrollBarRect.w = 20;
 	scrollBarRect.h = 160;
+
+	ui_global_state.hoveredID = 0;
+	ui_global_state.pressedID = 0;
+	ui_global_state.kbditem = 0;
+	ui_global_state.keyentered = 0;
+	ui_global_state.keymod = 0;
+	ui_global_state.mousePos = mousePos;
+	ui_global_state.oldMousePos = oldMousePos;
+
+	//text input//
+	Text t;
+	t.text = string("");
+	t.color = SDL_Color{ 255,255,255,255 };
+	t.texture_ = NULL;
+	t.surface_ = NULL;
+	bool textChanged = false;
+
+	SDL_StartTextInput();
 
 	//---------------- Game Loop ------------------//
 
@@ -289,9 +389,65 @@ int main(int argc, char* argv[])
 			case SDL_MOUSEBUTTONUP:
 				mouseClicked = false;
 				break;
+			case SDL_KEYDOWN:
+				//report any key presses to the widgets.
+				ui_global_state.keyentered = event.key.keysym.sym;
+				ui_global_state.keymod = event.key.keysym.mod;
+				if (event.key.keysym.sym == SDLK_BACKSPACE)
+				{
+					if (!t.text.empty())
+					{
+						textChanged = true;
+						t.text.pop_back();
+					}
+				}
+				break;
+			case SDL_TEXTINPUT:
+				t.text += event.text.text;
+				textChanged = true;
+				break;
 			}
 		}
 
+		//Text Field//
+		int fontWidth, fontHeight;
+		TTF_SizeText(font, "|", &fontWidth, &fontHeight);
+		SDL_Rect textArea;
+		textArea.x = 10;
+		textArea.y = 50;
+		textArea.w = 200;
+		textArea.h = fontHeight + 10;
+		SDL_SetTextInputRect(&textArea);
+		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+		SDL_RenderDrawRect(render, &textArea);
+		if (textChanged)
+		{
+			if (t.surface_ != NULL)
+			{
+				SDL_FreeSurface(t.surface_);
+				t.surface_ = NULL;
+			}
+
+			if (t.texture_ != NULL)
+			{
+				SDL_DestroyTexture(t.texture_);
+				t.texture_ = NULL;
+			}
+
+			t.surface_ = TTF_RenderText_Blended(font, t.text.c_str(), t.color);
+			t.texture_ = SDL_CreateTextureFromSurface(render, t.surface_);
+		}
+
+		t.bounds.x = textArea.x;
+		t.bounds.y = textArea.y;
+		TTF_SizeText(font, t.text.c_str(), &t.bounds.w, &t.bounds.h);
+		if(t.texture_ != NULL)
+			SDL_RenderCopy(render, t.texture_, NULL,&t.bounds);
+
+		textChanged = false;
+
+	//GUI Code Testing//
+	/*	
 		SDL_Rect buttonArea;
 		buttonArea.w = 100;
 		buttonArea.h = 20;
@@ -313,17 +469,6 @@ int main(int argc, char* argv[])
 			puts("button pressed 2");
 		}
 
-		/*
-			Params needed to construct vertical slider:
-			SDL_Renderer,
-			int id,
-			const SDL_Color& knobColor,
-			const SDL_Color& barColor,
-			SDL_Rect*  knobBounds,
-			const SDL_Rect* barBounds,
-			const SDL_Point* mousePos;
-		*/
-
 		//1st version
 		drawVerticalSlider(render, 3, scrollWheelColor, scrollBarColor, &scrollWheelRect, &scrollBarRect, &oldMousePos);
 
@@ -334,8 +479,14 @@ int main(int argc, char* argv[])
 		bounds2.w = 20;
 		bounds2.h = 150;
 		initialScrollValue = drawVerticalSlider(render, 4, &bounds2, initialScrollValue);
-		printf("scrollValue: %f\n", initialScrollValue);
 		
+		//draw label
+		SDL_Point labelPos{ 200,0 };
+		drawLabel(render, labelPos, font, string("Hello World!"));
+
+		SDL_Point labelPos2{ 200,50 };
+		drawLabel(render, labelPos2, font, string("Cool TExt"));
+		*/
 
 		oldMousePos.x = mousePos.x;
 		oldMousePos.y = mousePos.y;
@@ -373,6 +524,8 @@ int main(int argc, char* argv[])
 		title += std::string(" | FPS: ") + std::to_string(observedFPS);
 		SDL_SetWindowTitle(core.getWindow(), title.c_str());
 	}
+
+	SDL_StopTextInput();
 
 	SDL_DestroyTexture(textTextureSolid);
 	TTF_CloseFont(font);
