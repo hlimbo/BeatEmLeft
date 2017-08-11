@@ -1,5 +1,7 @@
 /*
 	Testing out: Immediate Mode GUI approach
+	Note: ids for each ui object is used to distinguish which ui is being hovered on or pressed on,
+	If only a single global state such as an enum was used to define the states of each button, all buttons would be affected by the change
 */
 
 #include <SDL2/SDL.h>
@@ -14,6 +16,9 @@ struct ui_state
 	int hoveredID;
 	//the id of the widget the mouse cursor has pressed
 	int pressedID;
+
+	SDL_Point mousePos;
+	SDL_Point oldMousePos;
 } ui_global_state;
 
 //draws the button relative to the game's window
@@ -77,6 +82,138 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 	return false;
 }
 
+//1st version
+void drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Color& knobColor, const SDL_Color& barColor, SDL_Rect* knobBounds, const SDL_Rect* barBounds, const SDL_Point* mousePos)
+{
+	SDL_Point newMousePos;
+	bool mouseClicked = SDL_GetMouseState(&newMousePos.x, &newMousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
+	
+	//determine if scroll bar is hovered on or pressed on
+	if(SDL_PointInRect(mousePos,barBounds))
+	{
+		ui_global_state.hoveredID = ui_id;
+		if (mouseClicked)
+		{
+			ui_global_state.pressedID = ui_id;
+		}
+	}
+
+	//1st goal: keep scroll knob in place anywhere that it is clicked on(do not move the knob if mouse delta y == 0)
+	//2nd goal: move the scroll knob when mouse delta y != 0;
+	if (ui_global_state.pressedID == ui_id)
+	{
+		int deltaMousePos = newMousePos.y - mousePos->y;
+		if (deltaMousePos != 0)
+		{
+			int projectedPos = knobBounds->y + deltaMousePos;
+			//3rd goal: keep the scroll knob in place when it touches the top bounds
+			if (projectedPos < barBounds->y)
+				knobBounds->y = barBounds->y;
+			//4th goal: keep the scroll knob in place when it touches the bottom bounds
+			else if (projectedPos + knobBounds->h > barBounds->y + barBounds->h)
+				knobBounds->y = (barBounds->y + barBounds->h) - knobBounds->h;
+			else
+				knobBounds->y = projectedPos;
+		}
+	}
+	
+	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
+	//draw scroll bar
+	SDL_SetRenderDrawColor(render, barColor.r, barColor.g, barColor.b, barColor.a);
+	SDL_RenderFillRect(render, barBounds);
+
+	//render knob
+	if (ui_global_state.pressedID == ui_id)
+	{
+		ui_global_state.pressedID = 0;
+		SDL_SetRenderDrawColor(render, knobColor.r / 2, knobColor.g / 2, knobColor.b / 2, knobColor.a);
+		SDL_RenderFillRect(render, knobBounds);
+	}
+	else
+	{
+		SDL_SetRenderDrawColor(render, knobColor.r, knobColor.g, knobColor.b, knobColor.a);
+		SDL_RenderFillRect(render, knobBounds);
+	}
+
+}
+
+//returns the position of the knob as a floating point value mapped between a min and max float value.
+//Note: initialValue must be a floating point value between 0.0f and 1.0f inclusive
+//2nd version
+float drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, float initialValue)
+{
+	//construct the knob bounds
+	float knobScale = 0.25f;
+	SDL_Rect knobBounds;
+	knobBounds.x = bounds->x;
+	knobBounds.w = bounds->w;
+	knobBounds.h = (int)(knobScale * bounds->h);
+
+	SDL_Color knobColor{ 160, 160,160,255 };
+	SDL_Color barColor{ 114, 99, 99, 255 };
+
+	SDL_Point newMousePos;
+	bool mouseClicked = SDL_GetMouseState(&newMousePos.x, &newMousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
+
+	//determine if scroll bar is hovered over or pressed on
+	if (SDL_PointInRect(&newMousePos, bounds))
+	{
+		ui_global_state.hoveredID = ui_id;
+		if (mouseClicked)
+		{
+			ui_global_state.pressedID = ui_id;
+		}
+	}
+
+	//keep the scroll knob in place anywhere that it is clicked on
+	//move the scroll knob by the amount the mouse position changes (delta mouse pos)
+	
+	float minValue = 0.0f;
+	float maxValue = 1.0f;
+	float value = (initialValue < minValue) ? minValue : (initialValue > maxValue) ? maxValue : initialValue;
+	knobBounds.y = (int)(value * bounds->h) + bounds->y;
+	if (ui_global_state.pressedID == ui_id)
+	{
+		int deltaMousePos = newMousePos.y - ui_global_state.oldMousePos.y;
+		if (deltaMousePos != 0)
+		{
+			//deltaV ranges from -1 to 1 inclusive
+			float deltaV = (float)deltaMousePos / bounds->h;
+			value += deltaV;
+			value = (value > maxValue) ? maxValue : (value < minValue) ? minValue : value;
+		}
+
+		//printf("value: %f\n", value);	
+		knobBounds.y = (int)(value * bounds->h) + bounds->y;
+	}
+
+	//since the knob has a height and its coordinates are measured from its top-left corner, 
+	//its necessary to make sure the knob doesn't move past its scrollable area.
+	if (knobBounds.y + knobBounds.h > bounds->y + bounds->h)
+		knobBounds.y = (bounds->y + bounds->h) - knobBounds.h;
+
+	//rendering
+	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
+	//draw scroll bar
+	SDL_SetRenderDrawColor(render, barColor.r, barColor.g, barColor.b, barColor.a);
+	SDL_RenderFillRect(render, bounds);
+
+	//draw scroll knob
+	if (ui_global_state.pressedID == ui_id)
+	{
+		ui_global_state.pressedID = 0;
+		SDL_SetRenderDrawColor(render, knobColor.r / 2, knobColor.g / 2, knobColor.b / 2, knobColor.a);
+		SDL_RenderFillRect(render, &knobBounds);
+	}
+	else
+	{
+		SDL_SetRenderDrawColor(render, knobColor.r, knobColor.g, knobColor.b, knobColor.a);
+		SDL_RenderFillRect(render, &knobBounds);
+	}
+
+	return value;
+}
+
 int main(int argc, char* argv[])
 {
 	Core core;
@@ -101,6 +238,7 @@ int main(int argc, char* argv[])
 	bool mouseClicked = false;
 
 	//initial slider properties
+	float initialScrollValue = 0.0f;
 	SDL_Color scrollWheelColor = { 0,0,255,255 };
 	SDL_Rect scrollWheelRect;
 	scrollWheelRect.x = 100;
@@ -141,9 +279,12 @@ int main(int argc, char* argv[])
 			case SDL_MOUSEMOTION:
 				mousePos.x = event.button.x;
 				mousePos.y = event.button.y;
+				ui_global_state.mousePos.x = event.button.x;
+				ui_global_state.mousePos.y = event.button.y;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				mouseClicked = true;
+				printf("mousePos: (%d, %d)\n", mousePos.x, mousePos.y);
 				break;
 			case SDL_MOUSEBUTTONUP:
 				mouseClicked = false;
@@ -172,61 +313,34 @@ int main(int argc, char* argv[])
 			puts("button pressed 2");
 		}
 
-		//draw a slider
-		int slider_id = 3;
+		/*
+			Params needed to construct vertical slider:
+			SDL_Renderer,
+			int id,
+			const SDL_Color& knobColor,
+			const SDL_Color& barColor,
+			SDL_Rect*  knobBounds,
+			const SDL_Rect* barBounds,
+			const SDL_Point* mousePos;
+		*/
 
-		//check if mouse is on scrollbar
-		if (SDL_PointInRect(&mousePos, &scrollBarRect))
-		{
-			ui_global_state.hoveredID = slider_id;
-			if (mouseClicked && ui_global_state.pressedID == 0)
-			{
-				ui_global_state.pressedID = slider_id;
-			}
-		}
+		//1st version
+		drawVerticalSlider(render, 3, scrollWheelColor, scrollBarColor, &scrollWheelRect, &scrollBarRect, &oldMousePos);
 
-		SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
-
-		//draw scroll bar
-		SDL_SetRenderDrawColor(render, scrollBarColor.r, scrollBarColor.g, scrollBarColor.b, scrollBarColor.a);
-		SDL_RenderFillRect(render, &scrollBarRect);
-
-		//1st goal: keep scroll knob in place anywhere that it is clicked on(do not move the knob if mouse delta y == 0)
-		//2nd goal: move the scroll knob when mouse delta y != 0;
-
-		//is pressed
-		if (ui_global_state.pressedID == slider_id)
-		{
-			ui_global_state.pressedID = 0;
-
-			int deltaMousePos = mousePos.y - oldMousePos.y;
-			if (deltaMousePos != 0)
-			{
-				int projectedPos = scrollWheelRect.y + deltaMousePos;
-				//3rd goal: keep the scroll knob in place when it touches the top bounds
-				if (projectedPos < scrollBarRect.y)
-					scrollWheelRect.y = scrollBarRect.y;
-				//4th goal: keep the scroll knob in place when it touches the bottom bounds
-				else if (projectedPos + scrollWheelRect.h > scrollBarRect.y + scrollBarRect.h)
-					scrollWheelRect.y = (scrollBarRect.y + scrollBarRect.h) - scrollWheelRect.h;
-				else
-					scrollWheelRect.y = projectedPos;
-
-			}
-
-			//render scroll wheel
-			SDL_SetRenderDrawColor(render, scrollWheelColor.r / 2, scrollWheelColor.g / 2, scrollWheelColor.b / 2, scrollWheelColor.a);
-			SDL_RenderFillRect(render, &scrollWheelRect);
-		}
-		else //not pressed
-		{
-			//render scroll wheel
-			SDL_SetRenderDrawColor(render, scrollWheelColor.r, scrollWheelColor.g, scrollWheelColor.b, scrollWheelColor.a);
-			SDL_RenderFillRect(render, &scrollWheelRect);
-		}
+		//2nd version
+		SDL_Rect bounds2;
+		bounds2.x = 300;
+		bounds2.y = 150;
+		bounds2.w = 20;
+		bounds2.h = 150;
+		initialScrollValue = drawVerticalSlider(render, 4, &bounds2, initialScrollValue);
+		printf("scrollValue: %f\n", initialScrollValue);
+		
 
 		oldMousePos.x = mousePos.x;
 		oldMousePos.y = mousePos.y;
+		ui_global_state.oldMousePos.x = mousePos.x;
+		ui_global_state.oldMousePos.y = mousePos.y;
 		
 
 		SDL_RenderPresent(render);
