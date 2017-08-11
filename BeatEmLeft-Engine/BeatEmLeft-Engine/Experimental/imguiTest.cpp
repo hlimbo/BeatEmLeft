@@ -20,6 +20,9 @@ struct ui_state
 //returns true if button is pressed, otherwise it returns false
 bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SDL_Color& color,SDL_Texture* text)
 {
+	ui_global_state.hoveredID = 0;
+
+	//changes the global state depending on these conditions
 	SDL_Point mousePos;
 	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
 	if (SDL_PointInRect(&mousePos, bounds))
@@ -31,6 +34,7 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 		}
 	}
 
+	//this updates how the button is drawn depending on what the global state is in
 	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
 
 	//is pressed
@@ -64,7 +68,10 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 
 	//evaluate if the button was pressed by checking to see if the button is released this frame
 	if (ui_global_state.pressedID == ui_id && ui_global_state.hoveredID == ui_id && !mousePressed)
+	{
+		ui_global_state.pressedID = 0;
 		return true;
+	}
 
 	//button was not pressed
 	return false;
@@ -84,15 +91,29 @@ int main(int argc, char* argv[])
 	SDL_Color textColor{ 0,0,0 };
 	const char* const sampleText = "OK";
 
-	
-
 	SDL_Surface* textSurface = TTF_RenderText_Blended(font, sampleText, textColor);
 	SDL_Texture* textTextureSolid = SDL_CreateTextureFromSurface(render, textSurface);
 	SDL_FreeSurface(textSurface);
 
 
 	SDL_Point mousePos{ 0,0 };
+	SDL_Point oldMousePos{ 0,0 };
 	bool mouseClicked = false;
+
+	//initial slider properties
+	SDL_Color scrollWheelColor = { 0,0,255,255 };
+	SDL_Rect scrollWheelRect;
+	scrollWheelRect.x = 100;
+	scrollWheelRect.y = 50;
+	scrollWheelRect.w = 20;
+	scrollWheelRect.h = 20;
+
+	SDL_Color scrollBarColor = { 255,255,255,255 };
+	SDL_Rect scrollBarRect;
+	scrollBarRect.x = 100;
+	scrollBarRect.y = 50;
+	scrollBarRect.w = 20;
+	scrollBarRect.h = 160;
 
 	//---------------- Game Loop ------------------//
 
@@ -130,30 +151,87 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		//preparation state ~ unconditionally changes the hoveredID of a widget to nothing every frame
-		ui_global_state.hoveredID = 0;
+		SDL_Rect buttonArea;
+		buttonArea.w = 100;
+		buttonArea.h = 20;
+		buttonArea.x = 85;
+		buttonArea.y = 230;
+		if (drawButton(render, 1, &buttonArea, SDL_Color{ 0,255,0,255 }, textTextureSolid))
+		{
+			puts("button pressed 1");
+		}
 
 		SDL_Rect buttonArea2;
 		buttonArea2.w = 100;
 		buttonArea2.h = 20;
 		buttonArea2.x = SCREEN_WIDTH / 2 - buttonArea2.w / 2;
 		buttonArea2.y = SCREEN_HEIGHT / 2 - buttonArea2.h / 2;
-		int ui_id = 1;
-		if (drawButton(render, ui_id, &buttonArea2, SDL_Color{ 255,255,0,255 },textTextureSolid))
+		if (drawButton(render, 2, &buttonArea2, SDL_Color{ 255,255,0,255 },textTextureSolid))
 		{
 			//logic where button does something when clicked on
-			puts("button pressed");
+			puts("button pressed 2");
 		}
+
+		//draw a slider
+		int slider_id = 3;
+
+		//check if mouse is on scrollbar
+		if (SDL_PointInRect(&mousePos, &scrollBarRect))
+		{
+			ui_global_state.hoveredID = slider_id;
+			if (mouseClicked && ui_global_state.pressedID == 0)
+			{
+				ui_global_state.pressedID = slider_id;
+			}
+		}
+
+		SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
+
+		//draw scroll bar
+		SDL_SetRenderDrawColor(render, scrollBarColor.r, scrollBarColor.g, scrollBarColor.b, scrollBarColor.a);
+		SDL_RenderFillRect(render, &scrollBarRect);
+
+		//1st goal: keep scroll knob in place anywhere that it is clicked on(do not move the knob if mouse delta y == 0)
+		//2nd goal: move the scroll knob when mouse delta y != 0;
+
+		//is pressed
+		if (ui_global_state.pressedID == slider_id)
+		{
+			ui_global_state.pressedID = 0;
+
+			int deltaMousePos = mousePos.y - oldMousePos.y;
+			if (deltaMousePos != 0)
+			{
+				int projectedPos = scrollWheelRect.y + deltaMousePos;
+				//3rd goal: keep the scroll knob in place when it touches the top bounds
+				if (projectedPos < scrollBarRect.y)
+					scrollWheelRect.y = scrollBarRect.y;
+				//4th goal: keep the scroll knob in place when it touches the bottom bounds
+				else if (projectedPos + scrollWheelRect.h > scrollBarRect.y + scrollBarRect.h)
+					scrollWheelRect.y = (scrollBarRect.y + scrollBarRect.h) - scrollWheelRect.h;
+				else
+					scrollWheelRect.y = projectedPos;
+
+			}
+
+			//render scroll wheel
+			SDL_SetRenderDrawColor(render, scrollWheelColor.r / 2, scrollWheelColor.g / 2, scrollWheelColor.b / 2, scrollWheelColor.a);
+			SDL_RenderFillRect(render, &scrollWheelRect);
+		}
+		else //not pressed
+		{
+			//render scroll wheel
+			SDL_SetRenderDrawColor(render, scrollWheelColor.r, scrollWheelColor.g, scrollWheelColor.b, scrollWheelColor.a);
+			SDL_RenderFillRect(render, &scrollWheelRect);
+		}
+
+		oldMousePos.x = mousePos.x;
+		oldMousePos.y = mousePos.y;
 		
+
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
 		SDL_RenderClear(render);
-
-		//finish state ~ reset the state of being pressed to nothing if the button being pressed was released
-		if (!mouseClicked)
-		{
-			ui_global_state.pressedID = 0;
-		}
 
 		endCount = SDL_GetPerformanceCounter();
 		observedDeltaTime = (1000.0f * (endCount - startCount)) / performanceFrequency;//gives ms
