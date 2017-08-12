@@ -305,8 +305,8 @@ int main(int argc, char* argv[])
 	string mainPath(SDL_GetBasePath());
 	mainPath += string("resources\\");
 
-	string fontPath = mainPath + string("Rubik_Mono_One/RubikMonoOne-Regular.ttf");
-	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), 24);
+	string fontPath = mainPath + string("SourceCodePro-Black.ttf");
+	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), 16);
 	SDL_Color textColor{ 0,0,0 };
 	const char* const sampleText = "OK";
 
@@ -314,6 +314,17 @@ int main(int argc, char* argv[])
 	SDL_Texture* textTextureSolid = SDL_CreateTextureFromSurface(render, textSurface);
 	SDL_FreeSurface(textSurface);
 
+	//TTF_GlyphMetrics(font,'a',)
+	//TTF_SetFontStyle(font,TTF_STYLE_ITALIC);
+	//TTF_SetFontOutline(font, 1);
+	if (TTF_FontFaceIsFixedWidth(font))
+		printf("this font is fixed\n");
+	else
+		printf("this font is not fixed\n");
+
+	//char* familyName = TTF_FontFaceFamilyName(font);
+	//char* styleName = TTF_FontFaceStyleName(font);
+	//printf("familyName: %s\nstyleName: %s\n", familyName, styleName);
 
 	SDL_Point mousePos{ 0,0 };
 	SDL_Point oldMousePos{ 0,0 };
@@ -350,6 +361,40 @@ int main(int argc, char* argv[])
 	t.texture_ = NULL;
 	t.surface_ = NULL;
 	bool textChanged = false;
+
+	//blinking cursor
+	textSurface = TTF_RenderText_Blended(font, "|", SDL_Color{ 255,255,255,255 });
+	SDL_Texture* blinkingTexture = SDL_CreateTextureFromSurface(render, textSurface);
+	SDL_SetTextureBlendMode(blinkingTexture, SDL_BLENDMODE_BLEND);
+	SDL_FreeSurface(textSurface);
+	float blinkDelay = 500.0f;//milliseconds
+	float pastTime = 0.0f;
+	int minAlpha = 0;
+	int maxAlpha = 255;
+	int blinkAlpha = maxAlpha;
+
+	int fontWidth, fontHeight;
+	int fontOffset = 1;
+	TTF_SizeText(font, "A", &fontWidth, &fontHeight);
+	SDL_Rect textArea;
+	textArea.x = 10;
+	textArea.y = 60;
+	textArea.w = 200;
+	textArea.h = fontHeight + 10;
+
+	float xOffset = 0.05f;
+	float yOffset = 0.1f;
+	t.bounds.x = textArea.x + (int)(textArea.w * xOffset);
+	t.bounds.y = textArea.y + (int)(textArea.h * yOffset);
+	t.max_len = ((textArea.w - (int)(textArea.w * xOffset)) / fontWidth) - 1;
+	printf("max characters: %d\n", t.max_len);
+	//should find a font that is mono
+
+	SDL_Rect blinkRect;
+	blinkRect.x = t.bounds.x;
+	blinkRect.y = t.bounds.y;
+	TTF_SizeText(font, "|", &blinkRect.w, &blinkRect.h);
+
 
 	SDL_StartTextInput();
 
@@ -398,25 +443,33 @@ int main(int argc, char* argv[])
 					if (!t.text.empty())
 					{
 						textChanged = true;
+						char* lastChar = &t.text[t.text.size() - 1];
+						int width;
+						TTF_SizeText(font, lastChar, &width, NULL);
+						blinkRect.x -= width;
 						t.text.pop_back();
 					}
 				}
 				break;
 			case SDL_TEXTINPUT:
-				t.text += event.text.text;
-				textChanged = true;
+				if (t.text.size() < t.max_len)
+				{
+				/*	char* p = event.text.text;
+					for (int i = 0;p[i] != '\0';++i)
+					{
+						int width;
+						TTF_SizeText(font, event.text.text, &width, NULL);
+						blinkRect.x += width;
+					}*/
+					blinkRect.x += fontWidth;
+					t.text += event.text.text;
+					textChanged = true;
+				}
 				break;
 			}
 		}
 
 		//Text Field//
-		int fontWidth, fontHeight;
-		TTF_SizeText(font, "|", &fontWidth, &fontHeight);
-		SDL_Rect textArea;
-		textArea.x = 10;
-		textArea.y = 50;
-		textArea.w = 200;
-		textArea.h = fontHeight + 10;
 		SDL_SetTextInputRect(&textArea);
 		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
 		SDL_RenderDrawRect(render, &textArea);
@@ -438,13 +491,21 @@ int main(int argc, char* argv[])
 			t.texture_ = SDL_CreateTextureFromSurface(render, t.surface_);
 		}
 
-		t.bounds.x = textArea.x;
-		t.bounds.y = textArea.y;
 		TTF_SizeText(font, t.text.c_str(), &t.bounds.w, &t.bounds.h);
 		if(t.texture_ != NULL)
 			SDL_RenderCopy(render, t.texture_, NULL,&t.bounds);
 
 		textChanged = false;
+
+		//blinking update
+		if (currentTime - pastTime >= blinkDelay)
+		{
+			pastTime = currentTime;
+			blinkAlpha = (blinkAlpha == minAlpha) ? maxAlpha : minAlpha;
+			SDL_SetTextureAlphaMod(blinkingTexture, blinkAlpha);
+		}
+
+		SDL_RenderCopy(render, blinkingTexture, NULL, &blinkRect);
 
 	//GUI Code Testing//
 	/*	
@@ -514,7 +575,7 @@ int main(int argc, char* argv[])
 			observedDeltaTime = (1000.0f * (endCount - startCount)) / performanceFrequency;//gives ms
 			observedFPS = performanceFrequency / (endCount - startCount);
 		}
-
+		
 		currentTime += observedDeltaTime;
 		deltaTime = observedDeltaTime / 1000.0f;
 		startCount = endCount;
@@ -528,6 +589,7 @@ int main(int argc, char* argv[])
 	SDL_StopTextInput();
 
 	SDL_DestroyTexture(textTextureSolid);
+	SDL_DestroyTexture(blinkingTexture);
 	TTF_CloseFont(font);
 	font = NULL;
 
