@@ -31,6 +31,8 @@ struct ui_state
 	//holds the id of the last widget procesessed.
 	int lastwidget;
 
+	//add a bool textChanged
+
 } ui_global_state;
 
 struct Text
@@ -41,6 +43,44 @@ struct Text
 	SDL_Texture* texture_;
 	SDL_Surface* surface_;
 	SDL_Color color;
+};
+
+struct Text2
+{
+	SDL_Texture* texture;
+	string text;
+	TTF_Font* font;
+	int char_limit;
+
+	//optional ~ might not need
+	SDL_Color color;
+	SDL_Rect bounds;
+
+	Text2()
+	{
+		texture = NULL;
+		font = NULL;
+		char_limit = -1;
+		color = SDL_Color{ 255,255,255,255 };
+	}
+
+	~Text2() {} 
+
+	//~Text2()
+	//{
+	//	if (texture != NULL)
+	//	{
+	//		SDL_DestroyTexture(texture);
+	//		texture = NULL;
+	//	}
+	//	//temporary...
+	///*	if (font != NULL)
+	//	{
+	//		TTF_CloseFont(font);
+	//		font = NULL;
+	//	}*/
+	//	char_limit = -1;
+	//}
 };
 
 //draws the button relative to the game's window
@@ -296,6 +336,66 @@ void drawLabel(SDL_Renderer* render,SDL_Point screen_position,TTF_Font* font,con
 
 }
 
+//to make this functional this should either return a new string with the updated text
+//or an updated texture with the modified text
+bool drawTextField(SDL_Renderer* render,int ui_id, SDL_Point screenPos, Text2* text)
+{
+	if (!TTF_FontFaceIsFixedWidth(text->font))
+		printf("Warning: characters of this font style vary in font width\n");
+
+	//construct textbox area based on character limit and font size
+	int fontWidth, fontHeight;
+	TTF_SizeText(text->font, "A", &fontWidth, &fontHeight);
+	SDL_Rect textBoxRect;
+	textBoxRect.x = screenPos.x;
+	textBoxRect.y = screenPos.y;
+	textBoxRect.w = (fontWidth * text->char_limit) + fontWidth;
+	textBoxRect.h = fontHeight + (fontHeight / 2);
+
+	//construct text area
+	SDL_Rect textAreaRect;
+	textAreaRect.x = screenPos.x + (int)(textBoxRect.w * 0.1f);
+	textAreaRect.y = screenPos.y + (int)(textBoxRect.h * 0.05f);
+	textAreaRect.w = (fontWidth * text->char_limit);
+	textAreaRect.h = fontHeight;
+
+	//check if text field is hovered over or clicked on
+	ui_global_state.hoveredID = 0;
+
+	SDL_Point mousePos;
+	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
+	if (SDL_PointInRect(&mousePos, &textBoxRect))
+	{
+		ui_global_state.hoveredID = ui_id;
+		if (mousePressed)
+		{
+			ui_global_state.pressedID = ui_id;
+		}
+	}
+
+	//if pressed on turn on blinker
+	if (ui_global_state.pressedID == ui_id)
+	{
+		puts("turn on blinker");
+		//turn on cursor blinker
+		SDL_StartTextInput();
+	}
+	else
+	{
+		puts("turn off blinker");
+		SDL_StopTextInput();
+	}
+
+	//display textbox and text
+	SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+	SDL_RenderDrawRect(render, &textBoxRect);
+
+	//if textChanges
+	//remake text texture with text updated text
+
+	return false;
+}
+
 int main(int argc, char* argv[])
 {
 	Core core;
@@ -373,14 +473,33 @@ int main(int argc, char* argv[])
 	int maxAlpha = 255;
 	int blinkAlpha = maxAlpha;
 
+	/*
+		Parameters needed to bool drawTextField();
+		1. SDL_Renderer
+		2. SDL_Point screenPos
+		3. TTF_Font* font
+		4. int character_limit
+		5. SDL_Texture* (holds how the text typed on keyboard is rendered to screen) (gets destroyed and created frequently when text is being modified)
+		6. string text
+
+		struct Text
+		{
+			SDL_Texture* texture;
+			char* buffer;
+			int character_limit;
+			TTF_Font* font;
+			int curr_index; //which will be updated everytime a character is added or removed from the buffer.
+		}
+	*/
+
 	int fontWidth, fontHeight;
 	int fontOffset = 1;
 	TTF_SizeText(font, "A", &fontWidth, &fontHeight);
 	SDL_Rect textArea;
 	textArea.x = 10;
 	textArea.y = 60;
-	textArea.w = 200;
-	textArea.h = fontHeight + 10;
+	textArea.w = 400;//200;//text area should be initialized based on the number of max characters that can be placed in text field
+	textArea.h = fontHeight + 10;//10 is the padding to ensure text area is slightly bigger than actual text
 
 	float xOffset = 0.05f;
 	float yOffset = 0.1f;
@@ -503,9 +622,20 @@ int main(int argc, char* argv[])
 			pastTime = currentTime;
 			blinkAlpha = (blinkAlpha == minAlpha) ? maxAlpha : minAlpha;
 			SDL_SetTextureAlphaMod(blinkingTexture, blinkAlpha);
+
+			//display fps text in title
+			std::string title("Beat Em Left");
+			title += std::string(" | FPS: ") + std::to_string(observedFPS);
+			SDL_SetWindowTitle(core.getWindow(), title.c_str());
 		}
 
 		SDL_RenderCopy(render, blinkingTexture, NULL, &blinkRect);
+
+		Text2 textStruct;
+		textStruct.char_limit = 20;
+		textStruct.font = font;
+		textStruct.text = "";
+		drawTextField(render,7, SDL_Point{ 50,350 }, &textStruct);
 
 	//GUI Code Testing//
 	/*	
@@ -580,10 +710,6 @@ int main(int argc, char* argv[])
 		deltaTime = observedDeltaTime / 1000.0f;
 		startCount = endCount;
 
-		//display fps text in title
-		std::string title("Beat Em Left");
-		title += std::string(" | FPS: ") + std::to_string(observedFPS);
-		SDL_SetWindowTitle(core.getWindow(), title.c_str());
 	}
 
 	SDL_StopTextInput();
