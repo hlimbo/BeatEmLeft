@@ -27,6 +27,7 @@ struct ui_state
 
 	int keyboardFocusID;
 	int keyPressed;
+	int prevPressed;
 	Uint16 keyMod;
 
 	//measured in milliseconds since start of game loop
@@ -36,8 +37,24 @@ struct ui_state
 	//used to create blinking text cursor effect
 	bool isTextCursorVisible;
 
-	//holds the id of the last widget procesessed.
-	int lastwidget;
+	ui_state()
+	{
+		hoveredID = 0;
+		pressedID = 0;
+		mousePos = SDL_Point{ 0,0 };
+		oldMousePos = SDL_Point{ 0,0 };
+		mouseClicked = false;
+		textChanged = false;
+		keyboardFocusID = 0;
+		keyPressed = -1;
+		prevPressed = -1;
+		currentTime = 0.0f;
+		pastTime = 0.0f;
+		isTextCursorVisible = true;
+		textBuffer = NULL;
+	}
+
+	~ui_state() {}
 
 } ui_global_state;
 
@@ -70,6 +87,7 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 	if (SDL_PointInRect(&mousePos, bounds))
 	{
 		ui_global_state.hoveredID = ui_id;
+		ui_global_state.keyboardFocusID = ui_id;
 		if (mousePressed)
 		{
 			ui_global_state.pressedID = ui_id;
@@ -78,10 +96,16 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 
 	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
 
-	//this updates how the button is drawn depending on what the global state is in
-
-	//is pressed
-	if (ui_global_state.pressedID == ui_id && ui_global_state.hoveredID == ui_id)
+	//this updates how the button is colored depending on what the global state is in
+	//if enter key is pressed when button has keyboard focus
+	if (ui_global_state.keyboardFocusID == ui_id && ui_global_state.keyPressed == SDLK_RETURN)
+	{
+		ui_global_state.prevPressed = SDLK_RETURN;
+		SDL_SetRenderDrawColor(render, color.r / 2, color.g / 2, color.b / 2, color.a);
+		SDL_RenderFillRect(render, bounds);
+	}
+	//is pressed by mouse
+	else if (ui_global_state.pressedID == ui_id && ui_global_state.hoveredID == ui_id)
 	{
 		SDL_SetRenderDrawColor(render, color.r / 2, color.g / 2, color.b / 2, color.a);
 		SDL_RenderFillRect(render, bounds);
@@ -99,7 +123,7 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 		SDL_RenderFillRect(render, bounds);
 	}
 
-	//render text
+	//render text ~ temporary placeholder text
 	SDL_Rect textArea;
 	SDL_QueryTexture(text, NULL, NULL, &textArea.w,&textArea.h);
 	textArea.x = bounds->x + (bounds->w - textArea.w) / 2;
@@ -113,6 +137,12 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 	if (ui_global_state.pressedID == ui_id && ui_global_state.hoveredID == ui_id && !mousePressed)
 	{
 		ui_global_state.pressedID = 0;
+		return true;
+	}
+
+	if(ui_global_state.keyboardFocusID == ui_id && ui_global_state.keyPressed == -1 && ui_global_state.prevPressed == SDLK_RETURN)
+	{
+		ui_global_state.prevPressed = -1;
 		return true;
 	}
 
@@ -461,19 +491,6 @@ int main(int argc, char* argv[])
 	scrollBarRect.w = 20;
 	scrollBarRect.h = 160;
 
-	ui_global_state.hoveredID = 0;
-	ui_global_state.pressedID = 0;
-	ui_global_state.mousePos = SDL_Point{ 0,0 };
-	ui_global_state.oldMousePos = SDL_Point{ 0,0 };
-	ui_global_state.mouseClicked = false;
-	ui_global_state.textChanged = false;
-	ui_global_state.keyboardFocusID = 0;
-	ui_global_state.keyPressed = -1;
-	ui_global_state.currentTime = 0.0f;
-	ui_global_state.pastTime = 0.0f;
-	ui_global_state.isTextCursorVisible = true;
-	ui_global_state.textBuffer = NULL;
-
 	Text textStruct;
 	textStruct.char_limit = 20;
 	textStruct.font = font;
@@ -530,6 +547,10 @@ int main(int argc, char* argv[])
 				if (event.key.keysym.sym == SDLK_BACKSPACE)
 					ui_global_state.textChanged = true;
 				break;
+			case SDL_KEYUP:
+				ui_global_state.keyPressed = -1;
+				ui_global_state.keyMod = 0;
+				break;
 			case SDL_TEXTINPUT:
 				ui_global_state.textBuffer = event.text.text;
 				ui_global_state.textChanged = true;
@@ -538,6 +559,17 @@ int main(int argc, char* argv[])
 		}
 
 		//GUI Code Testing//	
+
+		SDL_Rect buttonArea;
+		buttonArea.w = 100;
+		buttonArea.h = 20;
+		buttonArea.x = 85;
+		buttonArea.y = 230;
+		SDL_Color neonBlue{ 103,200,255,255 };
+		if (drawButton(render, 2, &buttonArea, neonBlue, textTextureSolid))
+		{
+			puts("neon blue button pressed");
+		}
 
 		//todo: pass in a string into drawTextField to modify and display on screen
 		SDL_Color blue{ 0,0,255,255 };
@@ -553,17 +585,6 @@ int main(int argc, char* argv[])
 		bounds2.w = 20;
 		bounds2.h = 150;
 		initialScrollValue = drawVerticalSlider(render, 4, &bounds2, initialScrollValue);
-
-		SDL_Rect buttonArea;
-		buttonArea.w = 100;
-		buttonArea.h = 20;
-		buttonArea.x = 85;
-		buttonArea.y = 230;
-		SDL_Color neonBlue{ 103,200,255,255 };
-		if (drawButton(render, 2, &buttonArea, neonBlue, textTextureSolid))
-		{
-			puts("neon blue button pressed");
-		}
 
 		SDL_Rect buttonArea2;
 		buttonArea2.w = 100;
