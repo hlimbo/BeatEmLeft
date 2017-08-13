@@ -20,6 +20,21 @@ struct ui_state
 	SDL_Point mousePos;
 	SDL_Point oldMousePos;
 
+	bool textChanged;
+	bool mouseClicked;
+	//holds the text input when SDL_TEXTINPUT event is triggered
+	char* textBuffer;
+
+	int keyboardFocusID;
+	int keyPressed;
+
+	//measured in milliseconds since start of game loop
+	float currentTime;
+	float pastTime;
+
+	//used to create blinking text cursor effect
+	bool isTextCursorVisible;
+
 	//following the tutorial for imgui: http://sol.gfxile.net/imgui/ch06.html
 	//stores the widget's id that has keyboard focus
 	int kbditem;
@@ -31,56 +46,25 @@ struct ui_state
 	//holds the id of the last widget procesessed.
 	int lastwidget;
 
-	//add a bool textChanged
-
 } ui_global_state;
 
-struct Text
-{
-	SDL_Rect bounds;
-	string text;
-	int max_len;
-	SDL_Texture* texture_;
-	SDL_Surface* surface_;
-	SDL_Color color;
-};
 
-struct Text2
+struct Text
 {
 	SDL_Texture* texture;
 	string text;
 	TTF_Font* font;
-	int char_limit;
+	unsigned int char_limit;
 
-	//optional ~ might not need
-	SDL_Color color;
-	SDL_Rect bounds;
-
-	Text2()
+	Text()
 	{
 		texture = NULL;
 		font = NULL;
 		char_limit = -1;
-		color = SDL_Color{ 255,255,255,255 };
+		text = "";
 	}
 
-	~Text2() {} 
-
-	//~Text2()
-	//{
-	//	if (texture != NULL)
-	//	{
-	//		SDL_DestroyTexture(texture);
-	//		texture = NULL;
-	//	}
-	//	//temporary...
-	///*	if (font != NULL)
-	//	{
-	//		TTF_CloseFont(font);
-	//		font = NULL;
-	//	}*/
-	//	char_limit = -1;
-	//}
+	~Text() {} 
 };
 
 //draws the button relative to the game's window
@@ -338,8 +322,9 @@ void drawLabel(SDL_Renderer* render,SDL_Point screen_position,TTF_Font* font,con
 
 //to make this functional this should either return a new string with the updated text
 //or an updated texture with the modified text
-bool drawTextField(SDL_Renderer* render,int ui_id, SDL_Point screenPos, Text2* text)
+string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text* text, SDL_Color color = SDL_Color{ 255,255,255,255 })
 {
+
 	if (!TTF_FontFaceIsFixedWidth(text->font))
 		printf("Warning: characters of this font style vary in font width\n");
 
@@ -349,16 +334,16 @@ bool drawTextField(SDL_Renderer* render,int ui_id, SDL_Point screenPos, Text2* t
 	SDL_Rect textBoxRect;
 	textBoxRect.x = screenPos.x;
 	textBoxRect.y = screenPos.y;
-	textBoxRect.w = (fontWidth * text->char_limit) + fontWidth;
+	textBoxRect.w = (fontWidth * text->char_limit) + (2 * fontWidth);
 	textBoxRect.h = fontHeight + (fontHeight / 2);
 
 	//construct text area
 	SDL_Rect textAreaRect;
-	textAreaRect.x = screenPos.x + (int)(textBoxRect.w * 0.1f);
-	textAreaRect.y = screenPos.y + (int)(textBoxRect.h * 0.05f);
-	textAreaRect.w = (fontWidth * text->char_limit);
+	textAreaRect.x = screenPos.x + fontWidth;
+	textAreaRect.y = screenPos.y + (fontHeight / 4);
+	textAreaRect.w = fontWidth * text->char_limit;
 	textAreaRect.h = fontHeight;
-
+	
 	//check if text field is hovered over or clicked on
 	ui_global_state.hoveredID = 0;
 
@@ -370,30 +355,99 @@ bool drawTextField(SDL_Renderer* render,int ui_id, SDL_Point screenPos, Text2* t
 		if (mousePressed)
 		{
 			ui_global_state.pressedID = ui_id;
+			ui_global_state.keyboardFocusID = ui_id;
 		}
-	}
-
-	//if pressed on turn on blinker
-	if (ui_global_state.pressedID == ui_id)
-	{
-		puts("turn on blinker");
-		//turn on cursor blinker
-		SDL_StartTextInput();
 	}
 	else
 	{
-		puts("turn off blinker");
+		if (!mousePressed)
+		{
+			ui_global_state.hoveredID = 0;
+			ui_global_state.pressedID = 0;
+		}
+		//if mouse was pressed but wasn't inside the text field, lose keyboard focus
+		else if(ui_global_state.keyboardFocusID == ui_id)
+			ui_global_state.keyboardFocusID = 0;
+	}
+
+	//if text field has current focus, turn on text cursor
+	if (ui_global_state.keyboardFocusID == ui_id)
+	{
+		//puts("turn on blinker");
+		ui_global_state.pressedID = 0;
+
+		SDL_StartTextInput();
+
+		//construct text cursor
+		SDL_Rect textCursorRect;
+		textCursorRect.x = textAreaRect.x;
+		textCursorRect.y = textAreaRect.y - (fontHeight / 8);
+		TTF_SizeText(text->font, "|", &textCursorRect.w, &textCursorRect.h);
+
+		//update the text texture
+		if (ui_global_state.textChanged)
+		{
+			ui_global_state.textChanged = false;
+			//check if text was input or backspace was entered
+			if (ui_global_state.keyPressed == SDLK_BACKSPACE)
+			{
+				if (!text->text.empty())	
+					text->text.pop_back();
+			}
+			else
+			{
+				if (text->char_limit > text->text.size())
+					text->text += string(ui_global_state.textBuffer);
+			}
+
+			if (text->texture != NULL)
+				SDL_DestroyTexture(text->texture);
+
+			SDL_Surface* textSurface = TTF_RenderText_Blended(text->font, text->text.c_str(), color);
+			text->texture = SDL_CreateTextureFromSurface(render, textSurface);
+			SDL_FreeSurface(textSurface);
+
+		}
+
+		//update position of text cursor
+		TTF_SizeText(text->font, text->text.c_str(), &textAreaRect.w, NULL);
+		textCursorRect.x = textAreaRect.x + textAreaRect.w;
+
+		//blink text cursor effect
+		float currentTime = ui_global_state.currentTime;
+		float pastTime = ui_global_state.pastTime;
+		float blinkDelay = 500.0f;
+		if (currentTime - pastTime >= blinkDelay)
+		{
+			ui_global_state.pastTime = currentTime;
+			ui_global_state.isTextCursorVisible = !ui_global_state.isTextCursorVisible;
+		}
+		
+		//create and destroy the text cursor texture every other 500 ms
+		if (ui_global_state.isTextCursorVisible)
+		{
+			SDL_Surface* textCursor_s = TTF_RenderText_Blended(text->font, "|", color);
+			SDL_Texture* textCursor_t = SDL_CreateTextureFromSurface(render, textCursor_s);
+			SDL_RenderCopy(render, textCursor_t, NULL, &textCursorRect);
+			SDL_FreeSurface(textCursor_s);
+			SDL_DestroyTexture(textCursor_t);
+		}
+	}
+	else if(ui_global_state.keyboardFocusID == 0)
+	{
+		//puts("turn off blinker");
 		SDL_StopTextInput();
 	}
 
 	//display textbox and text
-	SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+	SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
 	SDL_RenderDrawRect(render, &textBoxRect);
 
-	//if textChanges
-	//remake text texture with text updated text
+	TTF_SizeText(text->font, text->text.c_str(), &textAreaRect.w, NULL);
+	if (text->texture != NULL)
+		SDL_RenderCopy(render, text->texture, NULL, &textAreaRect);
 
-	return false;
+	return text->text;
 }
 
 int main(int argc, char* argv[])
@@ -414,21 +468,10 @@ int main(int argc, char* argv[])
 	SDL_Texture* textTextureSolid = SDL_CreateTextureFromSurface(render, textSurface);
 	SDL_FreeSurface(textSurface);
 
-	//TTF_GlyphMetrics(font,'a',)
-	//TTF_SetFontStyle(font,TTF_STYLE_ITALIC);
-	//TTF_SetFontOutline(font, 1);
 	if (TTF_FontFaceIsFixedWidth(font))
 		printf("this font is fixed\n");
 	else
 		printf("this font is not fixed\n");
-
-	//char* familyName = TTF_FontFaceFamilyName(font);
-	//char* styleName = TTF_FontFaceStyleName(font);
-	//printf("familyName: %s\nstyleName: %s\n", familyName, styleName);
-
-	SDL_Point mousePos{ 0,0 };
-	SDL_Point oldMousePos{ 0,0 };
-	bool mouseClicked = false;
 
 	//initial slider properties
 	float initialScrollValue = 0.0f;
@@ -451,71 +494,29 @@ int main(int argc, char* argv[])
 	ui_global_state.kbditem = 0;
 	ui_global_state.keyentered = 0;
 	ui_global_state.keymod = 0;
-	ui_global_state.mousePos = mousePos;
-	ui_global_state.oldMousePos = oldMousePos;
+	ui_global_state.mousePos = SDL_Point{ 0,0 };
+	ui_global_state.oldMousePos = SDL_Point{ 0,0 };
+	ui_global_state.mouseClicked = false;
+	ui_global_state.textChanged = false;
+	ui_global_state.keyboardFocusID = 0;
+	ui_global_state.keyPressed = -1;
+	ui_global_state.currentTime = 0.0f;
+	ui_global_state.pastTime = 0.0f;
+	ui_global_state.isTextCursorVisible = true;
+	ui_global_state.textBuffer = NULL;
 
-	//text input//
-	Text t;
-	t.text = string("");
-	t.color = SDL_Color{ 255,255,255,255 };
-	t.texture_ = NULL;
-	t.surface_ = NULL;
-	bool textChanged = false;
+	Text textStruct;
+	textStruct.char_limit = 20;
+	textStruct.font = font;
 
-	//blinking cursor
-	textSurface = TTF_RenderText_Blended(font, "|", SDL_Color{ 255,255,255,255 });
-	SDL_Texture* blinkingTexture = SDL_CreateTextureFromSurface(render, textSurface);
-	SDL_SetTextureBlendMode(blinkingTexture, SDL_BLENDMODE_BLEND);
-	SDL_FreeSurface(textSurface);
-	float blinkDelay = 500.0f;//milliseconds
-	float pastTime = 0.0f;
-	int minAlpha = 0;
-	int maxAlpha = 255;
-	int blinkAlpha = maxAlpha;
+	Text textStruct2;
+	textStruct2.char_limit = 40;
+	textStruct2.font = font;
 
-	/*
-		Parameters needed to bool drawTextField();
-		1. SDL_Renderer
-		2. SDL_Point screenPos
-		3. TTF_Font* font
-		4. int character_limit
-		5. SDL_Texture* (holds how the text typed on keyboard is rendered to screen) (gets destroyed and created frequently when text is being modified)
-		6. string text
+	Text textStruct3;
+	textStruct3.char_limit = 15;
+	textStruct3.font = font;
 
-		struct Text
-		{
-			SDL_Texture* texture;
-			char* buffer;
-			int character_limit;
-			TTF_Font* font;
-			int curr_index; //which will be updated everytime a character is added or removed from the buffer.
-		}
-	*/
-
-	int fontWidth, fontHeight;
-	int fontOffset = 1;
-	TTF_SizeText(font, "A", &fontWidth, &fontHeight);
-	SDL_Rect textArea;
-	textArea.x = 10;
-	textArea.y = 60;
-	textArea.w = 400;//200;//text area should be initialized based on the number of max characters that can be placed in text field
-	textArea.h = fontHeight + 10;//10 is the padding to ensure text area is slightly bigger than actual text
-
-	float xOffset = 0.05f;
-	float yOffset = 0.1f;
-	t.bounds.x = textArea.x + (int)(textArea.w * xOffset);
-	t.bounds.y = textArea.y + (int)(textArea.h * yOffset);
-	t.max_len = ((textArea.w - (int)(textArea.w * xOffset)) / fontWidth) - 1;
-	printf("max characters: %d\n", t.max_len);
-	//should find a font that is mono
-
-	SDL_Rect blinkRect;
-	blinkRect.x = t.bounds.x;
-	blinkRect.y = t.bounds.y;
-	TTF_SizeText(font, "|", &blinkRect.w, &blinkRect.h);
-
-
-	SDL_StartTextInput();
 
 	//---------------- Game Loop ------------------//
 
@@ -526,6 +527,8 @@ int main(int argc, char* argv[])
 	float targetDeltaTime = core.getTargetDeltaTime();
 	Uint64 observedFPS = core.getTargetFPS();
 	float currentTime = 0.0f;
+	float updateFPSDelay = 500.0f;//milliseconds
+	float pastTime = 0.0f;
 	Uint64 performanceFrequency = SDL_GetPerformanceFrequency();
 	Uint64 startCount = SDL_GetPerformanceCounter();
 	Uint64 endCount;
@@ -541,101 +544,52 @@ int main(int argc, char* argv[])
 				running = false;
 				break;
 			case SDL_MOUSEMOTION:
-				mousePos.x = event.button.x;
-				mousePos.y = event.button.y;
 				ui_global_state.mousePos.x = event.button.x;
 				ui_global_state.mousePos.y = event.button.y;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				mouseClicked = true;
-				printf("mousePos: (%d, %d)\n", mousePos.x, mousePos.y);
+				ui_global_state.mouseClicked = true;
+				printf("mousePos: (%d, %d)\n", ui_global_state.mousePos.x, ui_global_state.mousePos.y);
 				break;
 			case SDL_MOUSEBUTTONUP:
-				mouseClicked = false;
+				ui_global_state.mouseClicked = false;
 				break;
 			case SDL_KEYDOWN:
 				//report any key presses to the widgets.
 				ui_global_state.keyentered = event.key.keysym.sym;
+				ui_global_state.keyPressed = event.key.keysym.sym;
 				ui_global_state.keymod = event.key.keysym.mod;
 				if (event.key.keysym.sym == SDLK_BACKSPACE)
 				{
-					if (!t.text.empty())
-					{
-						textChanged = true;
-						char* lastChar = &t.text[t.text.size() - 1];
-						int width;
-						TTF_SizeText(font, lastChar, &width, NULL);
-						blinkRect.x -= width;
-						t.text.pop_back();
-					}
+					ui_global_state.textChanged = true;
 				}
 				break;
 			case SDL_TEXTINPUT:
-				if (t.text.size() < t.max_len)
-				{
-				/*	char* p = event.text.text;
-					for (int i = 0;p[i] != '\0';++i)
-					{
-						int width;
-						TTF_SizeText(font, event.text.text, &width, NULL);
-						blinkRect.x += width;
-					}*/
-					blinkRect.x += fontWidth;
-					t.text += event.text.text;
-					textChanged = true;
-				}
+				ui_global_state.textBuffer = event.text.text;
+				ui_global_state.textChanged = true;
 				break;
 			}
 		}
+		//todo: pass in a string into drawTextField to modify and display on screen
+		//SDL_Color blue{ 0,0,255,255 };
+		//textStruct.text = drawTextField(render, 7, SDL_Point{ 50,350 }, &textStruct,blue);
+		//textStruct2.text = drawTextField(render, 8, SDL_Point{ 50, 400 }, &textStruct2);
+		//SDL_Color red{ 255,0,0,255 };
+		//drawTextField(render, 9, SDL_Point{ 50,300 }, &textStruct3, red);
 
-		//Text Field//
-		SDL_SetTextInputRect(&textArea);
-		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
-		SDL_RenderDrawRect(render, &textArea);
-		if (textChanged)
+		SDL_Rect buttonArea;
+		buttonArea.w = 100;
+		buttonArea.h = 20;
+		buttonArea.x = 85;
+		buttonArea.y = 230;
+		SDL_Color neonBlue{ 103,200,255,255 };
+		if (drawButton(render, 2, &buttonArea, neonBlue, textTextureSolid))
 		{
-			if (t.surface_ != NULL)
-			{
-				SDL_FreeSurface(t.surface_);
-				t.surface_ = NULL;
-			}
-
-			if (t.texture_ != NULL)
-			{
-				SDL_DestroyTexture(t.texture_);
-				t.texture_ = NULL;
-			}
-
-			t.surface_ = TTF_RenderText_Blended(font, t.text.c_str(), t.color);
-			t.texture_ = SDL_CreateTextureFromSurface(render, t.surface_);
+			puts("neon blue button pressed");
 		}
 
-		TTF_SizeText(font, t.text.c_str(), &t.bounds.w, &t.bounds.h);
-		if(t.texture_ != NULL)
-			SDL_RenderCopy(render, t.texture_, NULL,&t.bounds);
-
-		textChanged = false;
-
-		//blinking update
-		if (currentTime - pastTime >= blinkDelay)
-		{
-			pastTime = currentTime;
-			blinkAlpha = (blinkAlpha == minAlpha) ? maxAlpha : minAlpha;
-			SDL_SetTextureAlphaMod(blinkingTexture, blinkAlpha);
-
-			//display fps text in title
-			std::string title("Beat Em Left");
-			title += std::string(" | FPS: ") + std::to_string(observedFPS);
-			SDL_SetWindowTitle(core.getWindow(), title.c_str());
-		}
-
-		SDL_RenderCopy(render, blinkingTexture, NULL, &blinkRect);
-
-		Text2 textStruct;
-		textStruct.char_limit = 20;
-		textStruct.font = font;
-		textStruct.text = "";
-		drawTextField(render,7, SDL_Point{ 50,350 }, &textStruct);
+		ui_global_state.oldMousePos.x = ui_global_state.mousePos.x;
+		ui_global_state.oldMousePos.y = ui_global_state.mousePos.y;
 
 	//GUI Code Testing//
 	/*	
@@ -678,11 +632,6 @@ int main(int argc, char* argv[])
 		SDL_Point labelPos2{ 200,50 };
 		drawLabel(render, labelPos2, font, string("Cool TExt"));
 		*/
-
-		oldMousePos.x = mousePos.x;
-		oldMousePos.y = mousePos.y;
-		ui_global_state.oldMousePos.x = mousePos.x;
-		ui_global_state.oldMousePos.y = mousePos.y;
 		
 
 		SDL_RenderPresent(render);
@@ -710,12 +659,20 @@ int main(int argc, char* argv[])
 		deltaTime = observedDeltaTime / 1000.0f;
 		startCount = endCount;
 
+		ui_global_state.currentTime = currentTime;
+
+		if(currentTime - pastTime >= updateFPSDelay)
+		{
+			pastTime = currentTime;
+			//display fps text in title
+			std::string title("Beat Em Left");
+			title += std::string(" | FPS: ") + std::to_string(observedFPS);
+			SDL_SetWindowTitle(core.getWindow(), title.c_str());
+		}
+
 	}
 
-	SDL_StopTextInput();
-
 	SDL_DestroyTexture(textTextureSolid);
-	SDL_DestroyTexture(blinkingTexture);
 	TTF_CloseFont(font);
 	font = NULL;
 
