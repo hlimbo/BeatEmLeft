@@ -71,8 +71,6 @@ struct Text
 //returns true if button is pressed, otherwise it returns false
 bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SDL_Color& color,SDL_Texture* text)
 {
-	ui_global_state.hoveredID = 0;
-
 	//changes the global state depending on these conditions
 	SDL_Point mousePos;
 	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
@@ -87,20 +85,6 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 
 	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
 
-	//if no widget has keyboard focus, take it
-	if (ui_global_state.kbditem == 0)
-		ui_global_state.kbditem = ui_id;
-
-	//if we have keyboard focus, show it
-	if (ui_global_state.kbditem == ui_id)
-	{
-		SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
-		SDL_Rect outline = *bounds;
-		outline.w = 120;
-		outline.h = 35;
-		SDL_RenderFillRect(render, &outline);
-	}
-
 	//this updates how the button is drawn depending on what the global state is in
 
 	//is pressed
@@ -113,7 +97,7 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 	{
 		SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
 		SDL_RenderFillRect(render, bounds);
-		SDL_SetRenderDrawColor(render, 255, 0, 255, 255 / 2);
+		SDL_SetRenderDrawColor(render, color.r, color.g / 2, color.b, color.a / 2);
 		SDL_RenderFillRect(render, bounds);
 	}
 	else //inactive
@@ -128,31 +112,6 @@ bool drawButton(SDL_Renderer* render,int ui_id, const SDL_Rect* bounds, const SD
 	textArea.x = bounds->x + (bounds->w - textArea.w) / 2;
 	textArea.y = bounds->y + (bounds->h - textArea.h) / 2;
 	SDL_RenderCopy(render, text, NULL, &textArea);
-
-
-	//if we have keyboard focus, we'll need to process the keys
-	if (ui_global_state.kbditem == ui_id)
-	{
-		switch (ui_global_state.keyentered)
-		{
-		case SDLK_TAB:
-			//if tab is pressed, lose keyboard focus
-			//next widget will grab focus
-			ui_global_state.kbditem = 0;
-			//if shift was also pressed, we want to move focus to the previous widget
-			//instead
-			if (ui_global_state.keymod & KMOD_SHIFT)
-				ui_global_state.kbditem = ui_global_state.lastwidget;
-			//also clear the key so that next widget won't process it
-			ui_global_state.keyentered = 0;
-			break;
-		case SDLK_RETURN:
-			//had keyboard focus, received return,so we act as if clicked happened
-			return 1;
-		}
-	}
-
-	ui_global_state.lastwidget = ui_id;
 
 	//set color back to black after drawing
 	SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
@@ -345,8 +304,6 @@ string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text*
 	textAreaRect.h = fontHeight;
 	
 	//check if text field is hovered over or clicked on
-	ui_global_state.hoveredID = 0;
-
 	SDL_Point mousePos;
 	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
 	if (SDL_PointInRect(&mousePos, &textBoxRect))
@@ -361,10 +318,7 @@ string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text*
 	else
 	{
 		if (!mousePressed)
-		{
 			ui_global_state.hoveredID = 0;
-			ui_global_state.pressedID = 0;
-		}
 		//if mouse was pressed but wasn't inside the text field, lose keyboard focus
 		else if(ui_global_state.keyboardFocusID == ui_id)
 			ui_global_state.keyboardFocusID = 0;
@@ -570,12 +524,23 @@ int main(int argc, char* argv[])
 				break;
 			}
 		}
+
+		//GUI Code Testing//	
+
 		//todo: pass in a string into drawTextField to modify and display on screen
-		//SDL_Color blue{ 0,0,255,255 };
-		//textStruct.text = drawTextField(render, 7, SDL_Point{ 50,350 }, &textStruct,blue);
-		//textStruct2.text = drawTextField(render, 8, SDL_Point{ 50, 400 }, &textStruct2);
-		//SDL_Color red{ 255,0,0,255 };
-		//drawTextField(render, 9, SDL_Point{ 50,300 }, &textStruct3, red);
+		SDL_Color blue{ 0,0,255,255 };
+		textStruct.text = drawTextField(render, 7, SDL_Point{ 50,350 }, &textStruct,blue);
+		textStruct2.text = drawTextField(render, 8, SDL_Point{ 50, 400 }, &textStruct2);
+		SDL_Color red{ 255,0,0,255 };
+		drawTextField(render, 9, SDL_Point{ 50,300 }, &textStruct3, red);
+
+		//2nd version
+		SDL_Rect bounds2;
+		bounds2.x = 300;
+		bounds2.y = 150;
+		bounds2.w = 20;
+		bounds2.h = 150;
+		initialScrollValue = drawVerticalSlider(render, 4, &bounds2, initialScrollValue);
 
 		SDL_Rect buttonArea;
 		buttonArea.w = 100;
@@ -588,51 +553,19 @@ int main(int argc, char* argv[])
 			puts("neon blue button pressed");
 		}
 
-		ui_global_state.oldMousePos.x = ui_global_state.mousePos.x;
-		ui_global_state.oldMousePos.y = ui_global_state.mousePos.y;
-
-	//GUI Code Testing//
-	/*	
-		SDL_Rect buttonArea;
-		buttonArea.w = 100;
-		buttonArea.h = 20;
-		buttonArea.x = 85;
-		buttonArea.y = 230;
-		if (drawButton(render, 1, &buttonArea, SDL_Color{ 0,255,0,255 }, textTextureSolid))
-		{
-			puts("button pressed 1");
-		}
-
 		SDL_Rect buttonArea2;
 		buttonArea2.w = 100;
 		buttonArea2.h = 20;
 		buttonArea2.x = SCREEN_WIDTH / 2 - buttonArea2.w / 2;
 		buttonArea2.y = SCREEN_HEIGHT / 2 - buttonArea2.h / 2;
-		if (drawButton(render, 2, &buttonArea2, SDL_Color{ 255,255,0,255 },textTextureSolid))
+		if (drawButton(render, 3, &buttonArea2, SDL_Color{ 255,255,0,255 }, textTextureSolid))
 		{
 			//logic where button does something when clicked on
 			puts("button pressed 2");
 		}
 
-		//1st version
-		drawVerticalSlider(render, 3, scrollWheelColor, scrollBarColor, &scrollWheelRect, &scrollBarRect, &oldMousePos);
-
-		//2nd version
-		SDL_Rect bounds2;
-		bounds2.x = 300;
-		bounds2.y = 150;
-		bounds2.w = 20;
-		bounds2.h = 150;
-		initialScrollValue = drawVerticalSlider(render, 4, &bounds2, initialScrollValue);
-		
-		//draw label
-		SDL_Point labelPos{ 200,0 };
-		drawLabel(render, labelPos, font, string("Hello World!"));
-
-		SDL_Point labelPos2{ 200,50 };
-		drawLabel(render, labelPos2, font, string("Cool TExt"));
-		*/
-		
+		ui_global_state.oldMousePos.x = ui_global_state.mousePos.x;
+		ui_global_state.oldMousePos.y = ui_global_state.mousePos.y;
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
