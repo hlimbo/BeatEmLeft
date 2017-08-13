@@ -27,6 +27,7 @@ struct ui_state
 
 	int keyboardFocusID;
 	int keyPressed;
+	Uint16 keyMod;
 
 	//measured in milliseconds since start of game loop
 	float currentTime;
@@ -34,14 +35,6 @@ struct ui_state
 
 	//used to create blinking text cursor effect
 	bool isTextCursorVisible;
-
-	//following the tutorial for imgui: http://sol.gfxile.net/imgui/ch06.html
-	//stores the widget's id that has keyboard focus
-	int kbditem;
-	//stores the key that was pressed
-	int keyentered;
-	//stores the key modifier flags such as shift pressed
-	int keymod;
 
 	//holds the id of the last widget procesessed.
 	int lastwidget;
@@ -338,6 +331,19 @@ string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text*
 		textCursorRect.y = textAreaRect.y - (fontHeight / 8);
 		TTF_SizeText(text->font, "|", &textCursorRect.w, &textCursorRect.h);
 
+		//check if paste shortcut key pressed (ctrl-v)
+		//adds on to end of text
+		if (ui_global_state.keyPressed == SDLK_v && (ui_global_state.keyMod & KMOD_CTRL))
+		{
+			ui_global_state.keyPressed = -1;
+			string temp(SDL_GetClipboardText());
+			if (temp.size() + text->text.size() < text->char_limit)
+			{
+				text->text += temp;
+				ui_global_state.textChanged = true;
+			}
+		}
+
 		//update the text texture
 		if (ui_global_state.textChanged)
 		{
@@ -348,10 +354,13 @@ string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text*
 				if (!text->text.empty())	
 					text->text.pop_back();
 			}
-			else
+			else // text input
 			{
-				if (text->char_limit > text->text.size())
+				if (text->char_limit > text->text.size() && ui_global_state.textBuffer != NULL)
+				{
 					text->text += string(ui_global_state.textBuffer);
+					ui_global_state.textBuffer = NULL;
+				}
 			}
 
 			if (text->texture != NULL)
@@ -361,6 +370,15 @@ string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text*
 			text->texture = SDL_CreateTextureFromSurface(render, textSurface);
 			SDL_FreeSurface(textSurface);
 
+		}
+		else
+		{
+			//check if copy shortcut key pressed (ctrl-c)
+			if (ui_global_state.keyPressed == SDLK_c && (ui_global_state.keyMod & KMOD_CTRL))
+			{
+				ui_global_state.keyPressed = -1;
+				SDL_SetClipboardText(text->text.c_str());
+			}
 		}
 
 		//update position of text cursor
@@ -445,9 +463,6 @@ int main(int argc, char* argv[])
 
 	ui_global_state.hoveredID = 0;
 	ui_global_state.pressedID = 0;
-	ui_global_state.kbditem = 0;
-	ui_global_state.keyentered = 0;
-	ui_global_state.keymod = 0;
 	ui_global_state.mousePos = SDL_Point{ 0,0 };
 	ui_global_state.oldMousePos = SDL_Point{ 0,0 };
 	ui_global_state.mouseClicked = false;
@@ -510,13 +525,10 @@ int main(int argc, char* argv[])
 				break;
 			case SDL_KEYDOWN:
 				//report any key presses to the widgets.
-				ui_global_state.keyentered = event.key.keysym.sym;
 				ui_global_state.keyPressed = event.key.keysym.sym;
-				ui_global_state.keymod = event.key.keysym.mod;
+				ui_global_state.keyMod = event.key.keysym.mod;
 				if (event.key.keysym.sym == SDLK_BACKSPACE)
-				{
 					ui_global_state.textChanged = true;
-				}
 				break;
 			case SDL_TEXTINPUT:
 				ui_global_state.textBuffer = event.text.text;
