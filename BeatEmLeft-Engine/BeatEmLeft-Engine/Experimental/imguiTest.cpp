@@ -452,6 +452,42 @@ string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text*
 	return text->text;
 }
 
+//returns true if toggle is marked, otherwise it returns false
+bool drawToggle(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds,bool isToggled, SDL_Color color = SDL_Color{ 255,255,255,255 })
+{
+	//construct check-mark bounds
+	SDL_Rect checkmarkBounds;
+	checkmarkBounds.x = bounds->x + bounds->w / 4;
+	checkmarkBounds.y = bounds->y + bounds->h / 4;
+	checkmarkBounds.w = bounds->w - bounds->w / 2;
+	checkmarkBounds.h = bounds->h - bounds->h / 2;
+
+	SDL_Point mousePos;
+	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
+	if (SDL_PointInRect(&mousePos, bounds))
+	{
+		ui_global_state.hoveredID = ui_id;
+		if (mousePressed)
+		{
+			ui_global_state.pressedID = ui_id;
+		}
+	}
+
+	if (ui_global_state.pressedID == ui_id && ui_global_state.hoveredID == ui_id && !mousePressed)
+	{
+		ui_global_state.pressedID = 0;
+		isToggled = !isToggled;
+	}
+
+	//render toggle
+	SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
+	if (isToggled)
+		SDL_RenderFillRect(render, &checkmarkBounds);
+	SDL_RenderDrawRect(render, bounds);
+
+	return isToggled;
+}
+
 int main(int argc, char* argv[])
 {
 	Core core;
@@ -502,6 +538,8 @@ int main(int argc, char* argv[])
 	Text textStruct3;
 	textStruct3.char_limit = 15;
 	textStruct3.font = font;
+
+	bool isToggled = false;
 
 
 	//---------------- Game Loop ------------------//
@@ -596,6 +634,14 @@ int main(int argc, char* argv[])
 			//logic where button does something when clicked on
 			puts("button pressed 2");
 		}
+
+		//toggle
+		SDL_Rect toggleArea;
+		toggleArea.x = 50;
+		toggleArea.y = 50;
+		toggleArea.w = 20;
+		toggleArea.h = 20;
+		isToggled = drawToggle(render, 622,&toggleArea,isToggled);
 
 		ui_global_state.oldMousePos.x = ui_global_state.mousePos.x;
 		ui_global_state.oldMousePos.y = ui_global_state.mousePos.y;
