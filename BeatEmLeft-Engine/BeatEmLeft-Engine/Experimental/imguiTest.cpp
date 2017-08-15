@@ -166,6 +166,10 @@ void drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Color& knobCo
 		}
 	}
 
+	//set pressedID = 0 when mouse button is released
+	if (ui_global_state.pressedID == ui_id && !mouseClicked)
+		ui_global_state.pressedID = 0;
+
 	//1st goal: keep scroll knob in place anywhere that it is clicked on(do not move the knob if mouse delta y == 0)
 	//2nd goal: move the scroll knob when mouse delta y != 0;
 	if (ui_global_state.pressedID == ui_id)
@@ -193,7 +197,7 @@ void drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Color& knobCo
 	//render knob
 	if (ui_global_state.pressedID == ui_id)
 	{
-		ui_global_state.pressedID = 0;
+		//ui_global_state.pressedID = 0;
 		SDL_SetRenderDrawColor(render, knobColor.r / 2, knobColor.g / 2, knobColor.b / 2, knobColor.a);
 		SDL_RenderFillRect(render, knobBounds);
 	}
@@ -233,6 +237,10 @@ float drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds
 		}
 	}
 
+	//set pressedID = 0 when mouse button is released
+	if (ui_global_state.pressedID == ui_id && !mouseClicked)
+		ui_global_state.pressedID = 0;
+
 	//keep the scroll knob in place anywhere that it is clicked on
 	//move the scroll knob by the amount the mouse position changes (delta mouse pos)
 	
@@ -269,7 +277,7 @@ float drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds
 	//draw scroll knob
 	if (ui_global_state.pressedID == ui_id)
 	{
-		ui_global_state.pressedID = 0;
+		//ui_global_state.pressedID = 0;
 		SDL_SetRenderDrawColor(render, knobColor.r / 2, knobColor.g / 2, knobColor.b / 2, knobColor.a);
 		SDL_RenderFillRect(render, &knobBounds);
 	}
@@ -311,6 +319,10 @@ float drawHorizontalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* boun
 		}
 	}
 
+	//set pressedID = 0 when mouse button is released
+	if (ui_global_state.pressedID == ui_id && !mouseClicked)
+		ui_global_state.pressedID = 0;
+
 	//keep the scroll knob in place anywhere that it is clicked on
 	//move the scroll knob by the amount the mouse position changes (delta mouse pos)
 
@@ -346,7 +358,7 @@ float drawHorizontalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* boun
 	//draw scroll knob
 	if (ui_global_state.pressedID == ui_id)
 	{
-		ui_global_state.pressedID = 0;
+		//ui_global_state.pressedID = 0;
 		SDL_SetRenderDrawColor(render, knobColor.r / 2, knobColor.g / 2, knobColor.b / 2, knobColor.a);
 		SDL_RenderFillRect(render, &knobBounds);
 	}
@@ -727,7 +739,7 @@ int main(int argc, char* argv[])
 		toggleArea.w = 20;
 		toggleArea.h = 20;
 		isToggled = drawToggle(render, 622,&toggleArea,isToggled);
-
+		
 		//horizontal slider
 		horizValue = drawHorizontalSlider(render, 731, &horizBarRect, horizValue, horizBarColor);
 
