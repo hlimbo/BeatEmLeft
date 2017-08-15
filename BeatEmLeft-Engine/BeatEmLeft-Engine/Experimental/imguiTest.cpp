@@ -282,6 +282,83 @@ float drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds
 	return value;
 }
 
+float drawHorizontalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, float initialValue, SDL_Color color = SDL_Color{ 255,255,255,255 })
+{
+	//construct the knob bounds
+	float knobScale = 0.25f;
+	SDL_Rect knobBounds;
+	knobBounds.x = bounds->x;
+	knobBounds.y = bounds->y;
+	knobBounds.w = (int)(knobScale * bounds->w);
+	knobBounds.h = bounds->h;
+
+	SDL_Color knobColor;
+	knobColor.r = color.r / 2;
+	knobColor.g = color.g / 2;
+	knobColor.b = color.b / 2;
+	knobColor.a = color.a / 2;
+
+	SDL_Point newMousePos;
+	bool mouseClicked = SDL_GetMouseState(&newMousePos.x, &newMousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
+
+	//determine if scroll bar is hovered over or pressed on
+	if (SDL_PointInRect(&newMousePos, bounds))
+	{
+		ui_global_state.hoveredID = ui_id;
+		if (mouseClicked)
+		{
+			ui_global_state.pressedID = ui_id;
+		}
+	}
+
+	//keep the scroll knob in place anywhere that it is clicked on
+	//move the scroll knob by the amount the mouse position changes (delta mouse pos)
+
+	float minValue = 0.0f;
+	float maxValue = 1.0f;
+	float value = (initialValue < minValue) ? minValue : (initialValue > maxValue) ? maxValue : initialValue;
+	knobBounds.x = (int)(value * bounds->w) + bounds->x;
+	if (ui_global_state.pressedID == ui_id)
+	{
+		int deltaMousePos = newMousePos.x - ui_global_state.oldMousePos.x;
+		if (deltaMousePos != 0)
+		{
+			//deltaV ranges from -1 to 1 inclusive
+			float deltaV = (float)deltaMousePos / bounds->w;
+			value += deltaV;
+			value = (value > maxValue) ? maxValue : (value < minValue) ? minValue : value;
+		}
+		//printf("value: %f\n", value);	
+		knobBounds.x = (int)(value * bounds->w) + bounds->x;
+	}
+
+	//since the knob has a height and its coordinates are measured from its top-left corner, 
+	//its necessary to make sure the knob doesn't move past its scrollable area.
+	if (knobBounds.x + knobBounds.w > bounds->x + bounds->w)
+		knobBounds.x = (bounds->x + bounds->w) - knobBounds.w;
+
+	//rendering
+	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
+	//draw scroll bar
+	SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
+	SDL_RenderFillRect(render, bounds);
+
+	//draw scroll knob
+	if (ui_global_state.pressedID == ui_id)
+	{
+		ui_global_state.pressedID = 0;
+		SDL_SetRenderDrawColor(render, knobColor.r / 2, knobColor.g / 2, knobColor.b / 2, knobColor.a);
+		SDL_RenderFillRect(render, &knobBounds);
+	}
+	else
+	{
+		SDL_SetRenderDrawColor(render, knobColor.r, knobColor.g, knobColor.b, knobColor.a);
+		SDL_RenderFillRect(render, &knobBounds);
+	}
+
+	return value;
+}
+
 //label - non interactive
 //not a very good function to call if drawing many labels because it takes up cpu time and lowers fps
 //because surfaces and the textures of the text are being constantly deleted and created
@@ -512,7 +589,7 @@ int main(int argc, char* argv[])
 		printf("this font is not fixed\n");
 
 	//initial slider properties
-	float initialScrollValue = 0.0f;
+	float initialScrollValue = 0.5f;
 	SDL_Color scrollWheelColor = { 0,0,255,255 };
 	SDL_Rect scrollWheelRect;
 	scrollWheelRect.x = 100;
@@ -540,6 +617,14 @@ int main(int argc, char* argv[])
 	textStruct3.font = font;
 
 	bool isToggled = false;
+
+	SDL_Color horizBarColor = { 0,255,0,255 };
+	SDL_Rect horizBarRect;
+	horizBarRect.x = 50;
+	horizBarRect.y = 50;
+	horizBarRect.w = 160;
+	horizBarRect.h = 20;
+	float horizValue = 0.0f;
 
 
 	//---------------- Game Loop ------------------//
@@ -638,10 +723,13 @@ int main(int argc, char* argv[])
 		//toggle
 		SDL_Rect toggleArea;
 		toggleArea.x = 50;
-		toggleArea.y = 50;
+		toggleArea.y = 100;
 		toggleArea.w = 20;
 		toggleArea.h = 20;
 		isToggled = drawToggle(render, 622,&toggleArea,isToggled);
+
+		//horizontal slider
+		horizValue = drawHorizontalSlider(render, 731, &horizBarRect, horizValue, horizBarColor);
 
 		ui_global_state.oldMousePos.x = ui_global_state.mousePos.x;
 		ui_global_state.oldMousePos.y = ui_global_state.mousePos.y;
