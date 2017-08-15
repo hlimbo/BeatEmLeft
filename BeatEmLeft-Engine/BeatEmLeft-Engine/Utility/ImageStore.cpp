@@ -24,10 +24,16 @@ ImageStore::~ImageStore()
 
 Image* ImageStore::Load(const std::string fileName, const std::string filePath)
 {
+	//O(1) lookup
+	if (images[fileName] == nullptr)
+		images.erase(fileName);//need to erase since [] operator creates an entry in the hash table with default value = nullptr
+	else
+		return images[fileName];
+
 	//this is possibly an O(n) check to ensure that the same fileName cannot be added more than once
 	//return the image that is already loaded into the store
-	if (images.find(fileName) != images.end())
-		return images[fileName];
+	//if (images.find(fileName) != images.end())
+	//	return images[fileName];
 
 	Image* image = TextureLoader::LoadImage(render, filePath.c_str());
 	if (image == nullptr)

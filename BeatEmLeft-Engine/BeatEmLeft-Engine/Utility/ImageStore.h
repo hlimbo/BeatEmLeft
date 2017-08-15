@@ -5,9 +5,6 @@
 #include <unordered_map>
 #include <string>
 
-struct SDL_Texture;
-struct SDL_Renderer;
-
 class ImageStore
 {
 public:
