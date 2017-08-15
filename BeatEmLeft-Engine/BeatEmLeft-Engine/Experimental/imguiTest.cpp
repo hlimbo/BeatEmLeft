@@ -209,9 +209,9 @@ void drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Color& knobCo
 
 }
 
+//2nd version
 //returns the position of the knob as a floating point value mapped between a min and max float value.
 //Note: initialValue must be a floating point value between 0.0f and 1.0f inclusive
-//2nd version
 float drawVerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, float initialValue)
 {
 	//construct the knob bounds

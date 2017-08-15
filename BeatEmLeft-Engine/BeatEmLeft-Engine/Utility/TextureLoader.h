@@ -5,6 +5,7 @@ struct SDL_Texture;
 struct SDL_Surface;
 struct SDL_Renderer;
 
+//TODO: move struct to ImageStore
 struct Image
 {
 	Image(SDL_Texture* texture, SDL_Surface* surface);
