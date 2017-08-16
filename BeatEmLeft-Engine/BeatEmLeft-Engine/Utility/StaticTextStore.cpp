@@ -12,6 +12,11 @@ StaticTextStore::StaticTextStore(SDL_Renderer* render,string fontFilePath, int p
 		fprintf(stderr, "Error: %s\n", TTF_GetError());
 }
 
+StaticTextStore::StaticTextStore()
+{
+	render = NULL;
+	font = NULL;
+}
 
 StaticTextStore::~StaticTextStore()
 {
@@ -73,3 +78,4 @@ SDL_Texture* StaticTextStore::Get(const std::string text)
 	assert(texts[text] != NULL);
 	return texts[text];
 }
+

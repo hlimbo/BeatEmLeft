@@ -1,6 +1,8 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "../Utility/GUI.h"
 #include "../MasterHeader.h"
+
 
 int main(int argc, char* argv[])
 {
@@ -9,7 +11,7 @@ int main(int argc, char* argv[])
 	
 	string mainPath(SDL_GetBasePath());
 	mainPath += string("resources/");
-	
+
 	string fontPath = mainPath + string("SourceCodePro-Black.ttf");
 	StaticTextStore textStore(render,fontPath,16);
 	SDL_Texture* sampleText = textStore.Load("OK", SDL_Color{ 255,255,255,255 });
