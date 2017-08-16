@@ -328,6 +328,15 @@ string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRe
 			ui_global_state.keyboardFocusID = 0;
 	}
 
+	//construct text area
+	int fontHeight, fontWidth;
+	TTF_SizeUTF8(font, "A", &fontWidth, &fontHeight);
+	SDL_Rect textAreaRect;
+	textAreaRect.x = textBoxRect->x + (fontWidth / 2);
+	textAreaRect.y = textBoxRect->y + (fontHeight / 4);
+
+	int char_limit = (textBoxRect->w - (fontWidth / 2)) / fontWidth;
+
 	if (ui_global_state.keyboardFocusID == 0)
 	{
 		SDL_StopTextInput();
@@ -336,6 +345,19 @@ string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRe
 	{
 		ui_global_state.pressedID = 0;
 		SDL_StartTextInput();
+
+		//check if paste shortcut key pressed (ctrl-v)
+		//adds on to end of text
+		if (ui_global_state.keyPressed == SDLK_v && (ui_global_state.keyMod & KMOD_CTRL))
+		{
+			ui_global_state.keyPressed = -1;
+			string temp(SDL_GetClipboardText());
+			if (temp.size() + text.size() < char_limit)
+			{
+				text += temp;
+				ui_global_state.textChanged = true;
+			}
+		}
 
 		if (ui_global_state.textChanged)
 		{
@@ -347,7 +369,7 @@ string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRe
 			}
 			else // text input
 			{
-				if (ui_global_state.textBuffer != NULL)
+				if (char_limit > text.size() && ui_global_state.textBuffer != NULL)
 				{
 					text += string(ui_global_state.textBuffer);
 					ui_global_state.textBuffer = NULL;
@@ -363,6 +385,42 @@ string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRe
 			SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), color);
 			ui_global_state.textBufferTextures[ui_id] = SDL_CreateTextureFromSurface(render, textSurface);
 			SDL_FreeSurface(textSurface);
+		}
+		else
+		{
+			//check if copy shortcut key pressed (ctrl-c)
+			if (ui_global_state.keyPressed == SDLK_c && (ui_global_state.keyMod & KMOD_CTRL))
+			{
+				ui_global_state.keyPressed = -1;
+				SDL_SetClipboardText(text.c_str());
+			}
+		}
+
+		//construct text cursor
+		//blink text cursor effect
+		float currentTime = ui_global_state.currentTime;
+		float pastTime = ui_global_state.pastTime;
+		float blinkDelay = 500.0f;
+		if (currentTime - pastTime >= blinkDelay)
+		{
+			ui_global_state.pastTime = currentTime;
+			ui_global_state.isTextCursorVisible = !ui_global_state.isTextCursorVisible;
+		}
+
+		//create and destroy the text cursor texture every other 500 ms
+		if (ui_global_state.isTextCursorVisible)
+		{
+			SDL_Rect textCursorRect;
+			TTF_SizeText(font, text.c_str(), &textAreaRect.w, NULL);
+			textCursorRect.x = textAreaRect.x + textAreaRect.w;
+			TTF_SizeText(font, "|", &textCursorRect.w, &textCursorRect.h);
+			textCursorRect.y = textAreaRect.y - (fontHeight / 8);
+
+			SDL_Surface* textCursor_s = TTF_RenderText_Blended(font, "|", color);
+			SDL_Texture* textCursor_t = SDL_CreateTextureFromSurface(render, textCursor_s);
+			SDL_RenderCopy(render, textCursor_t, NULL, &textCursorRect);
+			SDL_FreeSurface(textCursor_s);
+			SDL_DestroyTexture(textCursor_t);
 		}
 	}
 
@@ -384,11 +442,6 @@ string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRe
 	}
 	else
 	{
-		//construct text area
-		int fontHeight = TTF_FontHeight(font);
-		SDL_Rect textAreaRect;
-		textAreaRect.x = textBoxRect->x;
-		textAreaRect.y = textBoxRect->y + (fontHeight / 4);
 		SDL_QueryTexture(texture, NULL, NULL, &textAreaRect.w, &textAreaRect.h);
 		SDL_RenderCopy(render, texture, NULL, &textAreaRect);
 	}

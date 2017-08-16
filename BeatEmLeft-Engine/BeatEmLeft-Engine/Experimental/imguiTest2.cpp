@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
 	float horizSliderValue = 0.1f;
 	bool isToggled = true;
 	string theText("Test String");
+	string blankText;
 
 	//---------------- Game Loop ------------------//
 
@@ -71,9 +72,13 @@ int main(int argc, char* argv[])
 		SDL_Color white{ 255,255,255,255 };
 		isToggled = GUI::Toggle(render, __LINE__, &toggleArea, isToggled, white);
 
-		SDL_Rect textBoxRect{ 20,400,120,40 };
+		SDL_Rect textBoxRect{ 20,400,120 +(21 * 1.5),TTF_FontHeight(textStore.font) * 1.5f };
 		SDL_Color red{ 255,0,0,255 };
 		theText = GUI::TextField(render, __LINE__, &textBoxRect, theText, red, textStore.font);
+
+		SDL_Rect tBoxRect2{ 20,350,120,TTF_FontHeight(textStore.font) * 1.5f };
+		SDL_Color blue2{ 0,255,0,255 };
+		blankText = GUI::TextField(render, __LINE__, &tBoxRect2,blankText, blue2, textStore.font);
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
