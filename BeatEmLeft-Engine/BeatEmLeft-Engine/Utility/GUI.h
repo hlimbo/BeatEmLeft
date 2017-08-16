@@ -95,7 +95,7 @@ namespace GUI
 
 	//**Note** Need to figure out a way to efficiently render static text to the screen!
 	//returns true if button is pressed, otherwise it returns false
-	bool Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const SDL_Color& color, SDL_Texture* text);
+	bool Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const SDL_Color& color,const std::string text,TTF_Font* font);
 
 	//constructs a text field where its size is proportional to Text::char_limit
 	//returns the updated text typed into the text field

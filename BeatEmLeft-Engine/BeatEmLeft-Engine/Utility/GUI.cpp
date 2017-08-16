@@ -233,7 +233,7 @@ bool GUI::Toggle(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, bool i
 	return isToggled;
 }
 
-bool GUI::Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const SDL_Color& color, SDL_Texture* text)
+bool GUI::Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const SDL_Color& color,const string text, TTF_Font* font)
 {
 	//changes the global state depending on these conditions
 	SDL_Point mousePos;
@@ -278,12 +278,24 @@ bool GUI::Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const 
 		SDL_RenderFillRect(render, bounds);
 	}
 
-	//render text ~ temporary placeholder text
+	//construct text texture if not constructed
+	if (ui_global_state.textBufferTextures[ui_id] == NULL)
+	{
+		SDL_Color black{ 0,0,0,255 };
+		SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), black);
+		ui_global_state.textBufferTextures[ui_id] = SDL_CreateTextureFromSurface(render, textSurface);
+		SDL_FreeSurface(textSurface);
+	}
+
+	SDL_Texture* texture = ui_global_state.textBufferTextures[ui_id];
+	assert(texture != NULL);
+
+	//render text
 	SDL_Rect textArea;
-	SDL_QueryTexture(text, NULL, NULL, &textArea.w, &textArea.h);
+	SDL_QueryTexture(texture, NULL, NULL, &textArea.w, &textArea.h);
 	textArea.x = bounds->x + (bounds->w - textArea.w) / 2;
 	textArea.y = bounds->y + (bounds->h - textArea.h) / 2;
-	SDL_RenderCopy(render, text, NULL, &textArea);
+	SDL_RenderCopy(render, texture, NULL, &textArea);
 
 	//set color back to black after drawing
 	SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
