@@ -37,5 +37,6 @@
 //#include "Utility/CollisionQuery.h"//linker issues caused here
 #include "Utility/ImageMod.h"
 #include "Utility/ImageStore.h"
+#include "Utility/StaticTextStore.h"
 
 #endif

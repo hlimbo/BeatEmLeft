@@ -25,7 +25,11 @@ StaticTextStore::~StaticTextStore()
 	for (auto it = texts.begin();it != texts.end();it = texts.erase(it))
 	{
 		SDL_Texture* texture = it->second;
-		destroyCount = Free(it->first) ? destroyCount + 1 : destroyCount;
+		if (texture != NULL)
+		{
+			SDL_DestroyTexture(texture);
+			destroyCount++;
+		}
 	}
 
 	printf("Destroyed static texts: %d\n", destroyCount);

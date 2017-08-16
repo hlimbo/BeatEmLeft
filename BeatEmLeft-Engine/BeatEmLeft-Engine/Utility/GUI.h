@@ -2,6 +2,7 @@
 #define GUI_H
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_pixels.h>
+#include <SDL2/SDL_events.h>
 #include <string>
 
 struct SDL_Renderer;
@@ -59,6 +60,11 @@ namespace GUI
 		~ui_state() {}
 	};
 
+	//state handles all changes that happen to every widget
+	extern ui_state ui_global_state;
+	
+	void ProcessEvent(SDL_Event* event);
+
 	//Note:: the following functions are all drawn relative to the application's main window
 
 	//returns the position of the knob as a floating point value mapped between a min and max float value.
@@ -67,11 +73,11 @@ namespace GUI
 	float HorizontalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, float value,const SDL_Color& color);
 
 	//returns true if toggle is marked, otherwise it returns false
-	bool drawToggle(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, bool isToggled, const SDL_Color& color);
+	bool Toggle(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, bool isToggled, const SDL_Color& color);
 
 	//**Note** Need to figure out a way to efficiently render static text to the screen!
 	//returns true if button is pressed, otherwise it returns false
-	bool drawButton(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const SDL_Color& color, SDL_Texture* text);
+	bool Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const SDL_Color& color, SDL_Texture* text);
 
 	//constructs a text field where its size is proportional to Text::char_limit
 	//returns the updated text typed into the text field
