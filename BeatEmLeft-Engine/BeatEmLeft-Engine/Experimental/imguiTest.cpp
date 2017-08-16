@@ -395,7 +395,6 @@ void drawLabel(SDL_Renderer* render,SDL_Point screen_position,TTF_Font* font,con
 //or an updated texture with the modified text
 string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text* text, SDL_Color color = SDL_Color{ 255,255,255,255 })
 {
-
 	if (!TTF_FontFaceIsFixedWidth(text->font))
 		printf("Warning: characters of this font style vary in font width\n");
 
@@ -483,7 +482,10 @@ string drawTextField(SDL_Renderer* render, int ui_id, SDL_Point screenPos, Text*
 			}
 
 			if (text->texture != NULL)
+			{
 				SDL_DestroyTexture(text->texture);
+				text->texture = NULL;
+			}
 
 			SDL_Surface* textSurface = TTF_RenderText_Blended(text->font, text->text.c_str(), color);
 			text->texture = SDL_CreateTextureFromSurface(render, textSurface);
