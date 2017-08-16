@@ -12,16 +12,17 @@ class StaticTextStore
 {
 public:
 	StaticTextStore(SDL_Renderer* render,std::string fontFilePath,int ptsize);
+	StaticTextStore();
 	~StaticTextStore();
 
 	SDL_Texture* Load(const std::string text,const SDL_Color& textColor);
 	bool Free(const std::string text);
 	SDL_Texture* Get(const std::string text);
 
+	TTF_Font* font;
+	SDL_Renderer* render;//a pointer to the game window's renderer
 private:
 	std::unordered_map<std::string, SDL_Texture*> texts;
-	SDL_Renderer* render;//a pointer to the game window's renderer
-	TTF_Font* font;
 };
 
 #endif
