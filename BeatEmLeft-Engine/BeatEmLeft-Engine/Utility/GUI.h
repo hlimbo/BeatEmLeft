@@ -3,7 +3,9 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_ttf.h>
 #include <string>
+#include <unordered_map>
 
 struct SDL_Renderer;
 struct SDL_Texture;
@@ -25,8 +27,11 @@ namespace GUI
 
 		bool textChanged;
 		bool mouseClicked;
-		//holds the text input when SDL_TEXTINPUT event is triggered
+		//retrieves text input from keyboard when SDL_TEXTINPUT event is triggered
 		char* textBuffer;
+		//contains all textures of all rendered text displayed on screen
+		//where the key = ui_id,value = SDL_Texture*
+		std::unordered_map<int, SDL_Texture*> textBufferTextures;
 
 		int keyboardFocusID;
 		int keyPressed;
@@ -57,7 +62,20 @@ namespace GUI
 			textBuffer = NULL;
 		}
 
-		~ui_state() {}
+		~ui_state() 
+		{
+			for (auto it = textBufferTextures.begin();
+				it != textBufferTextures.end();
+				it = textBufferTextures.erase(it))
+			{
+				SDL_Texture* texture = it->second;
+				if (texture != NULL)
+				{
+					SDL_DestroyTexture(texture);
+					texture = NULL;
+				}
+			}
+		}
 	};
 
 	//state handles all changes that happen to every widget
@@ -81,7 +99,7 @@ namespace GUI
 
 	//constructs a text field where its size is proportional to Text::char_limit
 	//returns the updated text typed into the text field
-	//std::string TextField(SDL_Renderer* render, int ui_id, const SDL_Point* screenPos, Text* text, const SDL_Color& color);
+	std::string TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRect,std::string text, const SDL_Color& color,TTF_Font* font);
 }
 
 

@@ -1,7 +1,10 @@
 #include "GUI.h"
 #include <SDL2/SDL.h>
+#include <assert.h>
 
 GUI::ui_state GUI::ui_global_state;
+
+using namespace std;
 
 void GUI::ProcessEvent(SDL_Event* event)
 {
@@ -301,3 +304,99 @@ bool GUI::Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const 
 	//button was not pressed
 	return false;
 }
+
+string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRect, std::string text, const SDL_Color& color,TTF_Font* font)
+{
+	//check if text field is hovered over or clicked on
+	SDL_Point mousePos;
+	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
+	if (SDL_PointInRect(&mousePos, textBoxRect))
+	{
+		ui_global_state.hoveredID = ui_id;
+		if (mousePressed)
+		{
+			ui_global_state.pressedID = ui_id;
+			ui_global_state.keyboardFocusID = ui_id;
+		}
+	}
+	else
+	{
+		if (!mousePressed)
+			ui_global_state.hoveredID = 0;
+		//if mouse was pressed but wasn't inside the text field, lose keyboard focus
+		else if (ui_global_state.keyboardFocusID == ui_id)
+			ui_global_state.keyboardFocusID = 0;
+	}
+
+	if (ui_global_state.keyboardFocusID == 0)
+	{
+		SDL_StopTextInput();
+	}
+	else if (ui_global_state.keyboardFocusID == ui_id)
+	{
+		ui_global_state.pressedID = 0;
+		SDL_StartTextInput();
+
+		if (ui_global_state.textChanged)
+		{
+			ui_global_state.textChanged = false;
+			if (ui_global_state.keyPressed == SDLK_BACKSPACE)
+			{
+				if (!text.empty())
+					text.pop_back();
+			}
+			else // text input
+			{
+				if (ui_global_state.textBuffer != NULL)
+				{
+					text += string(ui_global_state.textBuffer);
+					ui_global_state.textBuffer = NULL;
+				}
+			}
+
+			if (ui_global_state.textBufferTextures[ui_id] != NULL)
+			{
+				SDL_DestroyTexture(ui_global_state.textBufferTextures[ui_id]);
+				ui_global_state.textBufferTextures[ui_id] = NULL;
+			}
+
+			SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), color);
+			ui_global_state.textBufferTextures[ui_id] = SDL_CreateTextureFromSurface(render, textSurface);
+			SDL_FreeSurface(textSurface);
+		}
+	}
+
+	//display textbox and text
+	SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
+	SDL_RenderDrawRect(render, textBoxRect);
+
+	SDL_Texture* texture = ui_global_state.textBufferTextures[ui_id];
+	if (texture == NULL)
+	{
+		if(text.empty())
+			ui_global_state.textBufferTextures.erase(ui_id);
+		else
+		{
+			SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), color);
+			ui_global_state.textBufferTextures[ui_id] = SDL_CreateTextureFromSurface(render, textSurface);
+			SDL_FreeSurface(textSurface);
+		}
+	}
+	else
+	{
+		//construct text area
+		int fontHeight = TTF_FontHeight(font);
+		SDL_Rect textAreaRect;
+		textAreaRect.x = textBoxRect->x;
+		textAreaRect.y = textBoxRect->y + (fontHeight / 4);
+		SDL_QueryTexture(texture, NULL, NULL, &textAreaRect.w, &textAreaRect.h);
+		SDL_RenderCopy(render, texture, NULL, &textAreaRect);
+	}
+
+	return text;
+}
+
+//string text("Sample Text");
+//SDL_Color blue{0,0,255,255};
+//SDL_Rect textArea{10,320,100,TTF_FontHeight(font)};
+//TextField(render,__LINE__,textArea,text,blue);
