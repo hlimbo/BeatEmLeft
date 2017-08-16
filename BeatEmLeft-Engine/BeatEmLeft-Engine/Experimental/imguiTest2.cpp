@@ -14,7 +14,6 @@ int main(int argc, char* argv[])
 
 	string fontPath = mainPath + string("SourceCodePro-Black.ttf");
 	StaticTextStore textStore(render,fontPath,16);
-	SDL_Texture* sampleText = textStore.Load("OK", SDL_Color{ 255,255,255,255 });
 
 	float vertSliderValue = 0.5f;
 	float horizSliderValue = 0.1f;
@@ -63,7 +62,7 @@ int main(int argc, char* argv[])
 
 		SDL_Rect buttonArea{ 85, 230, 100, 20 };
 		SDL_Color neonBlue{ 103, 200, 255, 255 };
-		if (GUI::Button(render, __LINE__, &buttonArea, neonBlue, sampleText))
+		if (GUI::Button(render, __LINE__, &buttonArea, neonBlue, "GO",textStore.font))
 		{
 			puts("neon blue button pressed");
 		}
