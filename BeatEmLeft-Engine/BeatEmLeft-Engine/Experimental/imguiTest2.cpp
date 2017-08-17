@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 		*/
 		//grid selector
 		SDL_Rect gridBounds{ 0,0,256,32 };
-		GUI::GridSelector(render, __LINE__, &gridBounds, &sheet, 4);
+		GUI::GridSelector(render, __LINE__, &gridBounds, &sheet, 7);
 
 
 		SDL_RenderPresent(render);

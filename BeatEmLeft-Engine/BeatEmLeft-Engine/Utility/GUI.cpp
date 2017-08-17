@@ -489,16 +489,19 @@ void GUI::Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_
 
 int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross = 2)
 {
+	//todo: construct an array of sdl rects that serve as grid slots
+	//todo: write functionality that returns the index of the pressed grid slot
+	//todo: write functionality that detects if this widget is being hovered over
+	//todo: write rendering code that updates the selected grid and changes the color based on that
+	//todo: have image of each tile grid slot scale by the relative size of SDL_Rect bounds
+	
 	//construct a grid slot based on the width and height of bounds and the number of images held in sprite sheet
 	SDL_Rect gridSlotRect;
 	gridSlotRect.x = bounds->x;
 	gridSlotRect.y = bounds->y;
 	//temp use the width and height of the tile relative to the texture's file dimensions
-	//gridSlotRect.w = sheet->getFrameWidth();
-	//gridSlotRect.h = sheet->getFrameHeight();
-	//temp
-	gridSlotRect.w = 32;
-	gridSlotRect.h = bounds->h;
+	gridSlotRect.w = sheet->getFrameWidth();
+	gridSlotRect.h = sheet->getFrameHeight();
 	int margin = 2;
 
 	int r = 0;
@@ -507,7 +510,7 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 	for (int i = 0;i < sheet->GetFrameCount(); ++i)
 	{
 		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
-		//SDL_RenderFillRect(render, &gridSlotRect);
+		SDL_RenderFillRect(render, &gridSlotRect);
 		SDL_RenderCopy(render, sheet->texture, sheet->GetFrame(i), &gridSlotRect);
 		gridSlotRect.x = bounds->x + (c * (gridSlotRect.w + margin));
 		gridSlotRect.y = bounds->y + (r * (gridSlotRect.h + margin));
