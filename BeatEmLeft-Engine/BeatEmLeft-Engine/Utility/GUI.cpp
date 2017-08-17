@@ -461,7 +461,20 @@ string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRe
 	return text;
 }
 
-//string text("Sample Text");
-//SDL_Color blue{0,0,255,255};
-//SDL_Rect textArea{10,320,100,TTF_FontHeight(font)};
-//TextField(render,__LINE__,textArea,text,blue);
+void GUI::Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_Font* font, const std::string& text,const SDL_Color& color)
+{
+	if (ui_global_state.textBufferTextures[ui_id] == NULL)
+	{
+		SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), color);
+		ui_global_state.textBufferTextures[ui_id] = SDL_CreateTextureFromSurface(render, textSurface);
+		SDL_FreeSurface(textSurface);
+	}
+
+	assert(ui_global_state.textBufferTextures[ui_id] != NULL);
+	SDL_Texture* texture = ui_global_state.textBufferTextures[ui_id];
+	SDL_Rect textArea;
+	textArea.x = screen_pos->x;
+	textArea.y = screen_pos->y;
+	SDL_QueryTexture(texture, NULL, NULL, &textArea.w, &textArea.h);
+	SDL_RenderCopy(render, texture, NULL, &textArea);
+}
