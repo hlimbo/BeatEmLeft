@@ -79,6 +79,10 @@ int main(int argc, char* argv[])
 		SDL_Color blue2{ 0,255,0,255 };
 		blankText = GUI::TextField(render, __LINE__, &tBoxRect2,blankText, blue2, textStore.font);
 
+		SDL_Color purple{ 255,0,255,255 };
+		SDL_Point labelPos{ 200,350 };
+		GUI::Label(render, __LINE__, &labelPos, textStore.font, "This is some random text", purple);
+		
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
 		SDL_RenderClear(render);

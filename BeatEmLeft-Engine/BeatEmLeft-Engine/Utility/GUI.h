@@ -100,6 +100,8 @@ namespace GUI
 	//constructs a text field where its size is proportional to Text::char_limit
 	//returns the updated text typed into the text field
 	std::string TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRect,std::string text, const SDL_Color& color,TTF_Font* font);
+
+	void Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_Font* font, const std::string& text,const SDL_Color& color);
 }
 
 
