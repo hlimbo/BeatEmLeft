@@ -501,13 +501,22 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 	gridSlotRect.h = bounds->h;
 	int margin = 2;
 
-
+	int r = 0;
+	int c = 0;
 	//render each grid slot across
-	for (int i = 0;i < xAcross + 1; ++i)
+	for (int i = 0;i < sheet->GetFrameCount(); ++i)
 	{
 		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
-		SDL_RenderFillRect(render, &gridSlotRect);
-		gridSlotRect.x = bounds->x + (i * (gridSlotRect.w + margin));
+		//SDL_RenderFillRect(render, &gridSlotRect);
+		SDL_RenderCopy(render, sheet->texture, sheet->GetFrame(i), &gridSlotRect);
+		gridSlotRect.x = bounds->x + (c * (gridSlotRect.w + margin));
+		gridSlotRect.y = bounds->y + (r * (gridSlotRect.h + margin));
+		
+		if (++c >= xAcross)
+		{
+			c = 0;
+			++r;
+		}
 	}
 
 	return 0;

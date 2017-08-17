@@ -21,6 +21,15 @@ int main(int argc, char* argv[])
 	string theText("Test String");
 	string blankText;
 
+	ImageStore imageStore(render);
+	string imageFile("tiles-stones.png");
+	string imagePath(mainPath + imageFile);
+	imageStore.Load(imageFile, imagePath);
+
+	int frameWidth = 64, frameHeight = 64;
+	SpriteSheet sheet(render, imageStore.Get(imageFile), frameWidth, frameHeight);
+
+
 	//---------------- Game Loop ------------------//
 
 	//observedDeltaTime is measured in milliseconds
@@ -52,7 +61,7 @@ int main(int argc, char* argv[])
 		}
 
 		//GUI function tests
-		SDL_Rect vertSliderRect{ 300, 150, 20, 160 };
+	/*	SDL_Rect vertSliderRect{ 300, 150, 20, 160 };
 		SDL_Color blue{ 0,0,255,255 };
 		vertSliderValue = GUI::VerticalSlider(render, __LINE__, &vertSliderRect, vertSliderValue, blue);
 
@@ -82,10 +91,10 @@ int main(int argc, char* argv[])
 		SDL_Color purple{ 255,0,255,255 };
 		SDL_Point labelPos{ 200,350 };
 		GUI::Label(render, __LINE__, &labelPos, textStore.font, "This is some random text", purple);
-		
+		*/
 		//grid selector
-		SDL_Rect gridBounds{ 0,255,256,32 };
-		GUI::GridSelector(render, __LINE__, &gridBounds, nullptr, 2);
+		SDL_Rect gridBounds{ 0,0,256,32 };
+		GUI::GridSelector(render, __LINE__, &gridBounds, &sheet, 4);
 
 
 		SDL_RenderPresent(render);
