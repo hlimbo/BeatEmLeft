@@ -83,6 +83,11 @@ int main(int argc, char* argv[])
 		SDL_Point labelPos{ 200,350 };
 		GUI::Label(render, __LINE__, &labelPos, textStore.font, "This is some random text", purple);
 		
+		//grid selector
+		SDL_Rect gridBounds{ 0,255,256,32 };
+		GUI::GridSelector(render, __LINE__, &gridBounds, nullptr, 2);
+
+
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
 		SDL_RenderClear(render);
