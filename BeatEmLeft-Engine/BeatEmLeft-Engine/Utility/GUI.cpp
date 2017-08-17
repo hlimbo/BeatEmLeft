@@ -1,6 +1,7 @@
 #include "GUI.h"
 #include <SDL2/SDL.h>
 #include <assert.h>
+#include "../Components/SpriteSheet.h"
 
 GUI::ui_state GUI::ui_global_state;
 
@@ -351,13 +352,20 @@ string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRe
 
 	if (ui_global_state.keyboardFocusID == 0)
 	{
-		SDL_StopTextInput();
+		if (ui_global_state.textEditingEnabled)
+		{
+			ui_global_state.textEditingEnabled = false;
+			SDL_StopTextInput();
+		}
 	}
 	else if (ui_global_state.keyboardFocusID == ui_id)
 	{
 		ui_global_state.pressedID = 0;
-		SDL_StartTextInput();
-
+		if (!ui_global_state.textEditingEnabled)
+		{
+			ui_global_state.textEditingEnabled = true;
+			SDL_StartTextInput();
+		}
 		//check if paste shortcut key pressed (ctrl-v)
 		//adds on to end of text
 		if (ui_global_state.keyPressed == SDLK_v && (ui_global_state.keyMod & KMOD_CTRL))
@@ -477,4 +485,30 @@ void GUI::Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_
 	textArea.y = screen_pos->y;
 	SDL_QueryTexture(texture, NULL, NULL, &textArea.w, &textArea.h);
 	SDL_RenderCopy(render, texture, NULL, &textArea);
+}
+
+int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross = 2)
+{
+	//construct a grid slot based on the width and height of bounds and the number of images held in sprite sheet
+	SDL_Rect gridSlotRect;
+	gridSlotRect.x = bounds->x;
+	gridSlotRect.y = bounds->y;
+	//temp use the width and height of the tile relative to the texture's file dimensions
+	//gridSlotRect.w = sheet->getFrameWidth();
+	//gridSlotRect.h = sheet->getFrameHeight();
+	//temp
+	gridSlotRect.w = 32;
+	gridSlotRect.h = bounds->h;
+	int margin = 2;
+
+
+	//render each grid slot across
+	for (int i = 0;i < xAcross + 1; ++i)
+	{
+		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+		SDL_RenderFillRect(render, &gridSlotRect);
+		gridSlotRect.x = bounds->x + (i * (gridSlotRect.w + margin));
+	}
+
+	return 0;
 }

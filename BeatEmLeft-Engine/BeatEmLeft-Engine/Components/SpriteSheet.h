@@ -19,9 +19,6 @@ struct SpriteSheet
 	//when queried
 	bool SetTextureAttributes(SDL_Texture* srcTexture, int frameWidth, int frameHeight);
 	
-	//Note:Sometimes setting the alpha of specific portions of the texture cause errors when 
-	//TextureStore tries to delete the textures that have modified alpha values.
-	//Don't use this for now since Texture_Streaming is disabled!
 	void SetAlpha(int frameIndex, Uint8 newAlpha);
 
 	//Change the Alpha Value for the entire texture.

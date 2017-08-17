@@ -9,6 +9,7 @@
 
 struct SDL_Renderer;
 struct SDL_Texture;
+struct SpriteSheet;
 
 //Immediate Mode GUI functions used to draw gui widgets
 namespace GUI
@@ -26,6 +27,7 @@ namespace GUI
 		SDL_Point oldMousePos;
 
 		bool textChanged;
+		bool textEditingEnabled;
 		bool mouseClicked;
 		//retrieves text input from keyboard when SDL_TEXTINPUT event is triggered
 		char* textBuffer;
@@ -53,6 +55,7 @@ namespace GUI
 			oldMousePos = SDL_Point{ 0,0 };
 			mouseClicked = false;
 			textChanged = false;
+			textEditingEnabled = false;
 			keyboardFocusID = 0;
 			keyPressed = -1;
 			prevPressed = -1;
@@ -102,6 +105,8 @@ namespace GUI
 	std::string TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRect,std::string text, const SDL_Color& color,TTF_Font* font);
 
 	void Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_Font* font, const std::string& text,const SDL_Color& color);
+
+	int GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross);
 }
 
 
