@@ -28,7 +28,9 @@ int main(int argc, char* argv[])
 
 	int frameWidth = 64, frameHeight = 64;
 	SpriteSheet sheet(render, imageStore.Get(imageFile), frameWidth, frameHeight);
-
+	
+	//temp
+	int selected_index = -1;
 
 	//---------------- Game Loop ------------------//
 
@@ -93,9 +95,23 @@ int main(int argc, char* argv[])
 		GUI::Label(render, __LINE__, &labelPos, textStore.font, "This is some random text", purple);
 		*/
 		//grid selector
-		SDL_Rect gridBounds{ 20,100,256,128 };
-		GUI::GridSelector(render, __LINE__, &gridBounds, &sheet, 4);
+		SDL_Rect gridBounds{ 10,SCREEN_HEIGHT - 250,240,240 };
 
+		int index = GUI::GridSelector(render, __LINE__, &gridBounds, &sheet, 5);
+		if (index != -1)
+		{
+			printf("index selected: %d\n", index);
+			selected_index = index;
+		}
+
+		//temp draw selected tile
+		SDL_Rect dstRect{ 300,SCREEN_HEIGHT - 250,128,128 };
+		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+		SDL_RenderDrawRect(render, &dstRect);
+		if (selected_index != -1)
+		{
+			SDL_RenderCopy(render, sheet.texture, sheet.GetFrame(selected_index),&dstRect);
+		}
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
