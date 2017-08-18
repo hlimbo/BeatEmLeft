@@ -71,17 +71,6 @@ int main(int argc, char* argv[])
 		SDL_Color green{ 0,255,0,255 };
 		horizSliderValue = GUI::HorizontalSlider(render, __LINE__, &horizSliderRect, horizSliderValue, green);
 
-		SDL_Rect buttonArea{ 85, 230, 100, 20 };
-		SDL_Color neonBlue{ 103, 200, 255, 255 };
-		if (GUI::Button(render, __LINE__, &buttonArea, neonBlue, "GO",textStore.font))
-		{
-			puts("neon blue button pressed");
-		}
-
-		SDL_Rect toggleArea{ 250, 50, 20, 20 };
-		SDL_Color white{ 255,255,255,255 };
-		isToggled = GUI::Toggle(render, __LINE__, &toggleArea, isToggled, white);
-
 		SDL_Rect textBoxRect{ 20,400,120 +(21 * 1.5),TTF_FontHeight(textStore.font) * 1.5f };
 		SDL_Color red{ 255,0,0,255 };
 		theText = GUI::TextField(render, __LINE__, &textBoxRect, theText, red, textStore.font);
@@ -94,6 +83,12 @@ int main(int argc, char* argv[])
 		SDL_Point labelPos{ 200,350 };
 		GUI::Label(render, __LINE__, &labelPos, textStore.font, "This is some random text", purple);
 		*/
+
+		//toggle
+		SDL_Rect toggleArea{ 250, 50, 20, 20 };
+		SDL_Color white{ 255,255,255,255 };
+		isToggled = GUI::Toggle(render, __LINE__, &toggleArea, isToggled, white);
+
 		//grid selector
 		SDL_Rect gridBounds{ 10,SCREEN_HEIGHT - 250,240,240 };
 
@@ -111,6 +106,14 @@ int main(int argc, char* argv[])
 		if (selected_index != -1)
 		{
 			SDL_RenderCopy(render, sheet.texture, sheet.GetFrame(selected_index),&dstRect);
+		}
+
+		//button
+		SDL_Rect buttonArea{ 85, 100, 100, 20 };
+		SDL_Color neonBlue{ 103, 200, 255, 255 };
+		if (GUI::Button(render, __LINE__, &buttonArea, neonBlue, "GO", textStore.font))
+		{
+			puts("neon blue button pressed");
 		}
 
 		SDL_RenderPresent(render);

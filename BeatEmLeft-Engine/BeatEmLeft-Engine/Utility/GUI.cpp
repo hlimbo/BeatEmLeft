@@ -489,14 +489,12 @@ void GUI::Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_
 
 int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross = 2)
 {
+	int margin = 2;
 	assert(xAcross > 0);
 	int yAcross = sheet->GetFrameCount() / xAcross;
 	assert(yAcross > 0);
-	int margin = 2;
-	//temp
-	ui_global_state.hoveredID = 0;
 
-	//todo: write functionality that detects if this widget is being hovered over
+	//detects if this widget is being hovered over
 	SDL_Point mousePos;
 	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
 	if (SDL_PointInRect(&mousePos,bounds))
@@ -506,16 +504,7 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 			ui_global_state.pressedID = ui_id;
 	}
 
-	//temp
-	//if (ui_global_state.hoveredID == ui_id)
-	//{
-	//	SDL_SetRenderDrawColor(render, 255, 0,255, 255);
-	//	SDL_Rect debug{ bounds->x, bounds->y,bounds->w + margin * xAcross,bounds->h + margin * yAcross };
-	//	SDL_RenderDrawRect(render, &debug);
-	//}
-
-
-	//todo: width and height of each tile in the grid selector needs to be scaled evenly to fit within its bounds
+	//width and height of each tile in the grid selector needs to be scaled evenly to fit within its bounds
 	int slotWidth = (int)(sheet->getFrameWidth() * ((float)bounds->w / sheet->getSrcWidth()));
 	int slotHeight = (int)(sheet->getFrameHeight() * ((float)bounds->h / sheet->getSrcHeight()));
 	
@@ -532,7 +521,7 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 		slotWidth = bounds->w / xAcross;
 	}
 
-	//todo: construct an array of sdl rects that serve as grid slots
+	//construct an array of sdl rects that serve as grid slots
 	SDL_Rect* gridSlots = (SDL_Rect*)malloc(sizeof(SDL_Rect) * sheet->GetFrameCount());
 	for (int i = 0,r = 0;i < sheet->GetFrameCount();++i)
 	{	
@@ -548,10 +537,11 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 
 	free(gridSlots);
 
-	//todo: write functionality that returns the index of the pressed grid slot
+	//return the index of the pressed grid slot
 	int selectedIndex = -1;//-1 a grid wasn't clicked on
 	if (ui_global_state.hoveredID == ui_id)
 	{
+		ui_global_state.hoveredID = 0;
 		//draw a rect that highlights which tile is being hovered over in the grid
 		SDL_Rect hoverRect;
 		hoverRect.w = slotWidth;
@@ -574,7 +564,6 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 		//printf("hoverRect: (%d, %d)\n", hoverRect.x, hoverRect.y);
 	}
 
-	//todo: write rendering code that updates the selected grid and changes the color based on that
 
 	return selectedIndex;
 }
