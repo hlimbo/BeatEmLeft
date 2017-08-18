@@ -491,6 +491,7 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 {
 	assert(xAcross > 0);
 	int yAcross = sheet->GetFrameCount() / xAcross;
+	assert(yAcross > 0);
 	int margin = 2;
 	//temp
 	ui_global_state.hoveredID = 0;
@@ -501,15 +502,17 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 	if (SDL_PointInRect(&mousePos,bounds))
 	{
 		ui_global_state.hoveredID = ui_id;
+		if (mousePressed)
+			ui_global_state.pressedID = ui_id;
 	}
 
 	//temp
-	if (ui_global_state.hoveredID == ui_id)
-	{
-		SDL_SetRenderDrawColor(render, 255, 0,255, 255);
-		SDL_Rect debug{ bounds->x, bounds->y,bounds->w + margin * xAcross,bounds->h + margin * yAcross };
-		SDL_RenderDrawRect(render, &debug);
-	}
+	//if (ui_global_state.hoveredID == ui_id)
+	//{
+	//	SDL_SetRenderDrawColor(render, 255, 0,255, 255);
+	//	SDL_Rect debug{ bounds->x, bounds->y,bounds->w + margin * xAcross,bounds->h + margin * yAcross };
+	//	SDL_RenderDrawRect(render, &debug);
+	//}
 
 
 	//todo: width and height of each tile in the grid selector needs to be scaled evenly to fit within its bounds
@@ -537,15 +540,41 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 		gridSlots[i].w = slotWidth;
 		gridSlots[i].x = bounds->x + ((i % xAcross) * (gridSlots[i].w + margin));
 		gridSlots[i].y = bounds->y + (r * (gridSlots[i].h + margin));
-		r = (i != 0 && (i + 1) % xAcross == 0) ? r + 1 : r;
+		r = ((i + 1) % xAcross == 0) ? r + 1 : r;
 
+		//temp render the tiles
 		SDL_RenderCopy(render, sheet->texture, sheet->GetFrame(i), &gridSlots[i]);
 	}
 
 	free(gridSlots);
 
 	//todo: write functionality that returns the index of the pressed grid slot
+	int selectedIndex = -1;//-1 a grid wasn't clicked on
+	if (ui_global_state.hoveredID == ui_id)
+	{
+		//draw a rect that highlights which tile is being hovered over in the grid
+		SDL_Rect hoverRect;
+		hoverRect.w = slotWidth;
+		hoverRect.h = slotHeight;
+		int selected_row = (mousePos.y - bounds->y) / slotHeight;
+		int selected_col = (mousePos.x - bounds->x) / slotWidth;
+		hoverRect.x = (slotWidth + margin) * selected_col + bounds->x;
+		hoverRect.y = (slotHeight + margin) * selected_row + bounds->y;
+		
+		if (mousePressed)
+		{
+			SDL_SetRenderDrawColor(render, 0, 255, 0, 255);
+			selectedIndex = selected_row * xAcross + selected_col;
+		}
+		else
+			SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
+		
+		SDL_RenderDrawRect(render, &hoverRect);
+
+		//printf("hoverRect: (%d, %d)\n", hoverRect.x, hoverRect.y);
+	}
+
 	//todo: write rendering code that updates the selected grid and changes the color based on that
 
-	return 0;
+	return selectedIndex;
 }
