@@ -489,38 +489,63 @@ void GUI::Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_
 
 int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross = 2)
 {
-	//todo: construct an array of sdl rects that serve as grid slots
-	//todo: write functionality that returns the index of the pressed grid slot
-	//todo: write functionality that detects if this widget is being hovered over
-	//todo: write rendering code that updates the selected grid and changes the color based on that
-	//todo: have image of each tile grid slot scale by the relative size of SDL_Rect bounds
-	
-	//construct a grid slot based on the width and height of bounds and the number of images held in sprite sheet
-	SDL_Rect gridSlotRect;
-	gridSlotRect.x = bounds->x;
-	gridSlotRect.y = bounds->y;
-	//temp use the width and height of the tile relative to the texture's file dimensions
-	gridSlotRect.w = sheet->getFrameWidth();
-	gridSlotRect.h = sheet->getFrameHeight();
+	assert(xAcross > 0);
+	int yAcross = sheet->GetFrameCount() / xAcross;
 	int margin = 2;
+	//temp
+	ui_global_state.hoveredID = 0;
 
-	int r = 0;
-	int c = 0;
-	//render each grid slot across
-	for (int i = 0;i < sheet->GetFrameCount(); ++i)
+	//todo: write functionality that detects if this widget is being hovered over
+	SDL_Point mousePos;
+	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
+	if (SDL_PointInRect(&mousePos,bounds))
 	{
-		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
-		SDL_RenderFillRect(render, &gridSlotRect);
-		SDL_RenderCopy(render, sheet->texture, sheet->GetFrame(i), &gridSlotRect);
-		gridSlotRect.x = bounds->x + (c * (gridSlotRect.w + margin));
-		gridSlotRect.y = bounds->y + (r * (gridSlotRect.h + margin));
-		
-		if (++c >= xAcross)
-		{
-			c = 0;
-			++r;
-		}
+		ui_global_state.hoveredID = ui_id;
 	}
+
+	//temp
+	if (ui_global_state.hoveredID == ui_id)
+	{
+		SDL_SetRenderDrawColor(render, 255, 0,255, 255);
+		SDL_Rect debug{ bounds->x, bounds->y,bounds->w + margin * xAcross,bounds->h + margin * yAcross };
+		SDL_RenderDrawRect(render, &debug);
+	}
+
+
+	//todo: width and height of each tile in the grid selector needs to be scaled evenly to fit within its bounds
+	int slotWidth = (int)(sheet->getFrameWidth() * ((float)bounds->w / sheet->getSrcWidth()));
+	int slotHeight = (int)(sheet->getFrameHeight() * ((float)bounds->h / sheet->getSrcHeight()));
+	
+	if (slotWidth * xAcross > bounds->w)
+	{
+		slotWidth = (int)(slotWidth * (bounds->w / (float)(slotWidth * xAcross)));
+		//stretch tiles vertically
+		slotHeight = bounds->h / yAcross;
+	}
+	else if (slotHeight * yAcross > bounds->h)
+	{
+		slotHeight = (int)(slotHeight * (bounds->h / (float)(slotHeight * yAcross)));
+		//stretch tiles horizontally
+		slotWidth = bounds->w / xAcross;
+	}
+
+	//todo: construct an array of sdl rects that serve as grid slots
+	SDL_Rect* gridSlots = (SDL_Rect*)malloc(sizeof(SDL_Rect) * sheet->GetFrameCount());
+	for (int i = 0,r = 0;i < sheet->GetFrameCount();++i)
+	{	
+		gridSlots[i].h = slotHeight;
+		gridSlots[i].w = slotWidth;
+		gridSlots[i].x = bounds->x + ((i % xAcross) * (gridSlots[i].w + margin));
+		gridSlots[i].y = bounds->y + (r * (gridSlots[i].h + margin));
+		r = (i != 0 && (i + 1) % xAcross == 0) ? r + 1 : r;
+
+		SDL_RenderCopy(render, sheet->texture, sheet->GetFrame(i), &gridSlots[i]);
+	}
+
+	free(gridSlots);
+
+	//todo: write functionality that returns the index of the pressed grid slot
+	//todo: write rendering code that updates the selected grid and changes the color based on that
 
 	return 0;
 }
