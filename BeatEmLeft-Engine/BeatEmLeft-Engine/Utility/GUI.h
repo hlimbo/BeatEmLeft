@@ -86,6 +86,7 @@ namespace GUI
 	
 	void ProcessEvent(SDL_Event* event);
 
+	//todo:: remove SDL_Renderer* param pass to all GUI functions and create a function that sets the GUI's renderer to the main window's renderer
 	//Note:: the following functions are all drawn relative to the application's main window
 
 	//returns the position of the knob as a floating point value mapped between a min and max float value.
@@ -107,6 +108,8 @@ namespace GUI
 	void Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_Font* font, const std::string& text,const SDL_Color& color);
 
 	int GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross);
+
+	SDL_Rect Window(SDL_Renderer* render,int ui_id,const SDL_Rect* bounds,TTF_Font* font, void (*window_func)(SDL_Renderer*,int,const SDL_Point*,TTF_Font*));
 }
 
 

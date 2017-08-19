@@ -10,6 +10,7 @@
 //CORE
 #include "Core.h"
 #include "GameConstants.h"
+#include "GameLoop.h"
 
 // COMPONENTS
 #include "Components/Animation.h"
@@ -38,6 +39,6 @@
 #include "Utility/ImageMod.h"
 #include "Utility/ImageStore.h"
 #include "Utility/StaticTextStore.h"
-#include "../Utility/GUI.h"
+#include "Utility/GUI.h"
 
 #endif

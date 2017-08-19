@@ -1,13 +1,25 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "../MasterHeader.h"
-#include "../GameLoop.h"
 using namespace std;
 
 //helper function for setting the color
 void SetDrawColor(SDL_Renderer* render, const SDL_Color& color)
 {
 	SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
+}
+
+//SDL_Renderer*, int, const SDL_Point*, TTF_Font*
+void WindowFunction(SDL_Renderer* render,int ui_id,const SDL_Point* relativePos,TTF_Font* font)
+{
+	SDL_Rect buttonRect{ relativePos->x + 100,relativePos->y + 100,75,20 };
+	SDL_Color blue{ 0,0,255,255 };
+	int buttonID = __LINE__;
+	if (GUI::Button(render, buttonID, &buttonRect, blue, "OK", font))
+	{
+		printf("Window ID: %d\nButton ID: %d\n", ui_id, buttonID);
+		puts("Button pressed from window");
+	}
 }
 
 int main(int argc, char* argv[])
@@ -46,6 +58,8 @@ int main(int argc, char* argv[])
 	SDL_Rect tilePreviewRect{ 825,50,150,150 };
 	SDL_Rect tileSetRect{ 805,250, 190, 360 };
 
+	SDL_Rect guiWindowRect{ 100,100,200,200 };
+
 	//---------------- Game Loop ------------------//
 
 	GameLoop::InitTimer();
@@ -66,7 +80,6 @@ int main(int argc, char* argv[])
 
 		/* GAME LOGIC FUNCTIONS GO HERE*/
 
-
 		//Task : draw a mockup of where all the panels will go on the tile map editor window
 		
 		SetDrawColor(render, blue);
@@ -86,6 +99,9 @@ int main(int argc, char* argv[])
 
 		SetDrawColor(render, green);
 		SDL_RenderFillRect(render, &tileSetRect);
+
+		//Task 2: draw gui window
+		guiWindowRect = GUI::Window(render, __LINE__, &guiWindowRect,font,WindowFunction);
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
