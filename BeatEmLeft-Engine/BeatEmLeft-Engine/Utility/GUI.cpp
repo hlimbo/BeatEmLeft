@@ -583,15 +583,34 @@ SDL_Rect GUI::Window(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds,TTF
 
 	//temp draw window
 	//temp
-	SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+	SDL_SetRenderDrawColor(render,67,167,82,255);
 	SDL_RenderFillRect(render, bounds);
+	SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+	SDL_RenderDrawRect(render, bounds);
 
 	//todo: if click is held down.. the window should be able to translate about
 	//todo: recalculate the location of the window if window was dragged to another location
+
+	SDL_Rect newWindowPos = *bounds;	
+	if (mousePressed)
+	{
+		SDL_Point deltaMousePos;
+		deltaMousePos.x = mousePos.x - ui_global_state.oldMousePos.x;
+		deltaMousePos.y = mousePos.y - ui_global_state.oldMousePos.y;
+		if (deltaMousePos.x != 0)
+		{
+			newWindowPos.x = bounds->x + deltaMousePos.x;
+		}
+
+		if (deltaMousePos.y != 0)
+		{
+			newWindowPos.y = bounds->y + deltaMousePos.y;
+		}
+	}
 
 	//call the function pointer window that constructs the window made up of other GUI widget elements
 	SDL_Point relativePos{ bounds->x,bounds->y };
 	(*window_func)(render, ui_id,&relativePos,font);
 
-	return *bounds;
+	return newWindowPos;
 }

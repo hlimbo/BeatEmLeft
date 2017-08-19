@@ -12,10 +12,10 @@ void SetDrawColor(SDL_Renderer* render, const SDL_Color& color)
 //SDL_Renderer*, int, const SDL_Point*, TTF_Font*
 void WindowFunction(SDL_Renderer* render,int ui_id,const SDL_Point* relativePos,TTF_Font* font)
 {
-	SDL_Rect buttonRect{ relativePos->x + 100,relativePos->y + 100,75,20 };
-	SDL_Color blue{ 0,0,255,255 };
+	SDL_Rect buttonRect{ relativePos->x + 100 - 75 / 2,relativePos->y + 100 - 20 / 2,75,20 };
+	SDL_Color blue2{ 0,0,255,255 };
 	int buttonID = __LINE__;
-	if (GUI::Button(render, buttonID, &buttonRect, blue, "OK", font))
+	if (GUI::Button(render, buttonID, &buttonRect, blue2, "OK", font))
 	{
 		printf("Window ID: %d\nButton ID: %d\n", ui_id, buttonID);
 		puts("Button pressed from window");
@@ -51,7 +51,11 @@ int main(int argc, char* argv[])
 	SDL_Color green{ 56,230,140,255 };
 
 	//positions of each panel
-	SDL_Rect toolbarRect{ 0,0,SCREEN_WIDTH,20 };
+	SDL_Rect toolbarRect;
+	toolbarRect.x = 0;
+	toolbarRect.y = 0;
+	toolbarRect.w = SCREEN_WIDTH;
+	toolbarRect.h = 20;
 	SDL_Rect levelWindowRect{ 0,20,800,600 };
 	SDL_Rect sidePanelRect{ 800,20,400,600 };
 
@@ -90,15 +94,15 @@ int main(int argc, char* argv[])
 
 		SetDrawColor(render, red);
 		SDL_RenderFillRect(render, &sidePanelRect);
-
-		SetDrawColor(render, blue);
-		SDL_RenderFillRect(render, &toolbarRect);
 		
 		SetDrawColor(render, yellow);
 		SDL_RenderFillRect(render, &tilePreviewRect);
 
 		SetDrawColor(render, green);
 		SDL_RenderFillRect(render, &tileSetRect);
+
+		SDL_SetRenderDrawColor(render, blue.r, blue.g, blue.b, blue.a);
+		SDL_RenderFillRect(render, &toolbarRect);
 
 		//Task 2: draw gui window
 		guiWindowRect = GUI::Window(render, __LINE__, &guiWindowRect,font,WindowFunction);
@@ -111,6 +115,11 @@ int main(int argc, char* argv[])
 		GameLoop::CapFramerate(core.getTargetDeltaTime());
 		GameLoop::UpdateCurrentTime();
 		GameLoop::DisplayFPS(core.getWindow(), 500.0f);
+
+		//todo: should be wrapped in some function? e.g. GUI::PreProcessData();
+		GUI::ui_global_state.currentTime = GameLoop::CurrentTime();
+		GUI::ui_global_state.oldMousePos.x = GUI::ui_global_state.mousePos.x;
+		GUI::ui_global_state.oldMousePos.y = GUI::ui_global_state.mousePos.y;
 	}
 	
 
