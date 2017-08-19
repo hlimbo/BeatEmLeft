@@ -6,6 +6,7 @@
 
 #define SUCCESS 0
 
+//TODO: refactor Core into a struct and remove all getters from it
 //app initialization
 Core::Core()
 {
@@ -49,6 +50,7 @@ bool Core::appInitialization()
 		return false;
 	}
 
+	//TODO: move to GameLoop struct constructor
 	//obtain target fps based on monitor's refresh rate (hz).
 	SDL_DisplayMode displayMode;
 	//get the first monitor attached to device display mode settings.
@@ -58,6 +60,7 @@ bool Core::appInitialization()
 		return false;
 	}
 
+	//TODO: move to GameLoop struct constructor
 	//cap targetFPS to 60
 	targetFPS = displayMode.refresh_rate > 60 ? 60 : displayMode.refresh_rate;
 	targetDeltaTime = 1000.0f / targetFPS;
