@@ -1,6 +1,5 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "../Utility/GUI.h"
 #include "../MasterHeader.h"
 
 
@@ -32,12 +31,16 @@ int main(int argc, char* argv[])
 	//temp
 	int selected_index = -1;
 
-	//---------------- Game Loop ------------------//
+	//side note: could store game loop related variables into a struct
+	//the variables seen below should be initialized in the struct's constructor
+	//mockup of getting target delta time:
+	//GameLoop::data.targetDeltaTime;
 
+	//---------------- Game Loop ------------------//
 	//observedDeltaTime is measured in milliseconds
 	float observedDeltaTime = core.getTargetDeltaTime();
 	float deltaTime = observedDeltaTime / 1000.0f;//converts from milliseconds to seconds
-												  //to avoid unnecessary context switches os might do (which I have no control over.. cache the target delta time)
+	//to avoid unnecessary context switches os might do (which I have no control over.. cache the target delta time)
 	float targetDeltaTime = core.getTargetDeltaTime();
 	Uint64 observedFPS = core.getTargetFPS();
 	float currentTime = 0.0f;
@@ -124,6 +127,7 @@ int main(int argc, char* argv[])
 		observedDeltaTime = (1000.0f * (endCount - startCount)) / performanceFrequency;//gives ms
 		observedFPS = performanceFrequency / (endCount - startCount);
 
+		//cap framerate
 		//if the computer can process the update and draw functions faster than 60 fps...
 		//cap the frame-rate here to ensure that all computers play roughly around the same fps
 		float msDifference = targetDeltaTime - observedDeltaTime;
@@ -137,14 +141,24 @@ int main(int argc, char* argv[])
 			observedFPS = performanceFrequency / (endCount - startCount);
 		}
 
+		//update game time
 		currentTime += observedDeltaTime;
 		deltaTime = observedDeltaTime / 1000.0f;
 		startCount = endCount;
 
+		//mockup of what the functions would look like.
+		//GameLoop::UpdateFPS();
+		//GameLoop::CapFramerate(float targetDeltaTime);
+		//GameLoop::UpdateCurrentTime();
+
+		//todo: should be wrapped in some function? e.g. GUI::PreProcessData();
 		GUI::ui_global_state.currentTime = currentTime;
 		GUI::ui_global_state.oldMousePos.x = GUI::ui_global_state.mousePos.x;
 		GUI::ui_global_state.oldMousePos.y = GUI::ui_global_state.mousePos.y;
 
+
+		//mockup of what display framerate function would look like
+		//GameLoop::DisplayFPS(SDL_Window* window,const string FPS,int updateDelayInMS);
 		if (currentTime - pastTime >= updateFPSDelay)
 		{
 			pastTime = currentTime;

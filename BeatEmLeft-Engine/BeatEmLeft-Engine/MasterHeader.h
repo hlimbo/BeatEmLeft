@@ -38,5 +38,6 @@
 #include "Utility/ImageMod.h"
 #include "Utility/ImageStore.h"
 #include "Utility/StaticTextStore.h"
+#include "../Utility/GUI.h"
 
 #endif
