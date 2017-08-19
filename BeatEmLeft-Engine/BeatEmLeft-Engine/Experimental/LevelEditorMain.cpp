@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "../MasterHeader.h"
-
+#include "../GameLoop.h"
 using namespace std;
 
 //helper function for setting the color
@@ -48,18 +48,7 @@ int main(int argc, char* argv[])
 
 	//---------------- Game Loop ------------------//
 
-	//observedDeltaTime is measured in milliseconds
-	float observedDeltaTime = core.getTargetDeltaTime();
-	float deltaTime = observedDeltaTime / 1000.0f;//converts from milliseconds to seconds
-	//to avoid unnecessary context switches os might do (which I have no control over.. cache the target delta time)
-	float targetDeltaTime = core.getTargetDeltaTime();
-	Uint64 observedFPS = core.getTargetFPS();
-	float currentTime = 0.0f;
-	float updateFPSDelay = 500.0f;//milliseconds
-	float pastTime = 0.0f;
-	Uint64 performanceFrequency = SDL_GetPerformanceFrequency();
-	Uint64 startCount = SDL_GetPerformanceCounter();
-	Uint64 endCount;
+	GameLoop::InitTimer();
 	bool running = true;
 	while (running)
 	{
@@ -102,36 +91,10 @@ int main(int argc, char* argv[])
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
 		SDL_RenderClear(render);
 
-		endCount = SDL_GetPerformanceCounter();
-		observedDeltaTime = (1000.0f * (endCount - startCount)) / performanceFrequency;//gives ms
-		observedFPS = performanceFrequency / (endCount - startCount);
-
-		//if the computer can process the update and draw functions faster than 60 fps...
-		//cap the frame-rate here to ensure that all computers play roughly around the same fps
-		float msDifference = targetDeltaTime - observedDeltaTime;
-		if (msDifference > 0)
-		{
-			SDL_Delay((Uint32)msDifference);
-			//Note: must re-record the times after the delay since the times before the delay maybe
-			//under 16.666 ms
-			endCount = SDL_GetPerformanceCounter();
-			observedDeltaTime = (1000.0f * (endCount - startCount)) / performanceFrequency;//gives ms
-			observedFPS = performanceFrequency / (endCount - startCount);
-		}
-
-		currentTime += observedDeltaTime;
-		deltaTime = observedDeltaTime / 1000.0f;
-		startCount = endCount;
-
-		//display framerate
-		if (currentTime - pastTime >= updateFPSDelay)
-		{
-			pastTime = currentTime;
-			//display fps text in title
-			std::string title("Beat Em Left");
-			title += std::string(" | FPS: ") + std::to_string(observedFPS);
-			SDL_SetWindowTitle(core.getWindow(), title.c_str());
-		}
+		GameLoop::UpdateFPS();
+		GameLoop::CapFramerate(core.getTargetDeltaTime());
+		GameLoop::UpdateCurrentTime();
+		GameLoop::DisplayFPS(core.getWindow(), 500.0f);
 	}
 	
 
