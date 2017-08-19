@@ -567,3 +567,31 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 
 	return selectedIndex;
 }
+
+SDL_Rect GUI::Window(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds,TTF_Font* font,void (*window_func)(SDL_Renderer*, int, const SDL_Point*, TTF_Font*))
+{
+	SDL_Point mousePos;
+	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
+	if (SDL_PointInRect(&mousePos, bounds))
+	{
+		ui_global_state.hoveredID = ui_id;
+		if (mousePressed)
+		{
+			ui_global_state.pressedID = ui_id;
+		}
+	}
+
+	//temp draw window
+	//temp
+	SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+	SDL_RenderFillRect(render, bounds);
+
+	//todo: if click is held down.. the window should be able to translate about
+	//todo: recalculate the location of the window if window was dragged to another location
+
+	//call the function pointer window that constructs the window made up of other GUI widget elements
+	SDL_Point relativePos{ bounds->x,bounds->y };
+	(*window_func)(render, ui_id,&relativePos,font);
+
+	return *bounds;
+}
