@@ -9,7 +9,13 @@ void SetDrawColor(SDL_Renderer* render, const SDL_Color& color)
 	SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
 }
 
-//SDL_Renderer*, int, const SDL_Point*, TTF_Font*
+//temp global variables
+float vertSliderValue = 0.0f;
+
+//note: might want to not use function pointers to store GUI elements since some elements
+//such as sliders and toggles need to retain their state.
+//todo: find a way to remove TTF_Font* parameter pass to all GUI related functions that need to display text
+//e.g. GUI::Label() and GUI::TextField()
 bool WindowFunction(int ui_id,const SDL_Rect* relativePos,TTF_Font* font)
 {
 	SDL_Rect buttonRect{ relativePos->x + 100 - 75 / 2,relativePos->y + 100 - 20 / 2,75,20 };
@@ -21,8 +27,17 @@ bool WindowFunction(int ui_id,const SDL_Rect* relativePos,TTF_Font* font)
 		puts("Button pressed from window");
 	}
 
+	SDL_Rect vertSliderRect{relativePos->x + 10,relativePos->y + 10,20,150 };
+	int sliderID = __LINE__;
+	vertSliderValue = GUI::VerticalSlider(sliderID, &vertSliderRect, vertSliderValue, SDL_Color{ 255,0,0,255 });
+
+	if (GUI::ui_global_state.keyboardFocusID == sliderID)
+		puts("keyboard has focus on slider");
+	else if (GUI::ui_global_state.keyboardFocusID != 0)
+		puts("keyboard has focus on another thing");
+
 	//temp
-	return GUI::ui_global_state.hoveredID != ui_id;
+	return GUI::ui_global_state.keyboardFocusID != ui_id;
 }
 
 int main(int argc, char* argv[])
@@ -69,6 +84,9 @@ int main(int argc, char* argv[])
 
 	bool isToggled = true;
 	SDL_Rect toggleBounds{ 100,50, 25,25 };
+
+	float sliderValue2 = 0.0f;
+	SDL_Rect sliderRect2{ 400,50,20,200 };
 
 	//---------------- Game Loop ------------------//
 
@@ -119,6 +137,8 @@ int main(int argc, char* argv[])
 			SDL_SetRenderDrawColor(render, blue.r, blue.g, blue.b, blue.a);
 			SDL_RenderFillRect(render, &toolbarRect);
 		}
+
+		sliderValue2 = GUI::VerticalSlider(__LINE__, &sliderRect2, sliderValue2, green);
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);

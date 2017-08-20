@@ -76,7 +76,14 @@ float GUI::VerticalSlider(int ui_id, const SDL_Rect* bounds, float initialValue,
 		if (mouseClicked)
 		{
 			ui_global_state.pressedID = ui_id;
+			ui_global_state.keyboardFocusID = ui_id;
 		}
+	}
+	else
+	{
+		//lose keyboard focus if mouse was not clicked
+		if (!mouseClicked && ui_global_state.keyboardFocusID == ui_id)
+			ui_global_state.keyboardFocusID = 0;
 	}
 
 	//set pressedID = 0 when mouse button is released
@@ -90,7 +97,7 @@ float GUI::VerticalSlider(int ui_id, const SDL_Rect* bounds, float initialValue,
 	float maxValue = 1.0f;
 	float value = (initialValue < minValue) ? minValue : (initialValue > maxValue) ? maxValue : initialValue;
 	knobBounds.y = (int)(value * bounds->h) + bounds->y;
-	if (ui_global_state.pressedID == ui_id)
+	if (ui_global_state.pressedID == ui_id || ui_global_state.keyboardFocusID == ui_id)
 	{
 		int deltaMousePos = newMousePos.y - ui_global_state.oldMousePos.y;
 		if (deltaMousePos != 0)
@@ -117,7 +124,7 @@ float GUI::VerticalSlider(int ui_id, const SDL_Rect* bounds, float initialValue,
 	SDL_RenderFillRect(render, bounds);
 
 	//draw scroll knob
-	if (ui_global_state.pressedID == ui_id)
+	if (ui_global_state.pressedID == ui_id || ui_global_state.keyboardFocusID == ui_id)
 	{
 		//ui_global_state.pressedID = 0;
 		SDL_SetRenderDrawColor(render, knobColor.r / 2, knobColor.g / 2, knobColor.b / 2, knobColor.a);
@@ -601,6 +608,8 @@ SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,bool (*win
 		if (mousePressed)
 		{
 			ui_global_state.pressedID = ui_id;
+			if(ui_global_state.keyboardFocusID == 0)
+				ui_global_state.keyboardFocusID = ui_id;
 		}
 	}
 
