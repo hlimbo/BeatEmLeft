@@ -10,7 +10,7 @@ void SetDrawColor(SDL_Renderer* render, const SDL_Color& color)
 }
 
 //SDL_Renderer*, int, const SDL_Point*, TTF_Font*
-void WindowFunction(SDL_Renderer* render,int ui_id,const SDL_Point* relativePos,TTF_Font* font)
+bool WindowFunction(int ui_id,const SDL_Rect* relativePos,TTF_Font* font)
 {
 	SDL_Rect buttonRect{ relativePos->x + 100 - 75 / 2,relativePos->y + 100 - 20 / 2,75,20 };
 	SDL_Color blue2{ 0,0,255,255 };
@@ -20,6 +20,9 @@ void WindowFunction(SDL_Renderer* render,int ui_id,const SDL_Point* relativePos,
 		printf("Window ID: %d\nButton ID: %d\n", ui_id, buttonID);
 		puts("Button pressed from window");
 	}
+
+	//temp
+	return GUI::ui_global_state.hoveredID != ui_id;
 }
 
 int main(int argc, char* argv[])
@@ -47,7 +50,7 @@ int main(int argc, char* argv[])
 	SDL_Color yellow{ 255,231,76,255 };
 	SDL_Color red{ 255,89,100,255 };
 	SDL_Color white{ 255,255,255,255 };
-	SDL_Color blue{53,167,255};
+	SDL_Color blue{53,167,255,255};
 	SDL_Color green{ 56,230,140,255 };
 
 	//positions of each panel
@@ -63,6 +66,9 @@ int main(int argc, char* argv[])
 	SDL_Rect tileSetRect{ 805,250, 190, 360 };
 
 	SDL_Rect guiWindowRect{ 100,100,200,200 };
+
+	bool isToggled = true;
+	SDL_Rect toggleBounds{ 100,50, 25,25 };
 
 	//---------------- Game Loop ------------------//
 
@@ -102,11 +108,17 @@ int main(int argc, char* argv[])
 		SetDrawColor(render, green);
 		SDL_RenderFillRect(render, &tileSetRect);
 
-		SDL_SetRenderDrawColor(render, blue.r, blue.g, blue.b, blue.a);
-		SDL_RenderFillRect(render,&toolbarRect);
+		isToggled = GUI::Toggle(__LINE__, &toggleBounds, isToggled, red);
+		SDL_Point labelPos{ 135,50 };
+		GUI::Label(__LINE__, &labelPos, font, "Enable/Disable Window", red);
 
-		//Task 2: draw gui window
-		guiWindowRect = GUI::Window(__LINE__, &guiWindowRect,font,WindowFunction);
+		if (isToggled)
+		{
+			//Task 2: draw gui window
+			guiWindowRect = GUI::Window(__LINE__, &guiWindowRect, font, WindowFunction);
+			SDL_SetRenderDrawColor(render, blue.r, blue.g, blue.b, blue.a);
+			SDL_RenderFillRect(render, &toolbarRect);
+		}
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);

@@ -113,7 +113,17 @@ namespace GUI
 
 	int GridSelector(int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross);
 
-	SDL_Rect Window(int ui_id,const SDL_Rect* bounds,TTF_Font* font, void (*window_func)(SDL_Renderer*,int,const SDL_Point*,TTF_Font*));
+	/*  Summary:
+			bool(*window_func)(int, const SDL_Rect*, TTF_Font*) is a function pointer where
+			the user can program additional GUI elements inside of the function they define for the window to display
+		Parameters:
+			int = ui_id
+			const SDL_Rect* = position all gui elements contained inside the window is relative to (this is the window's position)
+			TTF_Font* = todo.. will remove later on but is needed for GUI Elements that need to display text
+		Return Value:
+			the function returns true if a GUI element was pressed inside the window, false otherwise
+	*/
+	SDL_Rect Window(int ui_id,const SDL_Rect* bounds,TTF_Font* font,bool (*window_func)(int,const SDL_Rect*,TTF_Font*));
 }
 
 

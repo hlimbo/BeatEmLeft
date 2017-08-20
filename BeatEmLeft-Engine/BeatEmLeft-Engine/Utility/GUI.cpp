@@ -590,7 +590,7 @@ int GUI::GridSelector(int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int 
 	return selectedIndex;
 }
 
-SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,void (*window_func)(SDL_Renderer*, int, const SDL_Point*, TTF_Font*))
+SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,bool (*window_func)(int, const SDL_Rect*, TTF_Font*))
 {
 	SDL_Renderer* render = ui_global_state.render;
 	SDL_Point mousePos;
@@ -611,13 +611,14 @@ SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,void (*win
 	SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
 	SDL_RenderDrawRect(render, bounds);
 
-	//todo: if click is held down.. the window should be able to translate about
-	//todo: recalculate the location of the window if window was dragged to another location
+	//call the function pointer window that constructs the window made up of other GUI widget elements
+	bool isGUIElementPressed = (*window_func)(ui_id, bounds, font);
 
+	//draggable window
 	SDL_Rect newWindowPos = *bounds;	
 	if (ui_global_state.pressedID == ui_id)
 	{
-		if(!mousePressed)
+		if(!mousePressed || isGUIElementPressed)
 			ui_global_state.pressedID = 0;
 		else
 		{
@@ -630,10 +631,6 @@ SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,void (*win
 				newWindowPos.y = bounds->y + deltaMousePos.y;
 		}
 	}
-
-	//call the function pointer window that constructs the window made up of other GUI widget elements
-	SDL_Point relativePos{ bounds->x,bounds->y };
-	(*window_func)(render, ui_id,&relativePos,font);
 
 	return newWindowPos;
 }
