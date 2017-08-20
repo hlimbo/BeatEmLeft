@@ -34,11 +34,11 @@ namespace GameLoop
 	void UpdateFPS();
 	//returns true if FPS was capped to target delta time, false otherwise
 	bool CapFramerate(float targetDeltaTime);
-	void UpdateCurrentTime();
+	//returns the updated current time
+	float UpdateCurrentTime();
 
 	void DisplayFPS(SDL_Window* window,const float& updateDelayInMS);
 
-	float CurrentTime();
 	Uint64 FPS();
 	//delta time in milliseconds
 	float DeltaTimeMS();

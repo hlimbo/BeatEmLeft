@@ -47,6 +47,9 @@ namespace GUI
 		//used to create blinking text cursor effect
 		bool isTextCursorVisible;
 
+		//pointer to main window's renderer
+		SDL_Renderer* render;
+
 		ui_state()
 		{
 			hoveredID = 0;
@@ -63,6 +66,7 @@ namespace GUI
 			pastTime = 0.0f;
 			isTextCursorVisible = true;
 			textBuffer = NULL;
+			render = NULL;
 		}
 
 		~ui_state() 
@@ -84,32 +88,32 @@ namespace GUI
 	//state handles all changes that happen to every widget
 	extern ui_state ui_global_state;
 	
+	void Init(SDL_Renderer* render);
+	void SetTimeAndOldMousePos(const float& currentTime);
 	void ProcessEvent(SDL_Event* event);
 
-	//todo:: remove SDL_Renderer* param pass to all GUI functions and create a function that sets the GUI's renderer to the main window's renderer
 	//Note:: the following functions are all drawn relative to the application's main window
 
 	//returns the position of the knob as a floating point value mapped between a min and max float value.
 	//Note: initialValue must be a floating point value between 0.0f and 1.0f inclusive
-	float VerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, float value, const SDL_Color& color);
-	float HorizontalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, float value,const SDL_Color& color);
+	float VerticalSlider(int ui_id, const SDL_Rect* bounds, float value, const SDL_Color& color);
+	float HorizontalSlider(int ui_id, const SDL_Rect* bounds, float value,const SDL_Color& color);
 
 	//returns true if toggle is marked, otherwise it returns false
-	bool Toggle(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, bool isToggled, const SDL_Color& color);
+	bool Toggle(int ui_id, const SDL_Rect* bounds, bool isToggled, const SDL_Color& color);
 
-	//**Note** Need to figure out a way to efficiently render static text to the screen!
 	//returns true if button is pressed, otherwise it returns false
-	bool Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const SDL_Color& color,const std::string text,TTF_Font* font);
+	bool Button(int ui_id, const SDL_Rect* bounds, const SDL_Color& color,const std::string text,TTF_Font* font);
 
 	//constructs a text field where its size is proportional to Text::char_limit
 	//returns the updated text typed into the text field
-	std::string TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRect,std::string text, const SDL_Color& color,TTF_Font* font);
+	std::string TextField(int ui_id, const SDL_Rect* textBoxRect,std::string text, const SDL_Color& color,TTF_Font* font);
 
-	void Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_Font* font, const std::string& text,const SDL_Color& color);
+	void Label(int ui_id,const SDL_Point* screen_pos, TTF_Font* font, const std::string& text,const SDL_Color& color);
 
-	int GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross);
+	int GridSelector(int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross);
 
-	SDL_Rect Window(SDL_Renderer* render,int ui_id,const SDL_Rect* bounds,TTF_Font* font, void (*window_func)(SDL_Renderer*,int,const SDL_Point*,TTF_Font*));
+	SDL_Rect Window(int ui_id,const SDL_Rect* bounds,TTF_Font* font, void (*window_func)(SDL_Renderer*,int,const SDL_Point*,TTF_Font*));
 }
 
 
