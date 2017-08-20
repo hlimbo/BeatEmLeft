@@ -3,9 +3,22 @@
 #include <assert.h>
 #include "../Components/SpriteSheet.h"
 
+//todo change to static variable (private inaccessable to outside classes)
 GUI::ui_state GUI::ui_global_state;
 
 using namespace std;
+
+void GUI::Init(SDL_Renderer* render)
+{
+	ui_global_state.render = render;
+}
+
+void GUI::SetTimeAndOldMousePos(const float & currentTime)
+{
+	ui_global_state.currentTime = currentTime;
+	ui_global_state.oldMousePos.x = ui_global_state.mousePos.x;
+	ui_global_state.oldMousePos.y = ui_global_state.mousePos.y;
+}
 
 void GUI::ProcessEvent(SDL_Event* event)
 {
@@ -39,8 +52,9 @@ void GUI::ProcessEvent(SDL_Event* event)
 	}
 }
 
-float GUI::VerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, float initialValue, const SDL_Color& color)
+float GUI::VerticalSlider(int ui_id, const SDL_Rect* bounds, float initialValue, const SDL_Color& color)
 {
+	SDL_Renderer* render = ui_global_state.render;
 	//construct the knob bounds
 	float knobScale = 0.25f;
 	SDL_Rect knobBounds;
@@ -118,8 +132,9 @@ float GUI::VerticalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bound
 	return value;
 }
 
-float GUI::HorizontalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, float initialValue, const SDL_Color& color)
+float GUI::HorizontalSlider(int ui_id, const SDL_Rect* bounds, float initialValue, const SDL_Color& color)
 {
+	SDL_Renderer* render = ui_global_state.render;
 	//construct the knob bounds
 	float knobScale = 0.25f;
 	SDL_Rect knobBounds;
@@ -199,8 +214,9 @@ float GUI::HorizontalSlider(SDL_Renderer* render, int ui_id, const SDL_Rect* bou
 	return value;
 }
 
-bool GUI::Toggle(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, bool isToggled, const SDL_Color& color)
+bool GUI::Toggle(int ui_id, const SDL_Rect* bounds, bool isToggled, const SDL_Color& color)
 {
+	SDL_Renderer* render = ui_global_state.render;
 	//construct check-mark bounds
 	SDL_Rect checkmarkBounds;
 	checkmarkBounds.x = bounds->x + bounds->w / 4;
@@ -234,8 +250,9 @@ bool GUI::Toggle(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, bool i
 	return isToggled;
 }
 
-bool GUI::Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const SDL_Color& color,const string text, TTF_Font* font)
+bool GUI::Button(int ui_id, const SDL_Rect* bounds, const SDL_Color& color,const string text, TTF_Font* font)
 {
+	SDL_Renderer* render = ui_global_state.render;
 	//changes the global state depending on these conditions
 	SDL_Point mousePos;
 	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
@@ -285,6 +302,8 @@ bool GUI::Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const 
 		SDL_Color black{ 0,0,0,255 };
 		SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), black);
 		ui_global_state.textBufferTextures[ui_id] = SDL_CreateTextureFromSurface(render, textSurface);
+		if (ui_global_state.textBufferTextures[ui_id] == NULL)
+			fprintf(stderr, "Error: %s\n", SDL_GetError());
 		SDL_FreeSurface(textSurface);
 	}
 
@@ -318,8 +337,9 @@ bool GUI::Button(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, const 
 	return false;
 }
 
-string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRect, std::string text, const SDL_Color& color,TTF_Font* font)
+string GUI::TextField(int ui_id, const SDL_Rect* textBoxRect, std::string text, const SDL_Color& color,TTF_Font* font)
 {
+	SDL_Renderer* render = ui_global_state.render;
 	//check if text field is hovered over or clicked on
 	SDL_Point mousePos;
 	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
@@ -469,8 +489,9 @@ string GUI::TextField(SDL_Renderer* render, int ui_id, const SDL_Rect* textBoxRe
 	return text;
 }
 
-void GUI::Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_Font* font, const std::string& text,const SDL_Color& color)
+void GUI::Label(int ui_id,const SDL_Point* screen_pos, TTF_Font* font, const std::string& text,const SDL_Color& color)
 {
+	SDL_Renderer* render = ui_global_state.render;
 	if (ui_global_state.textBufferTextures[ui_id] == NULL)
 	{
 		SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), color);
@@ -487,8 +508,9 @@ void GUI::Label(SDL_Renderer* render,int ui_id,const SDL_Point* screen_pos, TTF_
 	SDL_RenderCopy(render, texture, NULL, &textArea);
 }
 
-int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross = 2)
+int GUI::GridSelector(int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int xAcross = 2)
 {
+	SDL_Renderer* render = ui_global_state.render;
 	int margin = 2;
 	assert(xAcross > 0);
 	int yAcross = sheet->GetFrameCount() / xAcross;
@@ -568,8 +590,9 @@ int GUI::GridSelector(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds, S
 	return selectedIndex;
 }
 
-SDL_Rect GUI::Window(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds,TTF_Font* font,void (*window_func)(SDL_Renderer*, int, const SDL_Point*, TTF_Font*))
+SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,void (*window_func)(SDL_Renderer*, int, const SDL_Point*, TTF_Font*))
 {
+	SDL_Renderer* render = ui_global_state.render;
 	SDL_Point mousePos;
 	bool mousePressed = SDL_GetMouseState(&mousePos.x, &mousePos.y) & SDL_BUTTON(SDL_BUTTON_LEFT);
 	if (SDL_PointInRect(&mousePos, bounds))
@@ -592,19 +615,19 @@ SDL_Rect GUI::Window(SDL_Renderer* render, int ui_id, const SDL_Rect* bounds,TTF
 	//todo: recalculate the location of the window if window was dragged to another location
 
 	SDL_Rect newWindowPos = *bounds;	
-	if (mousePressed)
+	if (ui_global_state.pressedID == ui_id)
 	{
-		SDL_Point deltaMousePos;
-		deltaMousePos.x = mousePos.x - ui_global_state.oldMousePos.x;
-		deltaMousePos.y = mousePos.y - ui_global_state.oldMousePos.y;
-		if (deltaMousePos.x != 0)
+		if(!mousePressed)
+			ui_global_state.pressedID = 0;
+		else
 		{
-			newWindowPos.x = bounds->x + deltaMousePos.x;
-		}
-
-		if (deltaMousePos.y != 0)
-		{
-			newWindowPos.y = bounds->y + deltaMousePos.y;
+			SDL_Point deltaMousePos;
+			deltaMousePos.x = mousePos.x - ui_global_state.oldMousePos.x;
+			deltaMousePos.y = mousePos.y - ui_global_state.oldMousePos.y;
+			if (deltaMousePos.x != 0)
+				newWindowPos.x = bounds->x + deltaMousePos.x;
+			if (deltaMousePos.y != 0)
+				newWindowPos.y = bounds->y + deltaMousePos.y;
 		}
 	}
 

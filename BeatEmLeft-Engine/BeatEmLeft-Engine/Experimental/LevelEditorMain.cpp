@@ -15,7 +15,7 @@ void WindowFunction(SDL_Renderer* render,int ui_id,const SDL_Point* relativePos,
 	SDL_Rect buttonRect{ relativePos->x + 100 - 75 / 2,relativePos->y + 100 - 20 / 2,75,20 };
 	SDL_Color blue2{ 0,0,255,255 };
 	int buttonID = __LINE__;
-	if (GUI::Button(render, buttonID, &buttonRect, blue2, "OK", font))
+	if (GUI::Button(buttonID, &buttonRect, blue2, "OK", font))
 	{
 		printf("Window ID: %d\nButton ID: %d\n", ui_id, buttonID);
 		puts("Button pressed from window");
@@ -66,6 +66,7 @@ int main(int argc, char* argv[])
 
 	//---------------- Game Loop ------------------//
 
+	GUI::Init(render);
 	GameLoop::InitTimer();
 	bool running = true;
 	while (running)
@@ -102,10 +103,10 @@ int main(int argc, char* argv[])
 		SDL_RenderFillRect(render, &tileSetRect);
 
 		SDL_SetRenderDrawColor(render, blue.r, blue.g, blue.b, blue.a);
-		SDL_RenderFillRect(render, &toolbarRect);
+		SDL_RenderFillRect(render,&toolbarRect);
 
 		//Task 2: draw gui window
-		guiWindowRect = GUI::Window(render, __LINE__, &guiWindowRect,font,WindowFunction);
+		guiWindowRect = GUI::Window(__LINE__, &guiWindowRect,font,WindowFunction);
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
@@ -113,13 +114,10 @@ int main(int argc, char* argv[])
 
 		GameLoop::UpdateFPS();
 		GameLoop::CapFramerate(core.getTargetDeltaTime());
-		GameLoop::UpdateCurrentTime();
+		float currentTime = GameLoop::UpdateCurrentTime();
 		GameLoop::DisplayFPS(core.getWindow(), 500.0f);
 
-		//todo: should be wrapped in some function? e.g. GUI::PreProcessData();
-		GUI::ui_global_state.currentTime = GameLoop::CurrentTime();
-		GUI::ui_global_state.oldMousePos.x = GUI::ui_global_state.mousePos.x;
-		GUI::ui_global_state.oldMousePos.y = GUI::ui_global_state.mousePos.y;
+		GUI::SetTimeAndOldMousePos(currentTime);
 	}
 	
 

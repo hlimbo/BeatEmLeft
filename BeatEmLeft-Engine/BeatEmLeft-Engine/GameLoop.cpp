@@ -30,11 +30,13 @@ bool GameLoop::CapFramerate(float targetDeltaTime)
 
 	return canCapFramerate;
 }
-void GameLoop::UpdateCurrentTime()
+float GameLoop::UpdateCurrentTime()
 {
 	data.currentTime += data.observedDeltaTime;
 	data.deltaTime = data.observedDeltaTime / 1000.0f;
 	data.startCount = data.endCount;
+
+	return data.currentTime;
 }
 
 void GameLoop::DisplayFPS(SDL_Window* window,const float& updateDelayInMS)
@@ -45,11 +47,6 @@ void GameLoop::DisplayFPS(SDL_Window* window,const float& updateDelayInMS)
 		std::string title("Beat Em Left | FPS: " + std::to_string(data.observedFPS));
 		SDL_SetWindowTitle(window, title.c_str());
 	}
-}
-
-float GameLoop::CurrentTime()
-{
-	return data.currentTime;
 }
 
 Uint64 GameLoop::FPS()
