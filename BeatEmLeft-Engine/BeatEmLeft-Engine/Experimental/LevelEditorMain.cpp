@@ -3,17 +3,23 @@
 #include "../MasterHeader.h"
 using namespace std;
 
+//color pallette
+static SDL_Color yellow{ 255,231,76,255 };
+static SDL_Color red{ 255,89,100,255 };
+static SDL_Color white{ 255,255,255,255 };
+static SDL_Color blue{ 53,167,255,255 };
+static SDL_Color green{ 56,230,140,255 };
+
 //helper function for setting the color
 void SetDrawColor(SDL_Renderer* render, const SDL_Color& color)
 {
 	SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
 }
 
-//temp global variables
-float vertSliderValue = 0.0f;
+//temp global variables to retain state for gui elements that will be contained within a window
+//e.g. sliders and toggles need to retain state 
+static float vertSliderValue = 0.0f;
 
-//note: might want to not use function pointers to store GUI elements since some elements
-//such as sliders and toggles need to retain their state.
 //todo: find a way to remove TTF_Font* parameter pass to all GUI related functions that need to display text
 //e.g. GUI::Label() and GUI::TextField()
 bool WindowFunction(int ui_id,const SDL_Rect* relativePos,TTF_Font* font)
@@ -31,13 +37,81 @@ bool WindowFunction(int ui_id,const SDL_Rect* relativePos,TTF_Font* font)
 	int sliderID = __LINE__;
 	vertSliderValue = GUI::VerticalSlider(sliderID, &vertSliderRect, vertSliderValue, SDL_Color{ 255,0,0,255 });
 
-	if (GUI::ui_global_state.keyboardFocusID == sliderID)
-		puts("keyboard has focus on slider");
-	else if (GUI::ui_global_state.keyboardFocusID != 0)
-		puts("keyboard has focus on another thing");
-
-	//temp
+	//temp ~ if window doesn't have exclusive focus with the mice (i.e. the mouse is pressing on other gui elements in the window)
+	//the window should not be dragged
 	return GUI::ui_global_state.keyboardFocusID != ui_id;
+}
+
+static string mapName("Map-name.txt");
+static bool newMapWindowToggled = false;
+
+bool NewMapWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
+{
+	int fontHeight = TTF_FontHeight(font);
+	int yOffset = 20;
+
+	int labelID = __LINE__;
+	SDL_Point labelPos{ relativePos->x + 10, relativePos->y + yOffset};
+	GUI::Label(labelID, &labelPos, font, "New Map", white);
+
+	SDL_Point label2Pos{ relativePos->x + 10,relativePos->y + fontHeight + yOffset };
+	GUI::Label(__LINE__, &label2Pos, font, "Map Filename: ", white);
+
+	int textFieldID = __LINE__;
+	int widthOffset;
+	TTF_SizeText(font, "Map Filename: ", &widthOffset, NULL);
+	SDL_Rect textFieldPos{ relativePos->x + widthOffset + 10,relativePos->y + fontHeight + yOffset,100,25};
+	mapName = GUI::TextField(textFieldID, &textFieldPos, mapName, white, font);
+
+	int buttonWidth = relativePos->w * 0.2;
+	int buttonHeight = relativePos->h * 0.2;
+	SDL_Rect buttonRect{ relativePos->x + relativePos->w / 2 - buttonWidth / 2,relativePos->y + relativePos->h * 0.7,buttonWidth,buttonHeight};
+	GUI::Button(__LINE__, &buttonRect, red, "OK", font);
+
+	return false;
+}
+
+bool ToolbarPrototype(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
+{
+	int newMapID = __LINE__;
+	int saveMapID = __LINE__;
+	int openMapID = __LINE__;
+	int loadTileSetID = __LINE__;
+
+	//construct rects for toolbar buttons
+	int buttonWidth = 800 / 4;
+	int buttonHeight = relativePos->h;
+	int margin = 2;
+	SDL_Rect buttonRects[4];
+	for (int i = 0;i < 4;++i)
+	{
+		buttonRects[i].w = buttonWidth;
+		buttonRects[i].h = buttonHeight;
+		buttonRects[i].x = (i * (buttonWidth + margin)) + relativePos->x;
+		buttonRects[i].y = relativePos->y;
+	}
+
+	if (GUI::Button(newMapID, &buttonRects[0], blue, "New Map", font))
+	{
+		newMapWindowToggled = !newMapWindowToggled;
+	}
+
+	GUI::Button(saveMapID, &buttonRects[1], green, "Save Map", font);
+
+	GUI::Button(openMapID, &buttonRects[2], blue, "Open Map", font);
+
+	GUI::Button(loadTileSetID, &buttonRects[3], green, "Load Tileset", font);
+
+	if (newMapWindowToggled)
+	{
+		int windowWidth = 300;
+		int windowHeight = 150;
+		SDL_Rect newMapRect{ 800 / 2 - windowWidth / 2,600 / 2 - windowHeight / 2,windowWidth,windowHeight };
+		GUI::Window(__LINE__, &newMapRect, font, NewMapWindow);
+	}
+
+
+	return false;
 }
 
 int main(int argc, char* argv[])
@@ -50,7 +124,7 @@ int main(int argc, char* argv[])
 
 	//load in font
 	string fontPath = mainPath + string("SourceCodePro-Black.ttf");
-	int fontSize = 16;
+	int fontSize = 12;
 	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), fontSize);
 
 	//load in sample tilesheet to use
@@ -60,13 +134,6 @@ int main(int argc, char* argv[])
 	Image* src = imageStore.Load(imageFile, imagePath);
 	int frameWidth = 64, frameHeight = 64;
 	SpriteSheet tileSheet(render, src, frameWidth, frameHeight);
-
-	//color pallette
-	SDL_Color yellow{ 255,231,76,255 };
-	SDL_Color red{ 255,89,100,255 };
-	SDL_Color white{ 255,255,255,255 };
-	SDL_Color blue{53,167,255,255};
-	SDL_Color green{ 56,230,140,255 };
 
 	//positions of each panel
 	SDL_Rect toolbarRect;
@@ -126,19 +193,7 @@ int main(int argc, char* argv[])
 		SetDrawColor(render, green);
 		SDL_RenderFillRect(render, &tileSetRect);
 
-		isToggled = GUI::Toggle(__LINE__, &toggleBounds, isToggled, red);
-		SDL_Point labelPos{ 135,50 };
-		GUI::Label(__LINE__, &labelPos, font, "Enable/Disable Window", red);
-
-		if (isToggled)
-		{
-			//Task 2: draw gui window
-			guiWindowRect = GUI::Window(__LINE__, &guiWindowRect, font, WindowFunction);
-			SDL_SetRenderDrawColor(render, blue.r, blue.g, blue.b, blue.a);
-			SDL_RenderFillRect(render, &toolbarRect);
-		}
-
-		sliderValue2 = GUI::VerticalSlider(__LINE__, &sliderRect2, sliderValue2, green);
+		GUI::Window(__LINE__, &toolbarRect, font, ToolbarPrototype);
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
