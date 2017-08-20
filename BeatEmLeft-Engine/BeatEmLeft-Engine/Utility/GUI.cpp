@@ -623,23 +623,23 @@ SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,bool (*win
 	//call the function pointer window that constructs the window made up of other GUI widget elements
 	bool isGUIElementPressed = (*window_func)(ui_id, bounds, font);
 
-	//draggable window
+	//draggable window ~ temporarily disable
 	SDL_Rect newWindowPos = *bounds;	
-	if (ui_global_state.pressedID == ui_id)
-	{
-		if(!mousePressed || isGUIElementPressed)
-			ui_global_state.pressedID = 0;
-		else
-		{
-			SDL_Point deltaMousePos;
-			deltaMousePos.x = mousePos.x - ui_global_state.oldMousePos.x;
-			deltaMousePos.y = mousePos.y - ui_global_state.oldMousePos.y;
-			if (deltaMousePos.x != 0)
-				newWindowPos.x = bounds->x + deltaMousePos.x;
-			if (deltaMousePos.y != 0)
-				newWindowPos.y = bounds->y + deltaMousePos.y;
-		}
-	}
+	//if (ui_global_state.pressedID == ui_id)
+	//{
+	//	if(!mousePressed || isGUIElementPressed)
+	//		ui_global_state.pressedID = 0;
+	//	else
+	//	{
+	//		SDL_Point deltaMousePos;
+	//		deltaMousePos.x = mousePos.x - ui_global_state.oldMousePos.x;
+	//		deltaMousePos.y = mousePos.y - ui_global_state.oldMousePos.y;
+	//		if (deltaMousePos.x != 0)
+	//			newWindowPos.x = bounds->x + deltaMousePos.x;
+	//		if (deltaMousePos.y != 0)
+	//			newWindowPos.y = bounds->y + deltaMousePos.y;
+	//	}
+	//}
 
 	return newWindowPos;
 }
