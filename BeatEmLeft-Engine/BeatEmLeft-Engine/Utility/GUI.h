@@ -126,7 +126,7 @@ namespace GUI
 	*/
 	SDL_Rect Window(int ui_id,const SDL_Rect* bounds,TTF_Font* font,bool (*window_func)(int,const SDL_Rect*,TTF_Font*));
 
-	int Toolbar(int ui_id,const SDL_Rect* bounds, int toolbarIndex, const std::vector<std::string> textList);
+	int Toolbar(int ui_id,const SDL_Rect* bounds, int toolbarIndex, const std::vector<std::string> textList,TTF_Font* font);
 }
 
 

@@ -199,7 +199,11 @@ int main(int argc, char* argv[])
 		strings.push_back("New");
 		strings.push_back("Open");
 		strings.push_back("Save");
-		GUI::Toolbar(__LINE__,&toolbarRect, 0, strings);
+		int selectedButton = GUI::Toolbar(__LINE__,&toolbarRect, 0, strings,font);
+		if (selectedButton != -1)
+		{
+			printf("User selected: %s\n", strings[selectedButton].c_str());
+		}
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);

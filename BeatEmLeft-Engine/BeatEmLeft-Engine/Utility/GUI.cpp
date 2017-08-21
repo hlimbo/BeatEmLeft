@@ -645,7 +645,7 @@ SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,bool (*win
 }
 
 
-int GUI::Toolbar(int ui_id, const SDL_Rect* bounds, int toolbarIndex, const std::vector<std::string> textList)
+int GUI::Toolbar(int ui_id, const SDL_Rect* bounds, int toolbarIndex, const std::vector<std::string> textList,TTF_Font* font)
 {
 	assert(!textList.empty());
 
@@ -667,15 +667,19 @@ int GUI::Toolbar(int ui_id, const SDL_Rect* bounds, int toolbarIndex, const std:
 		buttonRects[i].y = bounds->y;
 	}
 
-
-	//draw the buttons temp
+	//baseNumber is a temp hacky thing to deal with possible id collisions
+	int baseNumber = 2048;
+	int selectedButton = -1;
 	for (int i = 0;i < size;++i)
 	{
-		SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
-		SDL_RenderDrawRect(render, &buttonRects[i]);
+		SDL_Color blue{ 0,0,255,255 };
+		if (GUI::Button(baseNumber + i, &buttonRects[i], blue, textList[i], font))
+		{
+			selectedButton = i;
+		}
 	}
 
 	free(buttonRects);
 	
-	return 0;
+	return selectedButton;
 }
