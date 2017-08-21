@@ -643,3 +643,39 @@ SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,bool (*win
 
 	return newWindowPos;
 }
+
+
+int GUI::Toolbar(int ui_id, const SDL_Rect* bounds, int toolbarIndex, const std::vector<std::string> textList)
+{
+	assert(!textList.empty());
+
+	SDL_Renderer* render = ui_global_state.render;
+	
+	//construct rects for toolbar buttons
+	int margin = 2;
+	int size = textList.size();
+	int padding = size * margin;
+	int buttonHeight = bounds->h;
+	int buttonWidth = (bounds->w + padding) / size;
+
+	SDL_Rect* buttonRects = (SDL_Rect*)malloc(sizeof(SDL_Rect) * size);
+	for (int i = 0;i < size;++i)
+	{
+		buttonRects[i].w = buttonWidth;
+		buttonRects[i].h = buttonHeight;
+		buttonRects[i].x = (i * (buttonWidth + margin)) + bounds->x;
+		buttonRects[i].y = bounds->y;
+	}
+
+
+	//draw the buttons temp
+	for (int i = 0;i < size;++i)
+	{
+		SDL_SetRenderDrawColor(render, 255, 0, 0, 255);
+		SDL_RenderDrawRect(render, &buttonRects[i]);
+	}
+
+	free(buttonRects);
+	
+	return 0;
+}
