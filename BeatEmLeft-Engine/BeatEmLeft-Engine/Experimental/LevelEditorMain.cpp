@@ -193,7 +193,13 @@ int main(int argc, char* argv[])
 		SetDrawColor(render, green);
 		SDL_RenderFillRect(render, &tileSetRect);
 
-		GUI::Window(__LINE__, &toolbarRect, font, ToolbarPrototype);
+		//GUI::Window(__LINE__, &toolbarRect, font, ToolbarPrototype);
+
+		vector<string> strings;
+		strings.push_back("New");
+		strings.push_back("Open");
+		strings.push_back("Save");
+		GUI::Toolbar(__LINE__,&toolbarRect, 0, strings);
 
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);

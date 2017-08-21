@@ -6,6 +6,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 struct SDL_Renderer;
 struct SDL_Texture;
@@ -124,6 +125,8 @@ namespace GUI
 			the function returns true if a GUI element was pressed inside the window, false otherwise
 	*/
 	SDL_Rect Window(int ui_id,const SDL_Rect* bounds,TTF_Font* font,bool (*window_func)(int,const SDL_Rect*,TTF_Font*));
+
+	int Toolbar(int ui_id,const SDL_Rect* bounds, int toolbarIndex, const std::vector<std::string> textList);
 }
 
 
