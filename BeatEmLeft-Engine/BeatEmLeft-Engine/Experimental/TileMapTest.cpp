@@ -3,24 +3,28 @@
 #include <iostream>
 #include <string>
 
-#include <Vect2.h>
+//#include <Vect2.h>
+//
+//#include "Systems/RenderSystem.h"
+//#include "Systems/ComponentManager.h"
+//#include "Systems/EntitySystem.h"
+//#include "Components/Sprite.h"
+//#include "Components/Transform.h"
+//#include "Components/BoxCollider.h"
+//#include "Components/SpriteSheet.h"
+//#include "Systems/ECS.h"
+//#include "Core.h"
+//#include "Systems/MovementSystem.h"
+//
+//#include "Input/KeyboardController.h"
+//#include "Input/GameController.h"
+//#include "Utility/TextureLoader.h"
+//#include "Utility/TextureStore.h"
+//#include "Utility/MapFileLoader.h"
 
-#include "Systems/RenderSystem.h"
-#include "Systems/ComponentManager.h"
-#include "Systems/EntitySystem.h"
-#include "Components/Sprite.h"
-#include "Components/Transform.h"
-#include "Components/BoxCollider.h"
-#include "Components/SpriteSheet.h"
-#include "Systems/ECS.h"
-#include "Core.h"
-#include "Systems/MovementSystem.h"
-
-#include "Input/KeyboardController.h"
-#include "Input/GameController.h"
-#include "Utility/TextureLoader.h"
-#include "Utility/TextureStore.h"
-#include "Utility/MapFileLoader.h"
+#include "../MasterHeader.h"
+#include "../Utility/TextureStore.h"
+#include "../Utility/MapFileLoader.h"
 
 using namespace std;
 

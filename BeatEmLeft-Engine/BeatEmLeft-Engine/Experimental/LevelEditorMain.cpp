@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <fstream>
 #include "../MasterHeader.h"
 using namespace std;
 
@@ -42,31 +43,97 @@ bool WindowFunction(int ui_id,const SDL_Rect* relativePos,TTF_Font* font)
 	return GUI::ui_global_state.keyboardFocusID != ui_id;
 }
 
-static string mapName("Map-name.txt");
-static bool newMapWindowToggled = false;
-
+static string mapName;
+static string levelWidth;
+static string levelHeight;
+static string tileWidth;
+static string tileHeight;
+static bool windowToggled = false;
+//prototyped-canned code temporary
 bool NewMapWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
 {
 	int fontHeight = TTF_FontHeight(font);
-	int yOffset = 20;
+	int titleYOffset = 10;
+	int leftMargin = 10;
 
 	int labelID = __LINE__;
-	SDL_Point labelPos{ relativePos->x + 10, relativePos->y + yOffset};
-	GUI::Label(labelID, &labelPos, font, "New Map", white);
+	int titleWidth, titleHeight;
+	TTF_SizeText(font, "New Map", &titleWidth, &titleHeight);
+	//center title label along x-axis
+	SDL_Point titlePos{ relativePos->x + (relativePos->w / 2 - titleWidth / 2), relativePos->y + titleYOffset};
+	GUI::Label(labelID, &titlePos, font, "New Map", white);
 
-	SDL_Point label2Pos{ relativePos->x + 10,relativePos->y + fontHeight + yOffset };
-	GUI::Label(__LINE__, &label2Pos, font, "Map Filename: ", white);
+	//map filename field
+	int yOffset = (titlePos.y - relativePos->y) + titleHeight;
+	SDL_Point labelPos{ relativePos->x + leftMargin,relativePos->y + fontHeight + yOffset };
+	GUI::Label(__LINE__, &labelPos, font, "Map Filename: ", white);
 
 	int textFieldID = __LINE__;
 	int widthOffset;
 	TTF_SizeText(font, "Map Filename: ", &widthOffset, NULL);
-	SDL_Rect textFieldPos{ relativePos->x + widthOffset + 10,relativePos->y + fontHeight + yOffset,100,25};
+	SDL_Rect textFieldPos{ relativePos->x + widthOffset + leftMargin,labelPos.y - 2,relativePos->w * 0.5f,fontHeight + 4};
 	mapName = GUI::TextField(textFieldID, &textFieldPos, mapName, white, font);
+
+	//level dimensions field
+	yOffset = textFieldPos.y - relativePos->y + titleHeight;
+	int levelDimensionsFieldID = __LINE__;
+	SDL_Point label2Pos{ relativePos->x + leftMargin,relativePos->y + fontHeight + yOffset };
+	GUI::Label(levelDimensionsFieldID, &label2Pos, font, "Level WxH: ", white);
+	TTF_SizeText(font, "Level WxH: ", &widthOffset, NULL);
+	SDL_Rect textFieldPos2{ relativePos->x + leftMargin + widthOffset,label2Pos.y - 2,relativePos->w * 0.2f,fontHeight + 4 };
+	levelWidth = GUI::TextField(__LINE__, &textFieldPos2, levelWidth, white, font);
+	SDL_Point label3Pos{ relativePos->x + leftMargin + textFieldPos2.w + widthOffset,textFieldPos2.y };
+	GUI::Label(__LINE__, &label3Pos, font, " x ", white);
+	TTF_SizeText(font, " x ", &widthOffset, NULL);
+	SDL_Rect textFieldPos3{ label3Pos.x + widthOffset, textFieldPos2.y,relativePos->w * 0.2f,fontHeight + 4 };
+	levelHeight = GUI::TextField(__LINE__, &textFieldPos3, levelHeight, white, font);
+	
+	//tile dimensions field
+	yOffset = textFieldPos3.y - relativePos->y + titleHeight;
+	SDL_Point label4Pos{ relativePos->x + leftMargin,relativePos->y + fontHeight + yOffset };
+	GUI::Label(__LINE__, &label4Pos, font, "Tile WxH: ", white);
+	TTF_SizeText(font, "Tile WxH: ", &widthOffset, NULL);
+	SDL_Rect textFieldPos4{ relativePos->x + leftMargin + widthOffset,label4Pos.y - 2,relativePos->w * 0.2f,fontHeight + 4 };
+	tileWidth = GUI::TextField(__LINE__, &textFieldPos4, tileWidth, white, font);
+	SDL_Point label5Pos{ relativePos->x + leftMargin + textFieldPos4.w + widthOffset,textFieldPos4.y };
+	GUI::Label(__LINE__, &label5Pos, font, " x ", white);
+	TTF_SizeText(font, " x ", &widthOffset, NULL);
+	SDL_Rect textFieldPos6{ label5Pos.x + widthOffset, textFieldPos4.y,relativePos->w * 0.2f,fontHeight + 4 };
+	tileHeight = GUI::TextField(__LINE__, &textFieldPos6, tileHeight, white, font);
+
 
 	int buttonWidth = relativePos->w * 0.2;
 	int buttonHeight = relativePos->h * 0.2;
 	SDL_Rect buttonRect{ relativePos->x + relativePos->w / 2 - buttonWidth / 2,relativePos->y + relativePos->h * 0.7,buttonWidth,buttonHeight};
-	GUI::Button(__LINE__, &buttonRect, red, "OK", font);
+	if (GUI::Button(__LINE__, &buttonRect, red, "OK", font))
+	{
+		//temporary functionality as this can be dangerous to do since creating a file that already exists
+		//in the file system overrides that file!
+		puts("Close this window and save the new file created");
+		windowToggled = false;
+
+		string mainPath(SDL_GetBasePath());
+		mainPath += string("resources/");
+		string filePath(mainPath + mapName);
+		ofstream outputFile;
+		outputFile.open(filePath, ifstream::out);
+
+		if (outputFile.good())
+		{
+			//write map level name
+			outputFile << mapName << endl;
+			//write level dimensions
+			outputFile << levelWidth << " " << levelHeight << endl;
+			//write tile dimensions
+			outputFile << tileWidth << " " << tileHeight << endl;
+			outputFile.close();
+		}
+		else
+		{
+			printf("File is bad\n");
+		}
+	}
+	
 
 	return false;
 }
@@ -93,7 +160,7 @@ bool ToolbarPrototype(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
 
 	if (GUI::Button(newMapID, &buttonRects[0], blue, "New Map", font))
 	{
-		newMapWindowToggled = !newMapWindowToggled;
+		windowToggled = !windowToggled;
 	}
 
 	GUI::Button(saveMapID, &buttonRects[1], green, "Save Map", font);
@@ -102,7 +169,7 @@ bool ToolbarPrototype(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
 
 	GUI::Button(loadTileSetID, &buttonRects[3], green, "Load Tileset", font);
 
-	if (newMapWindowToggled)
+	if (windowToggled)
 	{
 		int windowWidth = 300;
 		int windowHeight = 150;
@@ -155,6 +222,13 @@ int main(int argc, char* argv[])
 	float sliderValue2 = 0.0f;
 	SDL_Rect sliderRect2{ 400,50,20,200 };
 
+	int selectedButton = -1;
+	SDL_Rect newWindowRect;
+	newWindowRect.w = 800 * 0.3f;
+	newWindowRect.h = 600 * 0.35f;
+	newWindowRect.x = 400 - newWindowRect.w / 2;
+	newWindowRect.y = 300 - newWindowRect.h / 2;
+
 	//---------------- Game Loop ------------------//
 
 	GUI::Init(render);
@@ -195,14 +269,32 @@ int main(int argc, char* argv[])
 
 		//GUI::Window(__LINE__, &toolbarRect, font, ToolbarPrototype);
 
+		//toolbar temp
 		vector<string> strings;
 		strings.push_back("New");
 		strings.push_back("Open");
 		strings.push_back("Save");
-		int selectedButton = GUI::Toolbar(__LINE__,&toolbarRect, 0, strings,font);
-		if (selectedButton != -1)
+		int buttonToSelect = GUI::Toolbar(__LINE__,&toolbarRect, -1, strings,font);
+		if (buttonToSelect != -1)
 		{
-			printf("User selected: %s\n", strings[selectedButton].c_str());
+			windowToggled = true;
+			selectedButton = buttonToSelect;
+		}
+
+		if (!windowToggled)
+		{
+			selectedButton = -1;
+		}
+		enum TOOLMAP_BUTTONS { NEW, OPEN, SAVE };
+		switch (selectedButton)
+		{
+		case NEW:
+			GUI::Window(__LINE__, &newWindowRect, font, NewMapWindow);
+			break;
+		case OPEN:
+			break;
+		case SAVE:
+			break;
 		}
 
 		SDL_RenderPresent(render);

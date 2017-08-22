@@ -306,8 +306,8 @@ bool GUI::Button(int ui_id, const SDL_Rect* bounds, const SDL_Color& color,const
 	//construct text texture if not constructed
 	if (ui_global_state.textBufferTextures[ui_id] == NULL)
 	{
-		SDL_Color black{ 0,0,0,255 };
-		SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), black);
+		SDL_Color white{ 255,255,255,255 };
+		SDL_Surface* textSurface = TTF_RenderText_Blended(font, text.c_str(), white);
 		ui_global_state.textBufferTextures[ui_id] = SDL_CreateTextureFromSurface(render, textSurface);
 		if (ui_global_state.textBufferTextures[ui_id] == NULL)
 			fprintf(stderr, "Error: %s\n", SDL_GetError());
