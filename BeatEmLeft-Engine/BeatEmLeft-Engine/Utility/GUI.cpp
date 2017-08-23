@@ -597,7 +597,7 @@ int GUI::GridSelector(int ui_id, const SDL_Rect* bounds, SpriteSheet* sheet,int 
 	return selectedIndex;
 }
 
-SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,bool (*window_func)(int, const SDL_Rect*, TTF_Font*))
+SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,bool (*window_func)(int, const SDL_Rect*, TTF_Font*),SDL_Color windowcolor)
 {
 	SDL_Renderer* render = ui_global_state.render;
 	SDL_Point mousePos;
@@ -615,7 +615,7 @@ SDL_Rect GUI::Window(int ui_id, const SDL_Rect* bounds,TTF_Font* font,bool (*win
 
 	//temp draw window
 	//temp
-	SDL_SetRenderDrawColor(render,67,167,82,255);
+	SDL_SetRenderDrawColor(render, windowcolor.r, windowcolor.g, windowcolor.b, windowcolor.a);
 	SDL_RenderFillRect(render, bounds);
 	SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
 	SDL_RenderDrawRect(render, bounds);
