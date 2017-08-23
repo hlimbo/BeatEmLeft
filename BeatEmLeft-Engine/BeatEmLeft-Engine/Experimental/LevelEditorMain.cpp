@@ -4,12 +4,23 @@
 #include "../MasterHeader.h"
 using namespace std;
 
+//initialization and shutdown of SDL
+static Core core;
+static SDL_Renderer* render = core.getRenderer();
+
+//image store
+static ImageStore imageStore(render);
+static SpriteSheet* tileSheet = nullptr;
+
 //color pallette
 static SDL_Color yellow{ 255,231,76,255 };
 static SDL_Color red{ 255,89,100,255 };
 static SDL_Color white{ 255,255,255,255 };
 static SDL_Color blue{ 53,167,255,255 };
 static SDL_Color green{ 56,230,140,255 };
+
+//main path for saving/loading resources
+static string mainPath(SDL_GetBasePath() + string("resources/"));
 
 //helper function for setting the color
 void SetDrawColor(SDL_Renderer* render, const SDL_Color& color)
@@ -50,7 +61,7 @@ static string tileWidth;
 static string tileHeight;
 static bool windowToggled = false;
 //prototyped-canned code temporary
-bool NewMapWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
+static bool NewMapWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
 {
 	int fontHeight = TTF_FontHeight(font);
 	int titleYOffset = 10;
@@ -112,8 +123,7 @@ bool NewMapWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
 		puts("Close this window and save the new file created");
 		windowToggled = false;
 
-		string mainPath(SDL_GetBasePath());
-		mainPath += string("resources/");
+
 		string filePath(mainPath + mapName);
 		ofstream outputFile;
 		outputFile.open(filePath, ifstream::out);
@@ -138,69 +148,82 @@ bool NewMapWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
 	return false;
 }
 
-bool ToolbarPrototype(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
+static string tileSetName;
+static string sliceWidth;
+static string sliceHeight;
+static bool TileSetWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
 {
-	int newMapID = __LINE__;
-	int saveMapID = __LINE__;
-	int openMapID = __LINE__;
-	int loadTileSetID = __LINE__;
+	int fontHeight = TTF_FontHeight(font);
+	int titleYOffset = 10;
+	int leftMargin = 10;
 
-	//construct rects for toolbar buttons
-	int buttonWidth = 800 / 4;
-	int buttonHeight = relativePos->h;
-	int margin = 2;
-	SDL_Rect buttonRects[4];
-	for (int i = 0;i < 4;++i)
+	int titleWidth, titleHeight;
+	TTF_SizeText(font, "Load Tile Set", &titleWidth, &titleHeight);
+	//center title label along x-axis
+	SDL_Point titlePos{ relativePos->x + (relativePos->w / 2 - titleWidth / 2), relativePos->y + titleYOffset };
+	GUI::Label(__LINE__, &titlePos, font, "Load Tile Set", white);
+
+	int yOffset = (titlePos.y - relativePos->y) + titleHeight;
+	SDL_Point labelPos{ relativePos->x + leftMargin,relativePos->y + fontHeight + yOffset };
+	GUI::Label(__LINE__, &labelPos, font, "Tile Set File: ", white);
+	int widthOffset;
+	TTF_SizeText(font, "Tile Set File:  ", &widthOffset, NULL);
+	SDL_Rect textFieldPos{ relativePos->x + widthOffset,labelPos.y - 2,relativePos->w * 0.5f,fontHeight + 4 };
+	tileSetName = GUI::TextField(__LINE__, &textFieldPos, tileSetName, white, font);
+
+	yOffset = (labelPos.y - relativePos->y) + titleHeight;
+	SDL_Point labelPos2{relativePos->x + leftMargin,relativePos->y + fontHeight + yOffset};
+	GUI::Label(__LINE__, &labelPos2, font, "Slice Width: ", white);
+	TTF_SizeText(font, "Slice Width:  ", &widthOffset, NULL);
+	SDL_Rect textFieldPos2{ relativePos->x + widthOffset,labelPos2.y - 2,relativePos->w * 0.25f,fontHeight + 4 };
+	sliceWidth = GUI::TextField(__LINE__, &textFieldPos2, sliceWidth, white, font);
+
+	yOffset = (labelPos2.y - relativePos->y) + titleHeight;
+	SDL_Point labelPos3{ relativePos->x + leftMargin,relativePos->y + fontHeight + yOffset };
+	GUI::Label(__LINE__, &labelPos3, font, "Slice Height: ", white);
+	TTF_SizeText(font, "Slice Height:  ", &widthOffset, NULL);
+	SDL_Rect textFieldPos3{ relativePos->x + widthOffset,labelPos3.y - 2,relativePos->w * 0.25f,fontHeight + 4 };
+	sliceHeight = GUI::TextField(__LINE__, &textFieldPos3, sliceHeight, white, font);
+
+	int buttonWidth = relativePos->w * 0.2;
+	int buttonHeight = relativePos->h * 0.2;
+	SDL_Rect buttonRect{ relativePos->x + relativePos->w / 2 - buttonWidth / 2,relativePos->y + relativePos->h * 0.7,buttonWidth,buttonHeight };
+	if (GUI::Button(__LINE__, &buttonRect, red, "OK", font))
 	{
-		buttonRects[i].w = buttonWidth;
-		buttonRects[i].h = buttonHeight;
-		buttonRects[i].x = (i * (buttonWidth + margin)) + relativePos->x;
-		buttonRects[i].y = relativePos->y;
+		windowToggled = false;
+
+		if (tileSheet != nullptr)
+		{
+			delete tileSheet;
+			tileSheet = nullptr;
+		}
+
+		printf("Loading tileset: %s\n", tileSetName.c_str());
+		string filePath(mainPath + tileSetName);
+		//load tileset from file system
+		Image* img_src = imageStore.Load(tileSetName, filePath);
+		//create spritesheet from img_src
+		int frameWidth = stoi(sliceWidth);
+		int frameHeight = stoi(sliceHeight);
+		tileSheet = new SpriteSheet(render, img_src, frameWidth, frameHeight);
 	}
-
-	if (GUI::Button(newMapID, &buttonRects[0], blue, "New Map", font))
-	{
-		windowToggled = !windowToggled;
-	}
-
-	GUI::Button(saveMapID, &buttonRects[1], green, "Save Map", font);
-
-	GUI::Button(openMapID, &buttonRects[2], blue, "Open Map", font);
-
-	GUI::Button(loadTileSetID, &buttonRects[3], green, "Load Tileset", font);
-
-	if (windowToggled)
-	{
-		int windowWidth = 300;
-		int windowHeight = 150;
-		SDL_Rect newMapRect{ 800 / 2 - windowWidth / 2,600 / 2 - windowHeight / 2,windowWidth,windowHeight };
-		GUI::Window(__LINE__, &newMapRect, font, NewMapWindow);
-	}
-
-
 	return false;
 }
 
 int main(int argc, char* argv[])
 {
-	Core core;
-	SDL_Renderer* render = core.getRenderer();
-
-	string mainPath(SDL_GetBasePath());
-	mainPath += string("resources/");
-
 	//load in font
 	string fontPath = mainPath + string("SourceCodePro-Black.ttf");
 	int fontSize = 12;
 	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), fontSize);
 
 	//load in sample tilesheet to use
-	ImageStore imageStore(render);
-	string imageFile("tiles-stones.png");
-	string imagePath(mainPath + imageFile);
-	Image* src = imageStore.Load(imageFile, imagePath);
-	int frameWidth = 64, frameHeight = 64;
-	SpriteSheet tileSheet(render, src, frameWidth, frameHeight);
+	//ImageStore imageStore(render);
+	//string imageFile("tiles-stones.png");
+	//string imagePath(mainPath + imageFile);
+	//Image* src = imageStore.Load(imageFile, imagePath);
+	//int frameWidth = 64, frameHeight = 64;
+	//SpriteSheet tileSheet(render, src, frameWidth, frameHeight);
 
 	//positions of each panel
 	SDL_Rect toolbarRect;
@@ -222,12 +245,25 @@ int main(int argc, char* argv[])
 	float sliderValue2 = 0.0f;
 	SDL_Rect sliderRect2{ 400,50,20,200 };
 
+	//windows
+#define EDITOR_WIDTH 800
+#define EDITOR_HEIGHT 600
 	int selectedButton = -1;
 	SDL_Rect newWindowRect;
-	newWindowRect.w = 800 * 0.3f;
-	newWindowRect.h = 600 * 0.35f;
-	newWindowRect.x = 400 - newWindowRect.w / 2;
-	newWindowRect.y = 300 - newWindowRect.h / 2;
+	newWindowRect.w = EDITOR_WIDTH * 0.3f;
+	newWindowRect.h = EDITOR_HEIGHT * 0.35f;
+	newWindowRect.x = EDITOR_WIDTH / 2 - newWindowRect.w / 2;
+	newWindowRect.y = EDITOR_HEIGHT / 2 - newWindowRect.h / 2;
+
+	SDL_Rect tileSetWindowRect;
+	tileSetWindowRect.w = EDITOR_WIDTH * 0.35f;
+	tileSetWindowRect.h = EDITOR_HEIGHT * 0.35f;
+	tileSetWindowRect.x = EDITOR_WIDTH / 2 - tileSetWindowRect.w / 2;
+	tileSetWindowRect.y = EDITOR_HEIGHT / 2 - tileSetWindowRect.h / 2;
+
+
+	//tile selector
+	int selectedTileIndex = -1;
 
 	//---------------- Game Loop ------------------//
 
@@ -250,8 +286,7 @@ int main(int argc, char* argv[])
 
 		/* GAME LOGIC FUNCTIONS GO HERE*/
 
-		//Task : draw a mockup of where all the panels will go on the tile map editor window
-		
+		//Task : draw a mockup of where all the panels will go on the tile map editor window		
 		SetDrawColor(render, blue);
 		SDL_RenderFillRect(render, &toolbarRect);
 		
@@ -267,13 +302,12 @@ int main(int argc, char* argv[])
 		SetDrawColor(render, green);
 		SDL_RenderFillRect(render, &tileSetRect);
 
-		//GUI::Window(__LINE__, &toolbarRect, font, ToolbarPrototype);
-
 		//toolbar temp
 		vector<string> strings;
 		strings.push_back("New");
 		strings.push_back("Open");
 		strings.push_back("Save");
+		strings.push_back("Load TileSet");
 		int buttonToSelect = GUI::Toolbar(__LINE__,&toolbarRect, -1, strings,font);
 		if (buttonToSelect != -1)
 		{
@@ -282,10 +316,9 @@ int main(int argc, char* argv[])
 		}
 
 		if (!windowToggled)
-		{
 			selectedButton = -1;
-		}
-		enum TOOLMAP_BUTTONS { NEW, OPEN, SAVE };
+
+		enum TOOLMAP_BUTTONS { NEW, OPEN, SAVE,LOAD_TILESET };
 		switch (selectedButton)
 		{
 		case NEW:
@@ -295,8 +328,22 @@ int main(int argc, char* argv[])
 			break;
 		case SAVE:
 			break;
+		case LOAD_TILESET:
+			GUI::Window(__LINE__, &tileSetWindowRect, font, TileSetWindow);
+			break;
 		}
 
+		//display tilesheet
+		if (tileSheet != nullptr)
+		{
+			int tileIndex = GUI::GridSelector(__LINE__, &tileSetRect, tileSheet, 4);
+			if (tileIndex != -1)
+				selectedTileIndex = tileIndex;	
+
+			//draw tile selected preview
+			if(selectedTileIndex != -1)
+				SDL_RenderCopy(render, tileSheet->texture, tileSheet->GetFrame(selectedTileIndex), &tilePreviewRect);
+		}
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
 		SDL_RenderClear(render);
