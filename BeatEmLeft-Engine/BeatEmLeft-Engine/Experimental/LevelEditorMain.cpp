@@ -12,6 +12,9 @@ static SDL_Renderer* render = core.getRenderer();
 static ImageStore imageStore(render);
 static SpriteSheet* tileSheet = nullptr;
 
+//temp ~ tile map 2d array representation
+static int** tilemap = nullptr;
+
 //color pallette
 static SDL_Color yellow{ 255,231,76,255 };
 static SDL_Color red{ 255,89,100,255 };
@@ -262,7 +265,6 @@ int main(int argc, char* argv[])
 	float sliderValue2 = 0.0f;
 	SDL_Rect sliderRect2{ 400,50,20,200 };
 
-	//windows
 #define EDITOR_WIDTH 800
 #define EDITOR_HEIGHT 600
 	int selectedButton = -1;
@@ -278,10 +280,19 @@ int main(int argc, char* argv[])
 	tileSetWindowRect.x = EDITOR_WIDTH / 2 - tileSetWindowRect.w / 2;
 	tileSetWindowRect.y = EDITOR_HEIGHT / 2 - tileSetWindowRect.h / 2;
 
-
 	//tile selector
 	int selectedTileIndex = -1;
 
+	float currentTime = 0.0f;
+	float pastTime = 0.0f;
+	float printDelay = 2000.0f;
+	tilemap = (int**)malloc(sizeof(int*) * (EDITOR_HEIGHT / 64));
+	for (int i = 0;i < EDITOR_HEIGHT / 64;++i)
+	{
+		tilemap[i] = (int*)malloc(sizeof(int) * (EDITOR_WIDTH / 64));
+		for (int c = 0;c < EDITOR_WIDTH / 64;++c)
+			tilemap[i][c] = 0;
+	}
 	//---------------- Game Loop ------------------//
 
 	GUI::Init(render);
@@ -358,11 +369,37 @@ int main(int argc, char* argv[])
 		{
 			int tileIndex = GUI::GridSelector(__LINE__, &tileSetRect, tileSheet, 4);
 			if (tileIndex != -1)
-				selectedTileIndex = tileIndex;	
+				selectedTileIndex = tileIndex;
 
 			//draw tile selected preview
-			if(selectedTileIndex != -1)
+			if (selectedTileIndex != -1)
 				SDL_RenderCopy(render, tileSheet->texture, tileSheet->GetFrame(selectedTileIndex), &tilePreviewRect);
+		}
+		else
+			selectedTileIndex = -1;
+
+		if (selectedTileIndex != -1)
+		{
+			//print out tilemap
+			if (currentTime > pastTime + printDelay)
+			{
+				pastTime = currentTime;
+				printf("tile Map:\n");
+				for (int r = 0;r < EDITOR_HEIGHT / 64;++r)
+				{
+					printf("{ ");
+					for (int c = 0;c < EDITOR_WIDTH / 64;++c)
+						printf("%d ", tilemap[r][c]);
+					printf(" }\n");
+				}
+
+				puts("\n\n");
+			}
+
+			//place the tile on mouse click
+
+			//use screen position coordinates temporarily
+
 		}
 
 		SDL_RenderPresent(render);
@@ -371,13 +408,18 @@ int main(int argc, char* argv[])
 
 		GameLoop::UpdateFPS();
 		GameLoop::CapFramerate(core.getTargetDeltaTime());
-		float currentTime = GameLoop::UpdateCurrentTime();
+		currentTime = GameLoop::UpdateCurrentTime();
 		GameLoop::DisplayFPS(core.getWindow(), 500.0f);
 
 		GUI::SetTimeAndOldMousePos(currentTime);
 	}
 	
-
 	TTF_CloseFont(font);
+
+	for (int i = 0;i < EDITOR_HEIGHT / 64;++i)
+		free(tilemap[i]);
+	free(tilemap);
+	tilemap = NULL;
+
 	return 0;
 }
