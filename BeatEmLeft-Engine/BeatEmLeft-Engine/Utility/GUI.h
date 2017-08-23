@@ -124,7 +124,7 @@ namespace GUI
 		Return Value:
 			the function returns true if a GUI element was pressed inside the window, false otherwise
 	*/
-	SDL_Rect Window(int ui_id,const SDL_Rect* bounds,TTF_Font* font,bool (*window_func)(int,const SDL_Rect*,TTF_Font*));
+	SDL_Rect Window(int ui_id, const SDL_Rect* bounds, TTF_Font* font, bool(*window_func)(int, const SDL_Rect*, TTF_Font*), SDL_Color windowcolor = {60,87,121,255});
 
 	int Toolbar(int ui_id,const SDL_Rect* bounds, int toolbarIndex, const std::vector<std::string> textList,TTF_Font* font);
 }

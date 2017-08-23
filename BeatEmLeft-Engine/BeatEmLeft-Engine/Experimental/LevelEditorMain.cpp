@@ -23,7 +23,7 @@ static SDL_Color green{ 56,230,140,255 };
 static string mainPath(SDL_GetBasePath() + string("resources/"));
 
 //helper function for setting the color
-void SetDrawColor(SDL_Renderer* render, const SDL_Color& color)
+static void SetDrawColor(SDL_Renderer* render, const SDL_Color& color)
 {
 	SDL_SetRenderDrawColor(render, color.r, color.g, color.b, color.a);
 }
@@ -34,7 +34,7 @@ static float vertSliderValue = 0.0f;
 
 //todo: find a way to remove TTF_Font* parameter pass to all GUI related functions that need to display text
 //e.g. GUI::Label() and GUI::TextField()
-bool WindowFunction(int ui_id,const SDL_Rect* relativePos,TTF_Font* font)
+static bool WindowFunction(int ui_id,const SDL_Rect* relativePos,TTF_Font* font)
 {
 	SDL_Rect buttonRect{ relativePos->x + 100 - 75 / 2,relativePos->y + 100 - 20 / 2,75,20 };
 	SDL_Color blue2{ 0,0,255,255 };
@@ -207,6 +207,31 @@ static bool TileSetWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font
 		int frameHeight = stoi(sliceHeight);
 		tileSheet = new SpriteSheet(render, img_src, frameWidth, frameHeight);
 	}
+
+	return false;
+}
+
+static bool TileMapWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font)
+{
+	//draw tilemap grid
+	
+	//temporarily hardcode tile width and tile height
+	int tileWidth = 64, tileHeight = 64;
+	int windowWidth = relativePos->w, windowHeight = relativePos->h;
+
+	int numLinesAcross = windowWidth / tileWidth;
+	int numLinesBelow = windowHeight / tileHeight;
+
+	for (int v = 0;v < numLinesAcross + 1;++v)
+	{
+		SDL_RenderDrawLine(render, v * tileWidth,relativePos->y, v * tileWidth,relativePos->y + windowHeight);
+	}
+
+	for (int h = 0;h < numLinesBelow + 1;++h)
+	{
+		SDL_RenderDrawLine(render, relativePos->x, h * tileHeight, relativePos->x + windowWidth, h * tileHeight);
+	}
+
 	return false;
 }
 
@@ -216,14 +241,6 @@ int main(int argc, char* argv[])
 	string fontPath = mainPath + string("SourceCodePro-Black.ttf");
 	int fontSize = 12;
 	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), fontSize);
-
-	//load in sample tilesheet to use
-	//ImageStore imageStore(render);
-	//string imageFile("tiles-stones.png");
-	//string imagePath(mainPath + imageFile);
-	//Image* src = imageStore.Load(imageFile, imagePath);
-	//int frameWidth = 64, frameHeight = 64;
-	//SpriteSheet tileSheet(render, src, frameWidth, frameHeight);
 
 	//positions of each panel
 	SDL_Rect toolbarRect;
@@ -302,6 +319,9 @@ int main(int argc, char* argv[])
 		SetDrawColor(render, green);
 		SDL_RenderFillRect(render, &tileSetRect);
 
+		//display tile map window
+		GUI::Window(__LINE__, &levelWindowRect, font, TileMapWindow,white);
+
 		//toolbar temp
 		vector<string> strings;
 		strings.push_back("New");
@@ -344,6 +364,7 @@ int main(int argc, char* argv[])
 			if(selectedTileIndex != -1)
 				SDL_RenderCopy(render, tileSheet->texture, tileSheet->GetFrame(selectedTileIndex), &tilePreviewRect);
 		}
+
 		SDL_RenderPresent(render);
 		SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
 		SDL_RenderClear(render);
