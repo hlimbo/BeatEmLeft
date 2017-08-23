@@ -224,12 +224,12 @@ static bool TileMapWindow(int ui_id, const SDL_Rect* relativePos, TTF_Font* font
 
 	for (int v = 0;v < numLinesAcross + 1;++v)
 	{
-		SDL_RenderDrawLine(render, v * tileWidth,relativePos->y, v * tileWidth,relativePos->y + windowHeight);
+		SDL_RenderDrawLine(render,relativePos->x + v * tileWidth,relativePos->y,relativePos->x + v * tileWidth,relativePos->y + windowHeight);
 	}
 
 	for (int h = 0;h < numLinesBelow + 1;++h)
 	{
-		SDL_RenderDrawLine(render, relativePos->x, h * tileHeight, relativePos->x + windowWidth, h * tileHeight);
+		SDL_RenderDrawLine(render, relativePos->x,relativePos->y + h * tileHeight, relativePos->x + windowWidth,relativePos->y + h * tileHeight);
 	}
 
 	return false;
