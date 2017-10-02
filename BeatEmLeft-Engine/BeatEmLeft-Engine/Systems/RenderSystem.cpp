@@ -44,8 +44,10 @@ void RenderSystem::SetLocation(int x, int y)
 //temporary level dimensions
 //#define LEVEL_WIDTH 800
 //#define LEVEL_HEIGHT 600
+
 #define LEVEL_WIDTH 2048
 #define LEVEL_HEIGHT 1840
+
 bool RenderSystem::SetEntityToFollow(int id,int level_width,int level_height)
 {
 	//target entity's components

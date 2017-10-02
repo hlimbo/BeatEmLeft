@@ -1,3 +1,14 @@
+/*
+	imguiTest2.cpp further demos guis I wrote procedurally in GUI.cpp
+
+	It now features a grid selector and grid preview  widgets
+	to showcase how they work in action.
+
+	Controls:
+		Use your mouse to hover over a tile and left click to select the tile
+		to preview in the preview widget.
+*/
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "../MasterHeader.h"

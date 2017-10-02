@@ -16,7 +16,6 @@ using namespace std;
 #define SCREEN_WIDTH 1000
 #define SCREEN_HEIGHT 620
 
-
 //initialization and shutdown of SDL
 static Core core;
 static SDL_Renderer* render = core.getRenderer();

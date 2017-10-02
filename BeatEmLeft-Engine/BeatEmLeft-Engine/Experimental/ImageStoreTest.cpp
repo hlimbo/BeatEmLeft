@@ -1,3 +1,17 @@
+/*
+	ImageStoreTest.cpp
+	Used to demonstrate alpha values can be changed within a region of a single image file loaded
+
+	Controls:
+		left and right arrow keys to select which region of the image file to modify its alpha value
+		up key increases alpha value
+		down key decreases alpha value
+
+	Note:
+		selecting a region within the image file will automatically set it to its previously selected
+		region's alpha value.
+*/
+
 #include <stdio.h>
 #include <string>
 

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <assert.h>
 
+//Note: project may not compile properly as I have included this header file is statically linked.
 #include <Vect2.h>
 
 #include "../Systems/RenderSystem.h"
@@ -19,6 +20,7 @@
 #include "../Components/Animation.h"
 #include "../Components/SlopeCollider.h"
 #include "../Systems/ECS.h"
+
 #include "../Core.h"
 #include "../Systems/MovementSystem.h"
 
