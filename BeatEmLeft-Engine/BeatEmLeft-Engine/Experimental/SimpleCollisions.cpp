@@ -1,3 +1,5 @@
+//don't use this class for demo purposes ~ unstable
+
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <iostream>
@@ -5,20 +7,8 @@
 
 #include <Vect2.h>
 
-#include "Systems/RenderSystem.h"
-#include "Systems/ComponentManager.h"
-#include "Systems/EntitySystem.h"
-#include "Components/Sprite.h"
-#include "Components/Transform.h"
-#include "Components/BoxCollider.h"
-#include "Systems/ECS.h"
-#include "Core.h"
-#include "Systems/MovementSystem.h"
 
-#include "Input/KeyboardController.h"
-#include "Input/GameController.h"
-#include "Utility/TextureLoader.h"
-#include "Utility/TextureStore.h"
+#include "../MasterHeader.h"
 
 using namespace std;
 
@@ -41,7 +31,7 @@ int main(int argc, char* argv[])
 	string backgroundPath = mainPath + string("Background.png");
 	string tilePath = mainPath + string("block.png");
 
-	TextureStore store(render);
+	ImageStore store(render);
 	store.Load("Background.png", backgroundPath);
 	store.Load("block.png", tilePath);
 	store.Load("blue.png", playerPath);

@@ -1,3 +1,5 @@
+//use 800x600 pixel width and height
+
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <iostream>
@@ -27,6 +29,9 @@
 #include "../Utility/ImageStore.h"
 #include "../Utility/ImageMod.h"
 #include "../Utility/MapFileLoader.h"
+
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
 
 using namespace std;
 

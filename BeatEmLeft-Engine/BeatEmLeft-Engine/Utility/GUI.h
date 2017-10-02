@@ -13,6 +13,16 @@ struct SDL_Texture;
 struct SpriteSheet;
 
 //Immediate Mode GUI functions used to draw gui widgets
+/*
+	Immediate Mode GUI is a procedure based way of creating gui
+	widgets visible in the screen. Benefits of this approach is that
+	it is relatively easy to hook gui widgets into the application level
+	code (e.g. where the main function is located) and reason about the
+	underlying logic of the code.
+
+	ui_global_state maintains the state of all widgets placed in the application.
+
+*/
 namespace GUI
 {
 	//Should not declare more than one ui_state since this holds

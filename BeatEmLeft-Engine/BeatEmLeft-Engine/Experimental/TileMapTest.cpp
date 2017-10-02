@@ -1,3 +1,5 @@
+//do not use this class for demo purposes ~ unstable
+
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <iostream>

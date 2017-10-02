@@ -1,3 +1,27 @@
+/*
+	AnimationTest.cpp
+	Include this file as part of compilation when compiling in Visual Studio 2017.
+
+	This file is used to demonstrate the physics,collision detection and resolution,
+	keyboard polling and input, 2d rendering, and game loop systems of the game engine.
+	If you want to see an interactive demo that overall captures most features/functionalities
+	I have been working on in the game engine, include this file to view them.
+
+	Controls:
+		arrow keys to move
+		space bar to jump
+
+	Note:
+		The character fades on purpose to demonstrate that
+		my engine can set different alpha values to a single
+		sprite sheet by subdividing the sheet to different
+		sections.
+
+		Please view ImageMod.cpp to see the underlying implementation of this feature.
+
+*/
+
+
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <iostream>

@@ -1,8 +1,21 @@
+/*
+	LevelEditorMain.cpp
+	This program is work in progress and can only demo the following:
+		1. loads tileset from file system (loads from debug/resources folder as this entire project was built using visual studio 2017)
+		2. previews the tile selected on preview widget
+		3. displays the tiles loaded on the grid selector widget.
+
+*/
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <fstream>
 #include "../MasterHeader.h"
 using namespace std;
+
+#define SCREEN_WIDTH 1000
+#define SCREEN_HEIGHT 620
+
 
 //initialization and shutdown of SDL
 static Core core;

@@ -44,8 +44,8 @@ void RenderSystem::SetLocation(int x, int y)
 //temporary level dimensions
 //#define LEVEL_WIDTH 800
 //#define LEVEL_HEIGHT 600
-//#define LEVEL_WIDTH 2048
-//#define LEVEL_HEIGHT 1840
+#define LEVEL_WIDTH 2048
+#define LEVEL_HEIGHT 1840
 bool RenderSystem::SetEntityToFollow(int id,int level_width,int level_height)
 {
 	//target entity's components
@@ -96,7 +96,7 @@ void RenderSystem::Update(SDL_Renderer* render)
 
 		Sprite* bgSprite = spriteManager->GetComponent(backgroundID);
 		assert(bgSprite != nullptr);
-		SetEntityToFollow(playerID, bgSprite->width,bgSprite->height);
+		SetEntityToFollow(playerID, LEVEL_WIDTH, LEVEL_HEIGHT);//bgSprite->width,bgSprite->height);
 	}
 
 	vector<int> ids = ecs->entitySystem.GetIDs();
