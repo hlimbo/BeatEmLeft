@@ -1,7 +1,7 @@
 #ifndef IMAGE_STORE_H
 #define IMAGE_STORE_H
 #include "TextureLoader.h"
-#include <SDL2/SDL_render.h>
+#include <SDL_render.h>
 #include <unordered_map>
 #include <string>
 

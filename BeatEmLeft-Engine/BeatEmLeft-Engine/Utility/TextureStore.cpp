@@ -1,5 +1,5 @@
 #include "TextureStore.h"
-#include <SDL2/SDL_render.h>
+#include <SDL_render.h>
 #include <assert.h>
 
 TextureStore::TextureStore(SDL_Renderer* render)

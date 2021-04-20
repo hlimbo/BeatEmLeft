@@ -1,7 +1,7 @@
 #ifndef GAME_CONTROLLER_H
 #define GAME_CONTROLLER_H
-#include "SDL2/SDL_gamecontroller.h"
-#include "SDL2/SDL_events.h"
+#include "SDL_gamecontroller.h"
+#include "SDL_events.h"
 #include <unordered_map>
 #include <Vect2.h>
 

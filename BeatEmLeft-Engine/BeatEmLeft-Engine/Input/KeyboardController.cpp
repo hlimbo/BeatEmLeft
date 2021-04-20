@@ -1,6 +1,6 @@
 #include "KeyboardController.h"
-#include "SDL2/SDL_keyboard.h"
-#include "SDL2/SDL_keycode.h"
+#include "SDL_keyboard.h"
+#include "SDL_keycode.h"
 
 void KeyboardController::Init()
 {

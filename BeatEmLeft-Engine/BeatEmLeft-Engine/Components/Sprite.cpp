@@ -2,7 +2,7 @@
 #include "../Utility/TextureLoader.h"
 #include "../Components/SpriteSheet.h"
 #include <stdio.h>
-#include <typeinfo.h>
+#include <typeinfo>
 #include <assert.h>
 
 Sprite::Sprite()

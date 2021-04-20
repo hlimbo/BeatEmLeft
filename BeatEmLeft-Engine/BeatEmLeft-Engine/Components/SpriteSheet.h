@@ -1,8 +1,8 @@
 #ifndef SPRITE_SHEET_H
 #define SPRITE_SHEET_H
 
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_rect.h>
+#include <SDL_render.h>
+#include <SDL_rect.h>
 
 struct Image;
 

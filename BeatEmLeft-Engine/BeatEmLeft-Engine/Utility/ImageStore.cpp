@@ -1,5 +1,5 @@
 #include "ImageStore.h"
-#include <SDL2/SDL_render.h>
+#include <SDL_render.h>
 #include <assert.h>
 #include "../Utility/ImageMod.h"
 

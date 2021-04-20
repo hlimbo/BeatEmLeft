@@ -1,9 +1,9 @@
 #ifndef GUI_H
 #define GUI_H
-#include <SDL2/SDL_rect.h>
-#include <SDL2/SDL_pixels.h>
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL_rect.h>
+#include <SDL_pixels.h>
+#include <SDL_events.h>
+#include <SDL_ttf.h>
 #include <string>
 #include <unordered_map>
 #include <vector>

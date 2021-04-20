@@ -2,7 +2,7 @@
 #include "ECS.h"
 #include "../Components/Sprite.h"
 #include "../Components/Transform.h"
-#include <SDL2/SDL_render.h>
+#include <SDL_render.h>
 
 #include "../Components/Animation.h"
 #include "../Components/SpriteSheet.h"

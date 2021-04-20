@@ -2,7 +2,7 @@
 #include "../Utility/TextureLoader.h"
 #include "../Utility/ImageMod.h"
 #include <stdio.h>
-#include <typeinfo.h>
+#include <typeinfo>
 #include <assert.h>
 
 SpriteSheet::SpriteSheet(SDL_Renderer* render,SDL_Texture* texture,int frameWidth,int frameHeight)

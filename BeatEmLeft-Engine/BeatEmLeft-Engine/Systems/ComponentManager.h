@@ -2,7 +2,7 @@
 #define COMPONENT_MANAGER_H
 
 #include <unordered_map>
-#include <typeinfo.h>
+#include <typeinfo>
 
 //Component Manager will
 //1. manage components of a single type

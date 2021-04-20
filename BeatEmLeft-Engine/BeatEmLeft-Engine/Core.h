@@ -12,7 +12,7 @@
 //#define SCREEN_WIDTH 800
 //#define SCREEN_HEIGHT 800
 
-#include <SDL2/SDL_stdinc.h>
+#include <SDL_stdinc.h>
 
 struct SDL_Window;
 struct SDL_Renderer;

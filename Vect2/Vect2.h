@@ -121,21 +121,21 @@ namespace VectMath
 	inline Vect2 Up() { return Vect2(0.0f, 1.0f); }
 	inline Vect2 Down() { return Vect2(0.0f, -1.0f); }
 
-	float DistSqr(const Vect2& v1, const Vect2& v2);
-	float Dist(const Vect2& v1, const Vect2& v2);
-	float Magnitude(const Vect2& v);
+	extern float DistSqr(const Vect2& v1, const Vect2& v2);
+	extern float Dist(const Vect2& v1, const Vect2& v2);
+	extern float Magnitude(const Vect2& v);
 	
-	float GetMax(const Vect2& v);
-	float GetMin(const Vect2& v);
-	Vect2 GetAbs(const Vect2& v);
+	extern float GetMax(const Vect2& v);
+	extern float GetMin(const Vect2& v);
+	extern Vect2 GetAbs(const Vect2& v);
 
-	float Dot(const Vect2& v1, const Vect2& v2);
-	float Cross(const Vect2& v1, const Vect2 v2);
-	Vect2 Normalize(const Vect2& v);
-	Vect2 Normalize(const Vect2& v1, const Vect2& v2);
-	float AngleBetween(const Vect2& v1, const Vect2& v2);
-	Vect2 Lerp(const Vect2& from, const Vect2& to, float t);
-	bool IsRoughlyEqual(const Vect2& v1, const Vect2& v2, float tolerance = 0.001f);
+	extern float Dot(const Vect2& v1, const Vect2& v2);
+	extern float Cross(const Vect2& v1, const Vect2 v2);
+	extern Vect2 Normalize(const Vect2& v);
+	extern Vect2 Normalize(const Vect2& v1, const Vect2& v2);
+	extern float AngleBetween(const Vect2& v1, const Vect2& v2);
+	extern Vect2 Lerp(const Vect2& from, const Vect2& to, float t);
+	extern bool IsRoughlyEqual(const Vect2& v1, const Vect2& v2, float tolerance = 0.001f);
 }
 
 #endif

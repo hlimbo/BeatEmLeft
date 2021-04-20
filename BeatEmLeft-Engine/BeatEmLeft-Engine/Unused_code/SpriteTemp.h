@@ -1,6 +1,6 @@
 #ifndef SPRITE_H
 #define SPRITE_H
-#include <SDL2/SDL_rect.h>
+#include <SDL_rect.h>
 
 class Texture;
 struct SDL_Renderer;
