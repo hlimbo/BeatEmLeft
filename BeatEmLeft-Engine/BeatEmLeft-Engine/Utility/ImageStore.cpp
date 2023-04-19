@@ -3,10 +3,7 @@
 #include <assert.h>
 #include "../Utility/ImageMod.h"
 
-ImageStore::ImageStore(SDL_Renderer* render)
-{
-	this->render = render;
-}
+ImageStore::ImageStore(SDL_Renderer* render): render(render) {}
 
 ImageStore::~ImageStore()
 {

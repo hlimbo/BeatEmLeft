@@ -22,10 +22,7 @@ using namespace std;
 class AnimationStateMachine
 {
 public:
-	AnimationStateMachine(Animation* anim)
-	{
-		playerAnimation = anim;
-	}
+	AnimationStateMachine(Animation* anim): playerAnimation(anim), playerKinematic(nullptr), playerTransform(nullptr) {}
 	~AnimationStateMachine() {}
 
 	//initializes the relevant components (data) required to change animation state

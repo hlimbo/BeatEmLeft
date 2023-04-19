@@ -34,7 +34,7 @@ struct Entity
 class EntitySystem
 {
 public:
-	EntitySystem() { idCount = 0; }
+	EntitySystem(): idCount(0) {}
 	~EntitySystem(){}
 
 	bool ContainsEntityType(const string& type)

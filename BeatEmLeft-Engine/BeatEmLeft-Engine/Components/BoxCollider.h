@@ -5,7 +5,7 @@
 
 struct BoxCollider
 {
-	BoxCollider() { type = typeid(BoxCollider).name(); }
+	BoxCollider() : type(typeid(BoxCollider).name()), height(0), width(0) { }
 	~BoxCollider() {}
 
 	//position over the top-left corner of the box

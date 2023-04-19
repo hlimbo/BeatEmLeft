@@ -7,7 +7,7 @@ struct CircleCollider
 {
 	//typeid(class or some other type).name(); isn't nix compliant
 	//but works for msvc?
-	CircleCollider() { type = typeid(CircleCollider).name();  }
+	CircleCollider(): type(typeid(CircleCollider).name()), radius(0) {}
 	~CircleCollider() {}
 
 	Vect2 position;

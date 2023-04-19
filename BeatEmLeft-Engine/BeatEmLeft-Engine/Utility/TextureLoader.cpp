@@ -56,11 +56,7 @@ bool TextureLoader::Free(SDL_Texture* texture)
 	return true;
 }
 
-Image::Image(SDL_Texture* texture, SDL_Surface* surface)
-{
-	this->texture = texture;
-	this->surface = surface;
-}
+Image::Image(SDL_Texture* texture, SDL_Surface* surface): texture(texture), surface(surface) {}
 
 Image::~Image()
 {

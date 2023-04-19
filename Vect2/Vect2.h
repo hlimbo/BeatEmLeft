@@ -33,9 +33,9 @@ struct Vect2
 	float x, y;
 
 	//Note: Default Vect2 Constructor will always initialize the x and y components to zero ~ design choice
-	Vect2() { this->x = 0; this->y = 0; }
-	Vect2(float x, float y) { this->x = x; this->y = y; }
-	Vect2(const Vect2& copy) { this->x = copy.x; this->y = copy.y; }
+	Vect2(): x(0), y(0) {}
+	Vect2(float x, float y): x(x), y(y) {}
+	Vect2(const Vect2& copy): x(copy.x), y(copy.y) {}
 	~Vect2() {}
 
 	inline Vect2& operator=(const Vect2& other)
@@ -101,8 +101,6 @@ struct Vect2
 		result.y = (y == 0.0f) ? 0.0f : (y > 0.0f) ? 1.0f : -1.0f;
 		return result;
 	}
-
-// 	void PrintValues();
 
 	//Note:: The functions below are typically used for unit testing only
 	//returns true if the other vector is an identical copy of the original vector.

@@ -15,7 +15,7 @@ enum class ButtonStates
 class GameController
 {
 public:
-	GameController(){}
+	GameController(): controller(nullptr), pressedTime(0), timeHeldDelta(0) {}
 	~GameController() {}
 
 	void Init();

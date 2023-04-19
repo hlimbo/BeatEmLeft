@@ -19,7 +19,7 @@ template<typename component>
 class ComponentManager
 {
 public:
-	explicit ComponentManager() { type = typeid(component).name(); }
+	explicit ComponentManager(): type(typeid(component).name()) {}
 	~ComponentManager()
 	{
 		int destroyCount = 0;

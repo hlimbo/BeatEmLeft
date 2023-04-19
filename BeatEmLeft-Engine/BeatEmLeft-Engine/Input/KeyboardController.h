@@ -22,8 +22,8 @@ class KeyboardController
 {
 public:
 	//about 3 frames of keyboard delay from transitioning between pressed to held state
-	KeyboardController() { latency = 55.7f;}
-	KeyboardController(float latency) { this->latency = latency; }
+	KeyboardController(): latency(55.7) {}
+	KeyboardController(float latency): latency(latency) {}
 	~KeyboardController() {}
 
 	//will take in a file later on.......this should be dealt with towards the end of the engine..

@@ -63,24 +63,24 @@ namespace GUI
 		//pointer to main window's renderer
 		SDL_Renderer* render;
 
-		ui_state()
-		{
-			hoveredID = 0;
-			pressedID = 0;
-			mousePos = SDL_Point{ 0,0 };
-			oldMousePos = SDL_Point{ 0,0 };
-			mouseClicked = false;
-			textChanged = false;
-			textEditingEnabled = false;
-			keyboardFocusID = 0;
-			keyPressed = -1;
-			prevPressed = -1;
-			currentTime = 0.0f;
-			pastTime = 0.0f;
-			isTextCursorVisible = true;
-			textBuffer = NULL;
-			render = NULL;
-		}
+		ui_state():
+				hoveredID(0),
+				pressedID(0),
+				mousePos(SDL_Point{ 0,0 }),
+				oldMousePos(SDL_Point{ 0,0 }),
+				mouseClicked(false),
+				textChanged(false),
+				textEditingEnabled(false),
+				keyboardFocusID(0),
+				keyPressed(-1),
+				prevPressed(-1),
+				currentTime(0.0f),
+				pastTime(0.0f),
+				isTextCursorVisible(true),
+				textBuffer(NULL),
+				render(NULL),
+				keyMod(0)
+		{}
 
 		~ui_state() 
 		{

@@ -7,13 +7,11 @@
 //of the entity that registered to this component
 struct Transform
 {
-	Transform() { type = typeid(Transform).name(); }
-	Transform(Vect2 position)
+	Transform(): type(typeid(Transform).name()) {}
+	Transform(Vect2 position) : type(typeid(Transform).name()), position(position)
 	{
-		this->position = position;
 		scale.x = 1.0f;
 		scale.y = 1.0f;
-		type = typeid(Transform).name();
 	}
 	~Transform() {}
 

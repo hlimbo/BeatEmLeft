@@ -2,10 +2,7 @@
 #include <SDL_render.h>
 #include <assert.h>
 
-TextureStore::TextureStore(SDL_Renderer* render)
-{
-	this->render = render;
-}
+TextureStore::TextureStore(SDL_Renderer* render): render(render) {}
 
 TextureStore::~TextureStore()
 {

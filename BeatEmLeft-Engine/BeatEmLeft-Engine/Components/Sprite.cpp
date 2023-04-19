@@ -5,22 +5,14 @@
 #include <typeinfo>
 #include <assert.h>
 
-Sprite::Sprite()
-{
-	image = NULL;
-	flip = SDL_RendererFlip::SDL_FLIP_NONE;
-	type = typeid(Sprite).name();
-}
+Sprite::Sprite(): image(NULL), flip(SDL_RendererFlip::SDL_FLIP_NONE), type(typeid(Sprite).name()) {}
 Sprite::~Sprite()
 {
 }
 
-Sprite::Sprite(Image* image)
+Sprite::Sprite(Image* image): image(image), flip(SDL_RendererFlip::SDL_FLIP_NONE), type(typeid(Sprite).name())
 {
-	this->image = image;
-	SetTextureAttributes(image->texture);
-	flip = SDL_RendererFlip::SDL_FLIP_NONE;
-	type = typeid(Sprite).name();
+	SetTextureAttributes(this->image->texture);
 
 	bounds.x = 0;
 	bounds.y = 0;
@@ -30,7 +22,7 @@ Sprite::Sprite(Image* image)
 	height = src_h;
 }
 
-Sprite::Sprite(SpriteSheet* sheet, int frameIndex)
+Sprite::Sprite(SpriteSheet* sheet, int frameIndex) : flip(SDL_RendererFlip::SDL_FLIP_NONE), type(typeid(Sprite).name())
 {
 	assert(sheet != nullptr);
 	assert(frameIndex < sheet->GetFrameCount() && frameIndex >= 0);
@@ -48,8 +40,6 @@ Sprite::Sprite(SpriteSheet* sheet, int frameIndex)
 	bounds.x = sheet->GetFrame(frameIndex)->x;
 	bounds.y = sheet->GetFrame(frameIndex)->y;
 
-	flip = SDL_RendererFlip::SDL_FLIP_NONE;
-	type = typeid(Sprite).name();
 }
 
 

@@ -9,11 +9,23 @@
 
 struct Kinematic
 {
-	Kinematic() 
-	{
-		type = typeid(Kinematic).name(); 
-		accelFactor = 0.5f;
-	}
+	Kinematic() : 
+			type(typeid(Kinematic).name()), 
+			accelFactor(0.5f),
+			minSpeed(0),
+			maxSpeed(0),
+			currentSpeed(0),
+			gravity(0),
+			minGravity(0),
+			maxGravity(0),
+			gravityFactor(0),
+			minJumpSpeed(0),
+			maxJumpSpeed(0),
+			jumpFactor(0),
+			jumpSpeed(0),
+			maxJumpTime(0),
+			currentJumpTime(0),
+			mass(0) {}
 	~Kinematic() {}
 
 	Vect2 velocity; // pixels / millisecond with direction applied

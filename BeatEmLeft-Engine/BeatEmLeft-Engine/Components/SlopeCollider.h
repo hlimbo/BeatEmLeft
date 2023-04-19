@@ -5,11 +5,7 @@
 
 struct SlopeCollider
 {
-	SlopeCollider(Vect2 position)
-	{
-		this->position = position;
-		type = typeid(SlopeCollider).name();
-	}
+	SlopeCollider(Vect2 position) : position(position), type(typeid(SlopeCollider).name()) {}
 	~SlopeCollider(){}
 
 	float GetSlope()
