@@ -175,12 +175,13 @@
 //	
 //	//should probably turn into a helper function
 //	SDL_QueryTexture(store.Get(backgroundName)->texture, NULL, NULL, &level_width, &level_height);
+//	SDL_QueryTexture(store.Get("box.png")->texture, NULL, NULL, &tileWidth, &tileHeight);
 //
-//	cout << "Enter in tileWidth: ";
-//	cin >> tileWidth;
-//	cout << "Enter in tileHeight: ";
-//	cin >> tileHeight;
-//	fflush(stdin);
+//	//cout << "Enter in tileWidth: ";
+//	//cin >> tileWidth;
+//	//cout << "Enter in tileHeight: ";
+//	//cin >> tileHeight;
+//	//fflush(stdin);
 //
 //	//draw a grid - pre render a static image.
 //	int tiles_per_row = level_width / (int)tileWidth;

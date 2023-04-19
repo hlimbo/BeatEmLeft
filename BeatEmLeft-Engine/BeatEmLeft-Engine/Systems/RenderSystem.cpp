@@ -116,7 +116,8 @@ void RenderSystem::Update(SDL_Renderer* render)
 			if (backgroundID == *it)
 			{
 				//always render the background since all of its parts will always be seen in the game.
-				SDL_RenderCopy(render, sprite->image->texture, &camera, NULL);
+				// SDL_RenderCopy(render, sprite->image->texture, &camera, NULL);
+					SDL_RenderCopy(render, sprite->image->texture, NULL, NULL);
 			}
 			else if (playerID == *it)
 			{

@@ -26,6 +26,7 @@
 
 #ifndef VECT2_H
 #define VECT2_H
+#include <math.h>
 
 struct Vect2
 {
@@ -64,6 +65,11 @@ struct Vect2
 		return Vect2(x / scalar, y / scalar);
 	}
 
+	inline Vect2 operator/(const float& scalar) const
+	{
+			return Vect2(x / scalar, y / scalar);
+	}
+
 	inline Vect2 operator+=(const Vect2& other)
 	{
 		this->x += other.x;
@@ -96,7 +102,7 @@ struct Vect2
 		return result;
 	}
 
-	void PrintValues();
+// 	void PrintValues();
 
 	//Note:: The functions below are typically used for unit testing only
 	//returns true if the other vector is an identical copy of the original vector.
@@ -121,21 +127,61 @@ namespace VectMath
 	inline Vect2 Up() { return Vect2(0.0f, 1.0f); }
 	inline Vect2 Down() { return Vect2(0.0f, -1.0f); }
 
-	extern float DistSqr(const Vect2& v1, const Vect2& v2);
-	extern float Dist(const Vect2& v1, const Vect2& v2);
-	extern float Magnitude(const Vect2& v);
+	inline float DistSqr(const Vect2& v1, const Vect2& v2)
+	{
+		return (v2.x - v1.x) * (v2.x - v1.x) + (v2.y - v1.y) * (v2.y - v1.y);
+	}
+	inline float Dist(const Vect2& v1, const Vect2& v2)
+	{
+		return sqrt(DistSqr(v1, v2));
+	}
+	inline float Magnitude(const Vect2& v)
+	{
+		return Dist(Zero(), v);
+	}
 	
-	extern float GetMax(const Vect2& v);
-	extern float GetMin(const Vect2& v);
-	extern Vect2 GetAbs(const Vect2& v);
+	inline float GetMax(const Vect2& v)
+	{
+		return v.x > v.y ? v.x : v.y;
+	}
+	inline float GetMin(const Vect2& v)
+	{
+		return v.x > v.y ? v.y : v.x;
+	}
+	inline Vect2 GetAbs(const Vect2& v)
+	{
+		return Vect2(fabs(v.x), fabs(v.y));
+	}
 
-	extern float Dot(const Vect2& v1, const Vect2& v2);
-	extern float Cross(const Vect2& v1, const Vect2 v2);
-	extern Vect2 Normalize(const Vect2& v);
-	extern Vect2 Normalize(const Vect2& v1, const Vect2& v2);
-	extern float AngleBetween(const Vect2& v1, const Vect2& v2);
-	extern Vect2 Lerp(const Vect2& from, const Vect2& to, float t);
-	extern bool IsRoughlyEqual(const Vect2& v1, const Vect2& v2, float tolerance = 0.001f);
+	inline float Dot(const Vect2& v1, const Vect2& v2)
+	{
+		return v1.x * v2.x + v1.y * v2.y;
+	}
+	inline float Cross(const Vect2& v1, const Vect2 v2)
+	{
+		return (v1.x * v2.y) - (v1.y * v2.x);
+	}
+	inline Vect2 Normalize(const Vect2& v)
+	{
+		return v / Magnitude(v);
+	}
+	inline Vect2 Normalize(const Vect2& v1, const Vect2& v2)
+	{
+		float magnitude = Dist(v1, v2);
+		return (v2 - v1) / magnitude;
+	}
+	inline float AngleBetween(const Vect2& v1, const Vect2& v2)
+	{
+		return (float)acos(Dot(v1, v2) / (Magnitude(v1) * Magnitude(v2)));
+	}
+	inline Vect2 Lerp(const Vect2& from, const Vect2& to, float t)
+	{
+		return from + (to - from) * t;
+	}
+	inline bool IsRoughlyEqual(const Vect2& v1, const Vect2& v2, float tolerance = 0.001f)
+	{
+		return fabs(v1.x - v2.x) < tolerance && fabs(v1.y - v2.y) < tolerance;
+	}
 }
 
 #endif

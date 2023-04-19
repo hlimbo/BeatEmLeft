@@ -379,7 +379,7 @@
 //		//display tilesheet
 //		if (tileSheet != nullptr)
 //		{
-//			int tileIndex = GUI::GridSelector(__LINE__, &tileSetRect, tileSheet, 4);
+//			int tileIndex = GUI::GridSelector(__LINE__, &tileSetRect, tileSheet, 3);
 //			if (tileIndex != -1)
 //				selectedTileIndex = tileIndex;
 //

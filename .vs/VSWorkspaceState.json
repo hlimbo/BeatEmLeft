@@ -3,8 +3,11 @@
     "",
     "\\BeatEmLeft-Engine",
     "\\BeatEmLeft-Engine\\BeatEmLeft-Engine",
+    "\\BeatEmLeft-Engine\\BeatEmLeft-Engine\\Experimental",
+    "\\BeatEmLeft-Engine\\BeatEmLeft-Engine\\UnitTesting",
+    "\\BeatEmLeft-Engine\\BeatEmLeft-Engine\\Unused_code",
     "\\Vect2"
   ],
-  "SelectedNode": "\\BeatEmLeft.sln",
+  "SelectedNode": "\\BeatEmLeft-Engine\\BeatEmLeft-Engine\\Experimental\\imguiTest.cpp",
   "PreviewInSolutionExplorer": false
 }
