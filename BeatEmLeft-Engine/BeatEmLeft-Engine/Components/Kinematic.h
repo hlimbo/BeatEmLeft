@@ -1,7 +1,7 @@
 #ifndef KINEMATIC_COMPONENT_H
 #define KINEMATIC_COMPONENT_H
 #include <Vect2.h>
-#include <typeinfo.h>
+#include <typeinfo>
 /*
 	Defines 2d physics variables used to move entities around the game world
 	e.g. velocity and acceleration

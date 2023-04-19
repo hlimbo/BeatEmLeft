@@ -1,6 +1,6 @@
 #include "StaticTextStore.h"
 #include <assert.h>
-#include <SDL2/sdl_ttf.h>
+#include <SDL_ttf.h>
 
 using namespace std;
 

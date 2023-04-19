@@ -1,7 +1,7 @@
 #ifndef CIRCLE_COLLIDER_H
 #define CIRCLE_COLLIDER_H
 #include <Vect2.h>
-#include <typeinfo.h>
+#include <typeinfo>
 
 struct CircleCollider
 {

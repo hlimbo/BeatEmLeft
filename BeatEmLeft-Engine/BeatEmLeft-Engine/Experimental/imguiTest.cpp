@@ -4,9 +4,9 @@
 	If only a single global state such as an enum was used to define the states of each button, all buttons would be affected by the change
 */
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <SDL_image.h>
 
 #include "../MasterHeader.h"
 

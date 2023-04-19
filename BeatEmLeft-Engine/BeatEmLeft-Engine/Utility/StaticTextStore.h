@@ -1,6 +1,6 @@
 #ifndef STATIC_TEXT_STORE_H
 #define STATIC_TEXT_STORE_H
-#include <SDL2/SDL_render.h>
+#include <SDL_render.h>
 #include <unordered_map>
 #include <string>
 

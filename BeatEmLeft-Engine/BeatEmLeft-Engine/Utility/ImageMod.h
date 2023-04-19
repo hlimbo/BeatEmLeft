@@ -1,6 +1,6 @@
 #ifndef IMAGE_MOD_H
 #define IMAGE_MOD_H
-#include <SDL2/SDL_render.h>
+#include <SDL_render.h>
 
 struct Image;
 

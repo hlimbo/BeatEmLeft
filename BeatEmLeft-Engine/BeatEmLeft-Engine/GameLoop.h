@@ -1,6 +1,6 @@
 #ifndef GAMELOOP_H
 #define GAMELOOP_H
-#include <SDL2/SDL_timer.h>
+#include <SDL_timer.h>
 #include <string>
 
 struct SDL_Window;

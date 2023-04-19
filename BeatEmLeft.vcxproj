@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{49A97D8A-CDAC-4D01-8B69-16811571B03C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\limbo\Documents\SDL_Dependencies\SDL2_ttf-2.0.15\include;C:\Users\limbo\Documents\SDL_Dependencies\SDL2_image-2.0.5\include;C:\Users\limbo\source\repos\BeatEmLeft\Vect2;C:\Users\limbo\Documents\SDL_Dependencies\SDL2-2.0.14\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\limbo\source\repos\BeatEmLeft\Vect2;C:\Users\limbo\Documents\SDL_Dependencies\SDL2_image-2.0.5\lib\x64;C:\Users\limbo\Documents\SDL_Dependencies\SDL2_ttf-2.0.15\lib\x64;C:\Users\limbo\Documents\SDL_Dependencies\SDL2-2.0.14\lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\limbo\Documents\SDL_Dependencies\SDL2-2.0.14\include;C:\Users\limbo\Documents\SDL_Dependencies\gtest-1.7.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\limbo\Documents\SDL_Dependencies\SDL2-2.0.14\lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\limbo\source\repos\BeatEmLeft\Vect2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Users\limbo\Documents\SDL_Dependencies\SDL2_image-2.0.5\lib\x64;C:\Users\limbo\Documents\SDL_Dependencies\SDL2_ttf-2.0.15\lib\x64;C:\Users\limbo\Documents\SDL_Dependencies\SDL2-2.0.14\lib\x64;C:\Users\limbo\source\repos\BeatEmLeft\Vect2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;Vect2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalDependencies>gtest_main.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\builder\LevelFactory.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\components\Animation.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\components\Sprite.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\components\SpriteSheet.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\Core.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\AnimationsTest.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\ImageStoreTest.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\imguiTest.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\imguiTest2.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\LevelEditorMain.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\LoadTileSetTest.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\SeparateAlphasExperiment.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\SeparateAlphasExperiment2.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\SimpleCollisions.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\TileMapTest.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\experimental\TilePlacementSample.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\GameLoop.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\input\GameController.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\input\KeyboardController.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\systems\EntitySystem.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\systems\MovementSystem.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\systems\RenderSystem.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\unittesting\ComponentSystemUnitTest.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\unittesting\ECSUnitTesting.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\unittesting\EntitySystemUnitTest.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\unused_code\main.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\unused_code\SpriteSheetTemp.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\unused_code\SpriteTemp.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\unused_code\Texture.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\utility\GUI.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\utility\ImageMod.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\utility\ImageStore.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\utility\MapFileLoader.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\utility\StaticTextStore.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\utility\TextureLoader.cpp" />
+    <ClCompile Include="beatemleft-engine\beatemleft-engine\utility\TextureStore.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\builder\LevelFactory.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\components\Animation.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\components\BoxCollider.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\components\CircleCollider.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\components\Kinematic.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\components\SlopeCollider.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\components\Sprite.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\components\SpriteSheet.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\components\Transform.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\Core.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\GameConstants.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\GameLoop.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\input\GameController.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\input\KeyboardController.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\MasterHeader.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\systems\AnimationStateMachine.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\systems\ComponentManager.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\systems\ECS.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\systems\EntitySystem.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\systems\MovementSystem.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\systems\RenderSystem.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\unused_code\SpriteSheetTemp.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\unused_code\SpriteTemp.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\unused_code\Texture.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\utility\CollisionQuery.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\utility\GUI.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\utility\ImageMod.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\utility\ImageStore.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\utility\MapFileLoader.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\utility\StaticTextStore.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\utility\TextureLoader.h" />
+    <ClInclude Include="beatemleft-engine\beatemleft-engine\utility\TextureStore.h" />
+    <ClInclude Include="vect2\Vect2.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,7 +1,7 @@
 #ifndef KEYBOARD_CONTROLLER_H
 #define KEYBOARD_CONTROLLER_H
 #include <unordered_map>
-#include <SDL2/SDL_events.h>
+#include <SDL_events.h>
 
 /*
 //TODO(Harvey):
